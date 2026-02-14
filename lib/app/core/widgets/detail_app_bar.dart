@@ -54,11 +54,12 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: InkWell(
                 onTap: onBack ?? () => Get.back(),
                 borderRadius: BorderRadius.circular(12.r),
-                child: Padding(
-                  padding: EdgeInsets.all(12.w),
+                child: SizedBox(
+                  width: 48.w,
+                  height: 48.w,
                   child: Icon(
                     Icons.arrow_back_ios_new_rounded,
-                    size: 18.sp,
+                    size: 20.sp,
                     color: AppColors.primaryBlue,
                   ),
                 ),
@@ -98,11 +99,12 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: InkWell(
                   onTap: onFilter,
                   borderRadius: BorderRadius.circular(12.r),
-                  child: Padding(
-                    padding: EdgeInsets.all(12.w),
+                  child: SizedBox(
+                    width: 48.w,
+                    height: 48.w,
                     child: Icon(
                       Icons.filter_list_rounded,
-                      size: 20.sp,
+                      size: 22.sp,
                       color: AppColors.primaryBlue,
                     ),
                   ),

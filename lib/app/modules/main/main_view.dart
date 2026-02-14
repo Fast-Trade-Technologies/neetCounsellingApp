@@ -15,10 +15,10 @@ class MainView extends GetView<MainController> {
   static const String _icons = 'assets/dashboard-icons';
 
   static const List<_NavItem> _navItems = [
-    _NavItem(label: 'Dashboard', icon: Icons.home_rounded, iconAsset: '$_icons/news-update.png'),
-    _NavItem(label: 'Analysis', icon: Icons.show_chart_rounded, iconAsset: '$_icons/past_year.png'),
-    _NavItem(label: 'Tools', icon: Icons.build_rounded, iconAsset: '$_icons/cut-off.png'),
-    _NavItem(label: 'Post-Exam', icon: Icons.school_rounded, iconAsset: '$_icons/SYCC-Report.png'),
+    _NavItem(label: 'Dashboard', icon: Icons.home_rounded,),// iconAsset: '$_icons/news-update.png'),
+    _NavItem(label: 'Analysis', icon: Icons.show_chart_rounded,),// iconAsset: '$_icons/past_year.png'),
+    _NavItem(label: 'Tools', icon: Icons.build_rounded,),// iconAsset: '$_icons/cut-off.png'),
+    _NavItem(label: 'Post-Exam', icon: Icons.school_rounded,),// iconAsset: '$_icons/SYCC-Report.png'),
   ];
 
   static const List<String> _titles = [
@@ -194,37 +194,52 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppColors.navBarActive : Colors.white;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (iconAsset != null)
-              SizedBox(
-                width: 28.w,
-                height: 28.w,
-                child: Image.asset(
-                  iconAsset!,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Icon(icon, size: 24.sp, color: color),
+    final color = isSelected ? AppColors.navBarActive : Colors.white.withValues(alpha: 0.75);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.navBarActive.withValues(alpha: 0.28) : Colors.transparent,
+            borderRadius: BorderRadius.circular(14.r),
+            border: isSelected ? Border.all(color: AppColors.navBarActive.withValues(alpha: 0.7), width: 1.2) : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (iconAsset != null)
+                SizedBox(
+                  width: 26.w,
+                  height: 26.w,
+                  child: Image.asset(
+                    iconAsset!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => Icon(icon, size: 24.sp, color: color),
+                  ),
+                )
+              else
+                Icon(icon, size: 24.sp, color: color),
+              SizedBox(height: 4.h),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: color,
                 ),
-              )
-            else
-              Icon(icon, size: 24.sp, color: color),
-            SizedBox(height: 4.h),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-                color: color,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

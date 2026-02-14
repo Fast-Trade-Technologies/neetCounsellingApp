@@ -21,7 +21,7 @@ class UniversitiesInstitutesView extends GetView<UniversitiesInstitutesControlle
         onBack: () => Get.back(),
       ),
       body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,34 +71,11 @@ class UniversitiesInstitutesView extends GetView<UniversitiesInstitutesControlle
             style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
           ),
           SizedBox(height: 14.h),
-          Obx(() => Row(
+          Obx(() => Column(
             children: [
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'State',
-                  value: controller.selectedState.value,
-                  items: UniversitiesInstitutesController.states,
-                  onChanged: controller.setState,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'Institute Type',
-                  value: controller.selectedInstituteType.value,
-                  items: UniversitiesInstitutesController.instituteTypes,
-                  onChanged: controller.setInstituteType,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'University',
-                  value: controller.selectedUniversity.value,
-                  items: UniversitiesInstitutesController.universities,
-                  onChanged: controller.setUniversity,
-                ),
-              ),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: UniversitiesInstitutesController.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: UniversitiesInstitutesController.instituteTypes, onChanged: controller.setInstituteType))]),
+              SizedBox(height: 10.h),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'University', value: controller.selectedUniversity.value, items: UniversitiesInstitutesController.universities, onChanged: controller.setUniversity))]),
             ],
           )),
         ],

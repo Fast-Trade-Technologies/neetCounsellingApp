@@ -21,7 +21,7 @@ class CounsellingView extends GetView<CounsellingController> {
         onBack: () => Get.back(),
       ),
       body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,34 +71,11 @@ class CounsellingView extends GetView<CounsellingController> {
             style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
           ),
           SizedBox(height: 14.h),
-          Obx(() => Row(
+          Obx(() => Column(
             children: [
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'Counselling Type',
-                  value: controller.selectedCounsellingType.value,
-                  items: CounsellingController.counsellingTypes,
-                  onChanged: controller.setCounsellingType,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'State Type',
-                  value: controller.selectedStateType.value,
-                  items: CounsellingController.stateTypes,
-                  onChanged: controller.setStateType,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _FilterDropdown(
-                  label: 'State',
-                  value: controller.selectedState.value,
-                  items: CounsellingController.states,
-                  onChanged: controller.setState,
-                ),
-              ),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: CounsellingController.counsellingTypes, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'State Type', value: controller.selectedStateType.value, items: CounsellingController.stateTypes, onChanged: controller.setStateType))]),
+              SizedBox(height: 10.h),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: CounsellingController.states, onChanged: controller.setState))]),
             ],
           )),
         ],

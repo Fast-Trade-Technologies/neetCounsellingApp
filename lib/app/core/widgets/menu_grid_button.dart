@@ -38,6 +38,7 @@ class MenuGridButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(14.r),
         child: Container(
+          constraints: BoxConstraints(minHeight: 88.h),
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
           decoration: BoxDecoration(
             color: AppColors.chipBg,
