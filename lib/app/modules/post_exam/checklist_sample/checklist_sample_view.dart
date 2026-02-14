@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
@@ -248,7 +249,7 @@ class _DocumentCard extends StatelessWidget {
   final ChecklistDocument doc;
 
   void _onViewSample() {
-    Get.snackbar('Sample View', 'Sample for "${doc.documentName}" will open when configured.');
+    AppSnackbar.info('Sample View', 'Sample for "${doc.documentName}" will open when configured.');
   }
 
   @override

@@ -8,6 +8,8 @@ import '../bindings/fees_seat_matrix_binding.dart';
 import '../bindings/universities_institutes_binding.dart';
 import '../bindings/initial_binding.dart';
 import '../bindings/login_binding.dart';
+import '../bindings/otp_binding.dart';
+import '../bindings/splash_binding.dart';
 import '../bindings/main_binding.dart';
 import '../bindings/register_binding.dart';
 import '../bindings/menu_binding.dart';
@@ -29,7 +31,9 @@ import '../modules/dashboard/webinars_view.dart';
 import '../modules/analysis/merit_list/merit_list_view.dart';
 import '../modules/analysis/seat_distribution/seat_distribution_view.dart';
 import '../modules/auth/login/login_view.dart';
+import '../modules/auth/otp/otp_view.dart';
 import '../modules/auth/register/register_view.dart';
+import '../modules/splash/splash_view.dart';
 import '../modules/main/main_view.dart';
 import '../modules/more/menu/menu_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
@@ -47,6 +51,11 @@ class AppPages {
 
   static final pages = <GetPage<dynamic>>[
     GetPage(
+      name: AppRoutes.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
+    GetPage(
       name: AppRoutes.onboarding,
       page: () => const OnboardingView(),
       binding: InitialBinding(),
@@ -55,6 +64,11 @@ class AppPages {
       name: AppRoutes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.otp,
+      page: () => const OtpView(),
+      binding: OtpBinding(),
     ),
     GetPage(
       name: AppRoutes.register,

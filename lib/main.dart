@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'app/core/storage/app_storage.dart';
 import 'app/core/theme/app_colors.dart';
 import 'app/core/widgets/responsive_wrapper.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppStorage.init();
   runApp(const MyApp());
 }
 
@@ -34,7 +37,7 @@ class MyApp extends StatelessWidget {
             filled: true,
           ),
         ),
-        initialRoute: AppRoutes.onboarding,
+        initialRoute: AppRoutes.splash,
         getPages: AppPages.pages,
         builder: (context, child) => ResponsiveWrapper(child: child ?? const SizedBox.shrink()),
       ),
