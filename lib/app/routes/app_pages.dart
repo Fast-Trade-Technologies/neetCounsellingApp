@@ -13,6 +13,7 @@ import '../bindings/splash_binding.dart';
 import '../bindings/main_binding.dart';
 import '../bindings/register_binding.dart';
 import '../bindings/menu_binding.dart';
+import '../bindings/profile_binding.dart';
 import '../bindings/competition_statistics_binding.dart';
 import '../bindings/courses_binding.dart';
 import '../bindings/merit_list_binding.dart';
@@ -36,6 +37,7 @@ import '../modules/auth/register/register_view.dart';
 import '../modules/splash/splash_view.dart';
 import '../modules/main/main_view.dart';
 import '../modules/more/menu/menu_view.dart';
+import '../modules/more/profile/profile_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
 import '../modules/post_exam/checklist_sample/checklist_sample_view.dart';
 import '../modules/post_exam/sycc_report/sycc_report_view.dart';
@@ -144,6 +146,11 @@ class AppPages {
       name: AppRoutes.moreMenu,
       page: () => const MenuView(),
       binding: MenuBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
     ),
     GetPage(
       name: AppRoutes.dashboardBookNow,

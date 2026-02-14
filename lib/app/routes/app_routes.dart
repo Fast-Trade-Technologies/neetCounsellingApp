@@ -21,6 +21,7 @@ class AppRoutes {
   static const String syccReport = '/post-exam/sycc-report';
   static const String postExamChecklistSample = '/post-exam/checklist-sample';
   static const String moreMenu = '/more/menu';
+  static const String profile = '/profile';
 
   // Dashboard detail pages (from web dashboard)
   static const String dashboardBookNow = '/dashboard/book-now';
