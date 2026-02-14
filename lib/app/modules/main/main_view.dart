@@ -35,8 +35,17 @@ class MainView extends GetView<MainController> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(72.h),
         child: Container(
-          color: AppColors.headerBg,
-          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
+          decoration: BoxDecoration(
+            color: AppColors.headerBg,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textDark.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.fromLTRB(18.w, 10.h, 18.w, 14.h),
           child: SafeArea(
             bottom: false,
             child: Row(
@@ -92,7 +101,7 @@ class MainView extends GetView<MainController> {
       ),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -109,12 +118,19 @@ class MainView extends GetView<MainController> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.navBarBg,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
             child: Obx(
               () => Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -136,7 +152,7 @@ class MainView extends GetView<MainController> {
     );
   }
 
-  static void _onBookNow() {}
+  static void _onBookNow() => Get.toNamed(AppRoutes.dashboardBookNow);
 
   Widget _buildTabContent(int index) {
     switch (index) {
@@ -181,16 +197,16 @@ class _NavBarItem extends StatelessWidget {
     final color = isSelected ? AppColors.navBarActive : Colors.white;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(14.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (iconAsset != null)
               SizedBox(
-                width: 26.w,
-                height: 26.w,
+                width: 28.w,
+                height: 28.w,
                 child: Image.asset(
                   iconAsset!,
                   fit: BoxFit.contain,
@@ -236,10 +252,12 @@ class _DashboardContent extends StatelessWidget {
             MenuGridButton(
               label: 'News & Updates',
               iconAsset: '${MainView._icons}/news-update.png',
+              onTap: () => Get.toNamed(AppRoutes.dashboardNews),
             ),
             MenuGridButton(
               label: 'Counselling Links',
               iconAsset: '${MainView._icons}/Counselling-Links.png',
+              onTap: () => Get.toNamed(AppRoutes.dashboardCounsellingLinks),
             ),
             MenuGridButton(
               label: 'Colleges & Seats',
@@ -249,10 +267,12 @@ class _DashboardContent extends StatelessWidget {
             MenuGridButton(
               label: 'Webinars',
               iconAsset: '${MainView._icons}/webinar.png',
+              onTap: () => Get.toNamed(AppRoutes.dashboardWebinars),
             ),
             MenuGridButton(
               label: 'Important Links',
               iconAsset: '${MainView._icons}/links.png',
+              onTap: () => Get.toNamed(AppRoutes.dashboardImportantLinks),
             ),
           ],
         ),
@@ -271,6 +291,7 @@ class _AnalysisContent extends StatelessWidget {
         MenuGridButton(
           label: 'Past Years Competition',
           iconAsset: '${MainView._icons}/past_year.png',
+          onTap: () => Get.toNamed(AppRoutes.analysisCompetitionStatistics),
         ),
         MenuGridButton(
           label: 'Seat Distribution',
@@ -280,10 +301,12 @@ class _AnalysisContent extends StatelessWidget {
         MenuGridButton(
           label: 'Merit List',
           iconAsset: '${MainView._icons}/merit-list.png',
+          onTap: () => Get.toNamed(AppRoutes.analysisMeritList),
         ),
         MenuGridButton(
           label: 'Courses',
           iconAsset: '${MainView._icons}/course.png',
+          onTap: () => Get.toNamed(AppRoutes.analysisCourses),
         ),
       ],
     );
@@ -305,6 +328,7 @@ class _ToolsContent extends StatelessWidget {
         MenuGridButton(
           label: 'Fees & Seat Matrix',
           iconAsset: '${MainView._icons}/fee-seet.png',
+          onTap: () => Get.toNamed(AppRoutes.toolsFeesSeatMatrix),
         ),
         MenuGridButton(
           label: 'College Ranking',

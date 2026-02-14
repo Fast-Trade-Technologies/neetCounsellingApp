@@ -64,6 +64,13 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.chipBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,6 +94,13 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.chipBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [

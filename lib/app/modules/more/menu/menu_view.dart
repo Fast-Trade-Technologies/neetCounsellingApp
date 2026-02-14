@@ -133,15 +133,23 @@ class _MenuTile extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(14.r),
+      elevation: 0,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 12.w),
+          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 14.w),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: AppColors.chipBorder),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textDark.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [

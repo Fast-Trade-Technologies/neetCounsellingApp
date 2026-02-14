@@ -75,7 +75,14 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             height: 160.h,
             decoration: BoxDecoration(
               color: AppColors.chipBg,
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textDark.withValues(alpha: 0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Text(

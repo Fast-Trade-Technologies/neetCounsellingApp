@@ -29,20 +29,33 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
-      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 10.h),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 12.h),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
             Material(
               color: AppColors.chipBg,
-              shape: const CircleBorder(),
+              elevation: 0,
+              shadowColor: AppColors.textDark.withValues(alpha: 0.08),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
               child: InkWell(
                 onTap: onBack ?? () => Get.back(),
-                customBorder: const CircleBorder(),
+                borderRadius: BorderRadius.circular(12.r),
                 child: Padding(
-                  padding: EdgeInsets.all(10.w),
+                  padding: EdgeInsets.all(12.w),
                   child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 18.sp,
@@ -78,12 +91,15 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             if (!hideFilter)
               Material(
                 color: AppColors.chipBg,
-                shape: const CircleBorder(),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
                 child: InkWell(
                   onTap: onFilter,
-                  customBorder: const CircleBorder(),
+                  borderRadius: BorderRadius.circular(12.r),
                   child: Padding(
-                    padding: EdgeInsets.all(10.w),
+                    padding: EdgeInsets.all(12.w),
                     child: Icon(
                       Icons.filter_list_rounded,
                       size: 20.sp,

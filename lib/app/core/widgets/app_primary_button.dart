@@ -21,30 +21,34 @@ class AppPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool enabled = !isDisabled && onTap != null;
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Opacity(
-        opacity: enabled ? 1 : 0.6,
-        child: Container(
-          height: height ?? 44.h,
-          width: double.infinity,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.r),
-            gradient: const LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [AppColors.authButtonStart, AppColors.authButtonEnd],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.authButtonStart.withValues(alpha: 0.25),
-                blurRadius: 10,
-                offset: const Offset(0, 6),
+    return Opacity(
+      opacity: enabled ? 1 : 0.6,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            height: height ?? 48.h,
+            width: double.infinity,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              gradient: const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [AppColors.authButtonStart, AppColors.authButtonEnd],
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.authButtonStart.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Text(text, style: AppTextStyles.buttonText),
           ),
-          child: Text(text, style: AppTextStyles.buttonText),
         ),
       ),
     );

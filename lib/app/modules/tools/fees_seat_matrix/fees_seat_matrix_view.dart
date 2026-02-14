@@ -5,18 +5,18 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
-import 'cutoff_allotments_controller.dart';
+import 'fees_seat_matrix_controller.dart';
 
-class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
-  const CutoffAllotmentsView({super.key});
+class FeesSeatMatrixView extends GetView<FeesSeatMatrixController> {
+  const FeesSeatMatrixView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
-        title: 'Cut Off Allotments',
-        subtitle: 'Neet Counselling / Tools / Cut Off Allotments',
+        title: 'Fees & Seat Matrix',
+        subtitle: 'Neet Counselling / Tools / Fees & Seat Matrix',
         hideFilter: true,
         onBack: () => Get.back(),
       ),
@@ -27,7 +27,7 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'An overview of college cut-offs & allotments, with round-wise closing ranks and fee structure by course, category, quota and rank type.',
+              'View seat distributions and corresponding fee structure offered by colleges for every category and subcategory.',
               style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
             ),
             SizedBox(height: 16.h),
@@ -67,7 +67,7 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           Obx(() => Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading)),
           SizedBox(height: 4.h),
           Text(
-            'Round-wise updates with the latest closing ranks and allotments details of medical colleges',
+            'Round-wise updates with the latest seat intakes of medical colleges',
             style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
           ),
           SizedBox(height: 14.h),
@@ -75,21 +75,21 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
             children: [
               Row(
                 children: [
-                  Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: CutoffAllotmentsController.states, onChanged: controller.setState)),
+                  Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: FeesSeatMatrixController.states, onChanged: controller.setState)),
                   SizedBox(width: 10.w),
-                  Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType)),
+                  Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: FeesSeatMatrixController.instituteTypes, onChanged: controller.setInstituteType)),
                   SizedBox(width: 10.w),
-                  Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota)),
+                  Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: FeesSeatMatrixController.quotas, onChanged: controller.setQuota)),
                   SizedBox(width: 10.w),
-                  Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory)),
+                  Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: FeesSeatMatrixController.categories, onChanged: controller.setCategory)),
                 ],
               ),
               SizedBox(height: 10.h),
               Row(
                 children: [
-                  Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: CutoffAllotmentsController.courses, onChanged: controller.setCourse)),
+                  Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: FeesSeatMatrixController.courses, onChanged: controller.setCourse)),
                   SizedBox(width: 10.w),
-                  Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: CutoffAllotmentsController.years, onChanged: controller.setYear)),
+                  Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: FeesSeatMatrixController.years, onChanged: controller.setYear)),
                 ],
               ),
             ],
@@ -135,7 +135,7 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
             return Column(
               children: [
                 for (int i = 0; i < list.length; i++) ...[
-                  _CutoffCard(row: list[i]),
+                  _FeesSeatCard(row: list[i]),
                   if (i < list.length - 1) SizedBox(height: 12.h),
                 ],
               ],
@@ -145,13 +145,12 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
       ),
     );
   }
-
 }
 
-class _CutoffCard extends StatelessWidget {
-  const _CutoffCard({required this.row});
+class _FeesSeatCard extends StatelessWidget {
+  const _FeesSeatCard({required this.row});
 
-  final CutoffRow row;
+  final FeesSeatRow row;
 
   @override
   Widget build(BuildContext context) {
@@ -216,18 +215,7 @@ class _CutoffCard extends StatelessWidget {
                         _Chip(label: 'Quota', value: row.quota),
                         _Chip(label: 'Category', value: row.category),
                         _Chip(label: 'Fees', value: row.fees),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        _RoundChip(label: 'R1', value: row.r1),
-                        SizedBox(width: 8.w),
-                        _RoundChip(label: 'R2', value: row.r2),
-                        SizedBox(width: 8.w),
-                        _RoundChip(label: 'R3', value: row.r3),
-                        SizedBox(width: 8.w),
-                        _RoundChip(label: 'R4', value: row.r4),
+                        _Chip(label: 'Seats', value: row.seats),
                       ],
                     ),
                   ],
@@ -259,40 +247,6 @@ class _Chip extends StatelessWidget {
       child: Text(
         '$label: $value',
         style: AppTextStyles.bodyS.copyWith(fontSize: 10.sp, color: AppColors.textDark),
-      ),
-    );
-  }
-}
-
-class _RoundChip extends StatelessWidget {
-  const _RoundChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.chipBg,
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: AppColors.chipBorder),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: AppTextStyles.bodyS.copyWith(fontSize: 9.sp, color: AppColors.textMuted),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              value,
-              style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, fontWeight: FontWeight.w600, color: AppColors.textDark),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -341,4 +295,3 @@ class _FilterDropdown extends StatelessWidget {
     );
   }
 }
-

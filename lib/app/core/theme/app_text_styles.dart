@@ -9,21 +9,24 @@ class AppTextStyles {
   static TextStyle get titleXL => TextStyle(
         fontSize: 30.sp,
         fontWeight: FontWeight.w700,
-        height: 1.12,
+        height: 1.2,
+        letterSpacing: 0.2,
         color: AppColors.textDark,
       );
 
   static TextStyle get titleL => TextStyle(
         fontSize: 26.sp,
         fontWeight: FontWeight.w700,
-        height: 1.12,
+        height: 1.2,
+        letterSpacing: 0.15,
         color: AppColors.textDark,
       );
 
   static TextStyle get titleM => TextStyle(
         fontSize: 22.sp,
         fontWeight: FontWeight.w700,
-        height: 1.15,
+        height: 1.2,
+        letterSpacing: 0.1,
         color: AppColors.textDark,
       );
 
@@ -86,7 +89,8 @@ class AppTextStyles {
   static TextStyle get welcomeHeading => TextStyle(
         fontSize: 16.sp,
         fontWeight: FontWeight.w700,
-        height: 1.2,
+        height: 1.25,
+        letterSpacing: 0.1,
         color: AppColors.textDark,
       );
 

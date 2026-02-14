@@ -19,11 +19,11 @@ void showFilterSheet({
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h + MediaQuery.of(ctx).padding.bottom),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 12,
+            color: AppColors.textDark.withValues(alpha: 0.12),
+            blurRadius: 16,
             offset: const Offset(0, -4),
           ),
         ],
@@ -34,21 +34,22 @@ void showFilterSheet({
         children: [
           Center(
             child: Container(
-              width: 40.w,
-              height: 4.h,
+              width: 48.w,
+              height: 5.h,
+              margin: EdgeInsets.only(top: 12.h),
               decoration: BoxDecoration(
                 color: AppColors.border,
-                borderRadius: BorderRadius.circular(2.r),
+                borderRadius: BorderRadius.circular(3.r),
               ),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
           Text('Filters', style: AppTextStyles.welcomeHeading),
-          SizedBox(height: 14.h),
-          child,
           SizedBox(height: 16.h),
+          child,
+          SizedBox(height: 18.h),
           SizedBox(
-            height: 44.h,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
@@ -57,8 +58,9 @@ void showFilterSheet({
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.navBarActive,
                 foregroundColor: Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
               child: Text('Submit', style: AppTextStyles.buttonText),

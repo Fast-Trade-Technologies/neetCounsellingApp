@@ -78,13 +78,22 @@ class _DotsIndicator extends StatelessWidget {
       children: List.generate(count, (i) {
         final bool selected = i == index;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          margin: EdgeInsets.symmetric(horizontal: 5.w),
-          height: 8.w,
-          width: selected ? 22.w : 8.w,
+          duration: const Duration(milliseconds: 250),
+          margin: EdgeInsets.symmetric(horizontal: 6.w),
+          height: 8.h,
+          width: selected ? 24.w : 8.w,
           decoration: BoxDecoration(
             color: selected ? AppColors.primaryBlue : AppColors.indicatorInactive,
             borderRadius: BorderRadius.circular(999),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
         );
       }),

@@ -1,17 +1,14 @@
 import 'package:get/get.dart';
 
-class CutoffRow {
-  CutoffRow({
+class FeesSeatRow {
+  FeesSeatRow({
     required this.sNo,
     required this.instituteAndType,
     required this.course,
     required this.quota,
     required this.category,
     required this.fees,
-    required this.r1,
-    required this.r2,
-    required this.r3,
-    required this.r4,
+    required this.seats,
   });
 
   final int sNo;
@@ -20,20 +17,16 @@ class CutoffRow {
   final String quota;
   final String category;
   final String fees;
-  final String r1;
-  final String r2;
-  final String r3;
-  final String r4;
+  final String seats;
 }
 
-class CutoffAllotmentsController extends GetxController {
+class FeesSeatMatrixController extends GetxController {
   final RxString selectedState = 'Uttar Pradesh'.obs;
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedQuota = 'Select Quota'.obs;
   final RxString selectedCategory = 'Select Category'.obs;
   final RxString selectedCourse = 'Select Course'.obs;
   final RxString selectedYear = '2024'.obs;
-  final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
 
   static const List<String> states = ['Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka'];
@@ -42,12 +35,9 @@ class CutoffAllotmentsController extends GetxController {
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022'];
-  static const List<int> entriesOptions = [10, 25, 50];
 
-  List<int> get entriesOptionsList => entriesOptions;
-
-  late final List<CutoffRow> _allRows;
-  final RxList<CutoffRow> filteredRows = <CutoffRow>[].obs;
+  late final List<FeesSeatRow> _allRows;
+  final RxList<FeesSeatRow> filteredRows = <FeesSeatRow>[].obs;
 
   @override
   void onInit() {
@@ -56,67 +46,52 @@ class CutoffAllotmentsController extends GetxController {
     _applyFilters();
   }
 
-  List<CutoffRow> _buildSampleRows() {
+  List<FeesSeatRow> _buildSampleRows() {
     return [
-      CutoffRow(
+      FeesSeatRow(
         sNo: 1,
         instituteAndType: 'SRI RAM MURTI SMARAK INSTITUTE OF MEDICAL SCIENCES, BAREILLY (Private)',
         course: 'MBBS',
         quota: 'General',
         category: 'N/A',
         fees: '1648512',
-        r1: '101256',
-        r2: '98822',
-        r3: '68947',
-        r4: '-',
+        seats: '150',
       ),
-      CutoffRow(
+      FeesSeatRow(
         sNo: 2,
-        instituteAndType: 'SRI RAM MURTI SMARAK INSTITUTE OF MEDICAL SCIENCES, BAREILLY (Private)',
+        instituteAndType: 'MUZAFFARNAGAR MEDICAL COLLEGE, MUZAFFARNAGAR (Private)',
         course: 'MBBS',
         quota: 'General',
         category: 'N/A',
-        fees: '1648512',
-        r1: '101256',
-        r2: '98822',
-        r3: '68947',
-        r4: '-',
+        fees: '1393883',
+        seats: '200',
       ),
-      CutoffRow(
+      FeesSeatRow(
         sNo: 3,
         instituteAndType: 'EXAMPLE GOVERNMENT MEDICAL COLLEGE (Government)',
         course: 'MBBS',
         quota: 'General',
         category: 'N/A',
         fees: 'N/A',
-        r1: '45210',
-        r2: '44100',
-        r3: '43800',
-        r4: '-',
+        seats: '250',
       ),
-      CutoffRow(
+      FeesSeatRow(
         sNo: 4,
         instituteAndType: 'ANOTHER PRIVATE MEDICAL COLLEGE, LUCKNOW (Private)',
         course: 'MBBS',
         quota: 'General',
         category: 'N/A',
         fees: '1850000',
-        r1: '112000',
-        r2: '108500',
-        r3: '-',
-        r4: '-',
+        seats: '150',
       ),
-      CutoffRow(
+      FeesSeatRow(
         sNo: 5,
         instituteAndType: 'DEEMED UNIVERSITY MEDICAL COLLEGE (Deemed)',
         course: 'MBBS',
         quota: 'General',
         category: 'N/A',
         fees: '2400000',
-        r1: '98500',
-        r2: '96200',
-        r3: '95100',
-        r4: '94500',
+        seats: '100',
       ),
     ];
   }
@@ -127,7 +102,6 @@ class CutoffAllotmentsController extends GetxController {
   void setCategory(String v) => selectedCategory.value = v;
   void setCourse(String v) => selectedCourse.value = v;
   void setYear(String v) => selectedYear.value = v;
-  void setEntriesPerPage(int v) => entriesPerPage.value = v;
   void setSearchQuery(String value) {
     searchQuery.value = value;
     _applyFilters();
@@ -145,17 +119,10 @@ class CutoffAllotmentsController extends GetxController {
               r.course.toLowerCase().contains(q) ||
               r.quota.toLowerCase().contains(q) ||
               r.category.toLowerCase().contains(q) ||
-              r.fees.contains(q),
+              r.fees.contains(q) ||
+              r.seats.contains(q),
         ),
       );
     }
   }
-
-  List<CutoffRow> get paginatedRows {
-    final list = filteredRows;
-    final perPage = entriesPerPage.value;
-    return list.take(perPage).toList();
-  }
-
-  int get totalEntries => filteredRows.length;
 }
