@@ -2,7 +2,10 @@ import 'package:get/get.dart';
 
 import '../bindings/college_seats_binding.dart';
 import '../bindings/cutoff_allotments_binding.dart';
+import '../bindings/college_ranking_binding.dart';
+import '../bindings/counselling_binding.dart';
 import '../bindings/fees_seat_matrix_binding.dart';
+import '../bindings/universities_institutes_binding.dart';
 import '../bindings/initial_binding.dart';
 import '../bindings/login_binding.dart';
 import '../bindings/main_binding.dart';
@@ -11,6 +14,7 @@ import '../bindings/menu_binding.dart';
 import '../bindings/competition_statistics_binding.dart';
 import '../bindings/courses_binding.dart';
 import '../bindings/merit_list_binding.dart';
+import '../bindings/checklist_sample_binding.dart';
 import '../bindings/seat_distribution_binding.dart';
 import '../bindings/sycc_report_binding.dart';
 import '../modules/analysis/college_seats/college_seats_view.dart';
@@ -29,9 +33,13 @@ import '../modules/auth/register/register_view.dart';
 import '../modules/main/main_view.dart';
 import '../modules/more/menu/menu_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
+import '../modules/post_exam/checklist_sample/checklist_sample_view.dart';
 import '../modules/post_exam/sycc_report/sycc_report_view.dart';
+import '../modules/tools/college_ranking/college_ranking_view.dart';
+import '../modules/tools/counselling/counselling_view.dart';
 import '../modules/tools/cutoff_allotments/cutoff_allotments_view.dart';
 import '../modules/tools/fees_seat_matrix/fees_seat_matrix_view.dart';
+import '../modules/tools/universities_institutes/universities_institutes_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -94,9 +102,29 @@ class AppPages {
       binding: FeesSeatMatrixBinding(),
     ),
     GetPage(
+      name: AppRoutes.toolsCollegeRanking,
+      page: () => const CollegeRankingView(),
+      binding: CollegeRankingBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.toolsCounselling,
+      page: () => const CounsellingView(),
+      binding: CounsellingBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.toolsUniversitiesInstitutes,
+      page: () => const UniversitiesInstitutesView(),
+      binding: UniversitiesInstitutesBinding(),
+    ),
+    GetPage(
       name: AppRoutes.syccReport,
       page: () => const SyccReportView(),
       binding: SyccReportBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.postExamChecklistSample,
+      page: () => const ChecklistSampleView(),
+      binding: ChecklistSampleBinding(),
     ),
     GetPage(
       name: AppRoutes.moreMenu,

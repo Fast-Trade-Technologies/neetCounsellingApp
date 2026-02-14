@@ -333,19 +333,22 @@ class _ToolsContent extends StatelessWidget {
         MenuGridButton(
           label: 'College Ranking',
           iconAsset: '${MainView._icons}/collages.png',
+          onTap: () => Get.toNamed(AppRoutes.toolsCollegeRanking),
         ),
         MenuGridButton(
           label: 'Counselling',
           iconAsset: '${MainView._icons}/Counselling.png',
+          onTap: () => Get.toNamed(AppRoutes.toolsCounselling),
         ),
         MenuGridButton(
           label: 'Universities & Institutes',
           iconAsset: '${MainView._icons}/Universities&Institutes.png',
+          onTap: () => Get.toNamed(AppRoutes.toolsUniversitiesInstitutes),
         ),
-        MenuGridButton(
-          label: 'Documentation',
-          iconAsset: '${MainView._icons}/Documentation.png',
-        ),
+        // MenuGridButton(
+        //   label: 'Documentation',
+        //   iconAsset: '${MainView._icons}/Documentation.png',
+        // ),
       ],
     );
   }
@@ -368,8 +371,9 @@ class _PostExamContent extends StatelessWidget {
         SizedBox(width: 12.w),
         Expanded(
           child: MenuGridButton(
-            label: 'Documentation',
+            label: 'Checklist & Sample Views',
             iconAsset: '${MainView._icons}/Documentation.png',
+            onTap: () => Get.toNamed(AppRoutes.postExamChecklistSample),
           ),
         ),
       ],

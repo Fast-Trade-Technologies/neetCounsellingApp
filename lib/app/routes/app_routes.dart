@@ -13,7 +13,11 @@ class AppRoutes {
   static const String analysisCourses = '/analysis/courses';
   static const String toolsCutoffAllotments = '/tools/cutoff-allotments';
   static const String toolsFeesSeatMatrix = '/tools/fees-seat-matrix';
+  static const String toolsCollegeRanking = '/tools/college-ranking';
+  static const String toolsCounselling = '/tools/counselling';
+  static const String toolsUniversitiesInstitutes = '/tools/universities-institutes';
   static const String syccReport = '/post-exam/sycc-report';
+  static const String postExamChecklistSample = '/post-exam/checklist-sample';
   static const String moreMenu = '/more/menu';
 
   // Dashboard detail pages (from web dashboard)
