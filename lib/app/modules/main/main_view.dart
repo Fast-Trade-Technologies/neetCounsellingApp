@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/menu_grid_button.dart';
 import '../../core/widgets/welcome_card.dart';
+import '../../core/storage/app_storage.dart';
 import '../../routes/app_routes.dart';
 import 'main_controller.dart';
 
@@ -15,10 +16,10 @@ class MainView extends GetView<MainController> {
   static const String _icons = 'assets/dashboard-icons';
 
   static const List<_NavItem> _navItems = [
-    _NavItem(label: 'Dashboard', icon: Icons.home_rounded,),// iconAsset: '$_icons/news-update.png'),
-    _NavItem(label: 'Analysis', icon: Icons.show_chart_rounded,),// iconAsset: '$_icons/past_year.png'),
-    _NavItem(label: 'Tools', icon: Icons.build_rounded,),// iconAsset: '$_icons/cut-off.png'),
-    _NavItem(label: 'Post-Exam', icon: Icons.school_rounded,),// iconAsset: '$_icons/SYCC-Report.png'),
+    _NavItem(label: 'Dashboard', icon: Icons.home_rounded, iconAsset: null),
+    _NavItem(label: 'Analysis', icon: Icons.show_chart_rounded, iconAsset: null),
+    _NavItem(label: 'Tools', icon: Icons.build_rounded, iconAsset: null),
+    _NavItem(label: 'Post-Exam', icon: Icons.school_rounded, iconAsset: null),
   ];
 
   static const List<String> _titles = [
@@ -67,18 +68,24 @@ class MainView extends GetView<MainController> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Meet Kaur',
+                                  AppStorage.userName?.trim().isNotEmpty == true
+                                      ? AppStorage.userName!.trim()
+                                      : 'User',
                                   style: AppTextStyles.titleM.copyWith(
                                     fontSize: 16.sp,
                                     color: AppColors.textDark,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  'meetkaur39@gmail.com',
+                                  AppStorage.userEmail ?? '',
                                   style: AppTextStyles.bodyS.copyWith(
                                     fontSize: 11.sp,
                                     color: AppColors.textMuted,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -157,7 +164,7 @@ class MainView extends GetView<MainController> {
   Widget _buildTabContent(int index) {
     switch (index) {
       case 0:
-        return const _DashboardContent();
+        return _DashboardContent(controller: controller);
       case 1:
         return const _AnalysisContent();
       case 2:
@@ -165,7 +172,7 @@ class MainView extends GetView<MainController> {
       case 3:
         return const _PostExamContent();
       default:
-        return const _DashboardContent();
+        return _DashboardContent(controller: controller);
     }
   }
 }
@@ -247,52 +254,73 @@ class _NavBarItem extends StatelessWidget {
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent();
+  const _DashboardContent({required this.controller});
+  final MainController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'At "NEETCounseling.com", we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Our platform offers comprehensive counselling support, college predictions, and expert advice to help you make informed choices.',
-          style: AppTextStyles.bodyS.copyWith(
-            color: AppColors.textDark,
-            height: 1.4,
+    return Obx(() {
+      if (controller.dashboardLoading.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 24.h),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+      if (controller.dashboardError.value.isNotEmpty) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 24.h),
+          child: Center(
+            child: Text(
+              controller.dashboardError.value,
+              style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ),
           ),
-        ),
-        SizedBox(height: 16.h),
-        LayoutGrid(
-          children: [
-            MenuGridButton(
-              label: 'News & Updates',
-              iconAsset: '${MainView._icons}/news-update.png',
-              onTap: () => Get.toNamed(AppRoutes.dashboardNews),
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'At "NEETCounseling.com", we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Our platform offers comprehensive counselling support, college predictions, and expert advice to help you make informed choices.',
+            style: AppTextStyles.bodyS.copyWith(
+              color: AppColors.textDark,
+              height: 1.4,
             ),
-            MenuGridButton(
-              label: 'Counselling Links',
-              iconAsset: '${MainView._icons}/Counselling-Links.png',
-              onTap: () => Get.toNamed(AppRoutes.dashboardCounsellingLinks),
-            ),
-            MenuGridButton(
-              label: 'Colleges & Seats',
-              iconAsset: '${MainView._icons}/collages.png',
-              onTap: () => Get.toNamed(AppRoutes.analysisCollegeSeats),
-            ),
-            MenuGridButton(
-              label: 'Webinars',
-              iconAsset: '${MainView._icons}/webinar.png',
-              onTap: () => Get.toNamed(AppRoutes.dashboardWebinars),
-            ),
-            MenuGridButton(
-              label: 'Important Links',
-              iconAsset: '${MainView._icons}/links.png',
-              onTap: () => Get.toNamed(AppRoutes.dashboardImportantLinks),
-            ),
-          ],
-        ),
-      ],
-    );
+          ),
+          SizedBox(height: 16.h),
+          LayoutGrid(
+            children: [
+              MenuGridButton(
+                label: 'News & Updates',
+                iconAsset: '${MainView._icons}/news-update.png',
+                onTap: () => Get.toNamed(AppRoutes.dashboardNews),
+              ),
+              MenuGridButton(
+                label: 'Counselling Links',
+                iconAsset: '${MainView._icons}/Counselling-Links.png',
+                onTap: () => Get.toNamed(AppRoutes.dashboardCounsellingLinks),
+              ),
+              MenuGridButton(
+                label: 'Colleges & Seats',
+                iconAsset: '${MainView._icons}/collages.png',
+                onTap: () => Get.toNamed(AppRoutes.analysisCollegeSeats),
+              ),
+              MenuGridButton(
+                label: 'Webinars',
+                iconAsset: '${MainView._icons}/webinar.png',
+                onTap: () => Get.toNamed(AppRoutes.dashboardWebinars),
+              ),
+              MenuGridButton(
+                label: 'Important Links',
+                iconAsset: '${MainView._icons}/links.png',
+                onTap: () => Get.toNamed(AppRoutes.dashboardImportantLinks),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 }
 

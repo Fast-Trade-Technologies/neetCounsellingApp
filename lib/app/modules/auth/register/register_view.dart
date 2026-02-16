@@ -71,7 +71,7 @@ class RegisterView extends GetView<RegisterController> {
                 textInputAction: TextInputAction.done,
               ),
               SizedBox(height: 14.h),
-              AppPrimaryButton(text: 'Sign up', onTap: controller.onSignUp),
+              AppPrimaryButton(text: 'Sign up', onTap: () { controller.onSignUp(); }),
               SizedBox(height: 12.h),
               const AuthOrDivider(),
               SizedBox(height: 12.h),

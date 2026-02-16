@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../api_services/auth_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../routes/app_routes.dart';
 
 class OtpController extends GetxController {
-  static const int otpLength = 6;
+  static const int otpLength = 4;
   final List<TextEditingController> pinControllers = List.generate(otpLength, (_) => TextEditingController());
   final List<FocusNode> focusNodes = List.generate(otpLength, (_) => FocusNode());
   final RxString phone = ''.obs;
@@ -80,19 +81,41 @@ class OtpController extends GetxController {
       AppSnackbar.error('Invalid OTP', err);
       return;
     }
+    final token = AppStorage.loginToken;
+    if (token == null || token.isEmpty) {
+      AppSnackbar.error('Session expired', 'Please request OTP again from login.');
+      return;
+    }
     isLoading.value = true;
-    // Simulate API call – replace with real OTP verification
-    await Future.delayed(const Duration(milliseconds: 800));
+    final (success, errorMessage, userId) = await AuthApi.verifyOtp(
+      otp: otp,
+      token: token,
+      showLoader: true,
+    );
     isLoading.value = false;
-    // Save login state and go to main
-    AppStorage.isLoggedIn = true;
-    AppStorage.userPhone = phone.value.isNotEmpty ? phone.value : null;
-    Get.offAllNamed(AppRoutes.home);
+    if (success && userId != null) {
+      AppStorage.userId = userId;
+      AppStorage.isLoggedIn = true;
+      AppStorage.userPhone = phone.value.isNotEmpty ? phone.value : null;
+      Get.offAllNamed(AppRoutes.home);
+    } else {
+      AppSnackbar.error('Verification failed', errorMessage ?? 'Invalid OTP');
+    }
   }
 
-  void onResendOtp() {
+  Future<void> onResendOtp() async {
     if (resendSeconds.value > 0) return;
-    startResendTimer();
-    AppSnackbar.success('OTP Sent', 'New OTP sent to ${phone.value}');
+    final token = AppStorage.loginToken;
+    if (token == null || token.isEmpty) {
+      AppSnackbar.warning('Session expired', 'Please go back and request OTP again.');
+      return;
+    }
+    final (success, errorMessage) = await AuthApi.resendOtp(token: token, showLoader: false);
+    if (success) {
+      startResendTimer();
+      AppSnackbar.success('OTP Sent', 'New OTP sent to ${phone.value}');
+    } else {
+      AppSnackbar.error('Resend failed', errorMessage ?? 'Could not resend OTP');
+    }
   }
 }

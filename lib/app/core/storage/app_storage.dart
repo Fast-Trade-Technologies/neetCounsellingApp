@@ -32,6 +32,21 @@ class AppStorage {
   static String? get userId => _box.read(AppStorageKeys.userId) as String?;
   static set userId(String? v) => _box.write(AppStorageKeys.userId, v);
 
+  static String? get userFirstName => _box.read(AppStorageKeys.userFirstName) as String?;
+  static set userFirstName(String? v) => _box.write(AppStorageKeys.userFirstName, v);
+
+  static String? get userLastName => _box.read(AppStorageKeys.userLastName) as String?;
+  static set userLastName(String? v) => _box.write(AppStorageKeys.userLastName, v);
+
+  static String? get userStream => _box.read(AppStorageKeys.userStream) as String?;
+  static set userStream(String? v) => _box.write(AppStorageKeys.userStream, v);
+
+  static String? get userPaidStatus => _box.read(AppStorageKeys.userPaidStatus) as String?;
+  static set userPaidStatus(String? v) => _box.write(AppStorageKeys.userPaidStatus, v);
+
+  static String? get userImage => _box.read(AppStorageKeys.userImage) as String?;
+  static set userImage(String? v) => _box.write(AppStorageKeys.userImage, v);
+
   // Onboarding
   static bool get onboardingCompleted => _box.read(AppStorageKeys.onboardingCompleted) as bool? ?? false;
   static set onboardingCompleted(bool v) => _box.write(AppStorageKeys.onboardingCompleted, v);
@@ -48,6 +63,11 @@ class AppStorage {
     _box.remove(AppStorageKeys.authToken);
     _box.remove(AppStorageKeys.loginToken);
     _box.remove(AppStorageKeys.userId);
+    _box.remove(AppStorageKeys.userFirstName);
+    _box.remove(AppStorageKeys.userLastName);
+    _box.remove(AppStorageKeys.userStream);
+    _box.remove(AppStorageKeys.userPaidStatus);
+    _box.remove(AppStorageKeys.userImage);
   }
 
   static Future<void> clearAll() => _box.erase();

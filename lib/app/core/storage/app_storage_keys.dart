@@ -12,6 +12,12 @@ class AppStorageKeys {
   static const String loginToken = 'login_token';
   /// User ID from verify-otp (nLoginUserIdNo for authenticated APIs).
   static const String userId = 'user_id';
+  /// From verify-otp data.user
+  static const String userFirstName = 'user_first_name';
+  static const String userLastName = 'user_last_name';
+  static const String userStream = 'user_stream';
+  static const String userPaidStatus = 'user_paid_status';
+  static const String userImage = 'user_image';
 
   // Onboarding
   static const String onboardingCompleted = 'onboarding_completed';

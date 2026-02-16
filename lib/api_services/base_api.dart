@@ -45,6 +45,13 @@ class _BaseOverlays {
   }
 }
 
+/// NEET API uses nLoginUserIdNo (userId from verify-otp) for auth. Login token is only for verify-otp/resend-otp.
+Map<String, String> _authHeaders() {
+  final userId = AppStorage.userId;
+  if (userId == null || userId.isEmpty) return {};
+  return {'nLoginUserIdNo': userId};
+}
+
 class BaseAPI {
   late Dio _dio;
   static final BaseAPI _singleton = BaseAPI._internal();
@@ -72,10 +79,11 @@ class BaseAPI {
         LogInterceptor(responseBody: true, request: true, requestBody: true));
   }
 
-  /// GET Method
+  /// GET Method. Pass [headers] to add/override (e.g. nLoginUserIdNo for dashboard).
   Future<Response?> get(
       {required String url,
       Map<String, dynamic>? queryParameters,
+      Map<String, dynamic>? headers,
       bool? showLoader,
       bool focusOff = true}) async {
     if (await checkInternetConnection()) {
@@ -84,10 +92,10 @@ class BaseAPI {
         focusOff
             ? FocusScope.of(X.Get.context!).requestFocus(FocusNode())
             : null;
-        final String token = AppStorage.authToken ?? '';
+        final requestHeaders = <String, dynamic>{..._authHeaders(), ...?headers};
         final response = await _dio.get(
           url,
-          options: Options(headers: {"Authorization": "Bearer $token"}),
+          options: Options(headers: requestHeaders),
           queryParameters: queryParameters,
         );
         _BaseOverlays().dismissOverlay(showLoader: showLoader ?? true);
@@ -104,7 +112,8 @@ class BaseAPI {
   }
 
   /// POST Method
-  /// Set [skipAuth] to true for public endpoints (e.g. login) that do not use Bearer token.
+  /// Set [skipAuth] to true for public endpoints (login, verify-otp, resend-otp, register).
+  /// Authenticated APIs use nLoginUserIdNo header (userId from verify-otp).
   Future<Response?> post(
       {required String url,
       dynamic data,
@@ -115,11 +124,8 @@ class BaseAPI {
       try {
         _BaseOverlays().showLoader(showLoader: showLoader);
         FocusScope.of(X.Get.context!).requestFocus(FocusNode());
-        final Map<String, dynamic> requestHeaders = headers ?? {};
-        if (!skipAuth) {
-          final String token = AppStorage.authToken ?? '';
-          requestHeaders['Authorization'] = 'Bearer $token';
-        }
+        final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+        if (!skipAuth) requestHeaders.addAll(_authHeaders());
         final response = await _dio.post(url,
             data: data,
             options: Options(headers: requestHeaders));
@@ -146,15 +152,13 @@ class BaseAPI {
       try {
         _BaseOverlays().showLoader();
         FocusScope.of(X.Get.context!).requestFocus(FocusNode());
-        final String token =
-            AppStorage.authToken ?? "";
-        final String userId =
-            AppStorage.userId ?? "";
+        final String userId = AppStorage.userId ?? "";
+        final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+        requestHeaders.addAll(_authHeaders());
         final response = await _dio.patch(
             url + ((concatUserId ?? false) ? userId : ""),
             data: data,
-            options: Options(
-                headers: headers ?? {"Authorization": "Bearer $token"}));
+            options: Options(headers: requestHeaders));
         _BaseOverlays().dismissOverlay();
         return response;
       } on DioException catch (e) {
@@ -177,12 +181,11 @@ class BaseAPI {
       try {
         _BaseOverlays().showLoader();
         FocusScope.of(X.Get.context!).requestFocus(FocusNode());
-        final String token =
-            AppStorage.authToken ?? "";
+        final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+        requestHeaders.addAll(_authHeaders());
         final response = await _dio.put(url,
             data: data,
-            options: Options(
-                headers: headers ?? {"Authorization": "Bearer $token"}));
+            options: Options(headers: requestHeaders));
         _BaseOverlays().dismissOverlay();
         return response;
       } on DioException catch (e) {
@@ -205,10 +208,11 @@ class BaseAPI {
     if (await checkInternetConnection()) {
       try {
         _BaseOverlays().showLoader();
-        final String token = AppStorage.authToken ?? '';
+        final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+        requestHeaders.addAll(_authHeaders());
         final response = await _dio.delete(url,
             data: data,
-            options: Options(headers: headers ?? {"Authorization": "Bearer $token"}));
+            options: Options(headers: requestHeaders));
         _BaseOverlays().dismissOverlay();
         return response;
       } on DioException catch (e) {
@@ -240,13 +244,14 @@ class BaseAPI {
 
       log("Saving to: $savePath");
 
-      final String token = AppStorage.authToken ?? '';
+      final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+      requestHeaders.addAll(_authHeaders());
       _BaseOverlays().showLoader();
 
       final response = await Dio().download(
         url,
         savePath,
-        options: Options(headers: headers ?? {"Authorization": "Bearer $token"}),
+        options: Options(headers: requestHeaders),
         onReceiveProgress: (received, total) {
           int progress = ((received / total) * 100).toInt();
           _BaseOverlays().updateProgress(progress);

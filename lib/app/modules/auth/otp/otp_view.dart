@@ -57,7 +57,7 @@ class OtpView extends GetView<OtpController> {
                         style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
                       ),
                       TextButton(
-                        onPressed: controller.resendSeconds.value > 0 ? null : controller.onResendOtp,
+                        onPressed: controller.resendSeconds.value > 0 ? null : () { controller.onResendOtp(); },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
