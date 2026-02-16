@@ -26,6 +26,12 @@ class AppStorage {
   static String? get authToken => _box.read(AppStorageKeys.authToken) as String?;
   static set authToken(String? v) => _box.write(AppStorageKeys.authToken, v);
 
+  static String? get loginToken => _box.read(AppStorageKeys.loginToken) as String?;
+  static set loginToken(String? v) => _box.write(AppStorageKeys.loginToken, v);
+
+  static String? get userId => _box.read(AppStorageKeys.userId) as String?;
+  static set userId(String? v) => _box.write(AppStorageKeys.userId, v);
+
   // Onboarding
   static bool get onboardingCompleted => _box.read(AppStorageKeys.onboardingCompleted) as bool? ?? false;
   static set onboardingCompleted(bool v) => _box.write(AppStorageKeys.onboardingCompleted, v);
@@ -40,6 +46,8 @@ class AppStorage {
     _box.remove(AppStorageKeys.userEmail);
     _box.remove(AppStorageKeys.userName);
     _box.remove(AppStorageKeys.authToken);
+    _box.remove(AppStorageKeys.loginToken);
+    _box.remove(AppStorageKeys.userId);
   }
 
   static Future<void> clearAll() => _box.erase();

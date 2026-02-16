@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../api_services/auth_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final TextEditingController mobileController = TextEditingController();
+  final RxBool isLoading = false.obs;
 
   @override
   void onReady() {
@@ -16,7 +18,7 @@ class LoginController extends GetxController {
     }
   }
 
-  void onGetOtp() {
+  Future<void> onGetOtp() async {
     final phone = mobileController.text.trim();
     if (phone.isEmpty) {
       AppSnackbar.warning('Required', 'Enter mobile number');
@@ -26,8 +28,21 @@ class LoginController extends GetxController {
       AppSnackbar.error('Invalid', 'Enter valid 10-digit mobile number');
       return;
     }
-    AppStorage.userPhone = phone;
-    Get.toNamed(AppRoutes.otp, arguments: phone);
+
+    isLoading.value = true;
+    final (success, errorMessage) = await AuthApi.login(
+      mobile: phone,
+      otpType: 'whatsapp',
+      showLoader: true,
+    );
+    isLoading.value = false;
+
+    if (success) {
+      AppStorage.userPhone = phone;
+      Get.toNamed(AppRoutes.otp, arguments: phone);
+    } else {
+      AppSnackbar.error('Login', errorMessage ?? 'Failed to send OTP');
+    }
   }
 
   void onRegister() => Get.toNamed(AppRoutes.register);

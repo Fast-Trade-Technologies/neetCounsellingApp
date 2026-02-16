@@ -8,6 +8,10 @@ class AppStorageKeys {
   static const String userEmail = 'user_email';
   static const String userName = 'user_name';
   static const String authToken = 'auth_token';
+  /// Token from login API (used for verify-otp / resend-otp).
+  static const String loginToken = 'login_token';
+  /// User ID from verify-otp (nLoginUserIdNo for authenticated APIs).
+  static const String userId = 'user_id';
 
   // Onboarding
   static const String onboardingCompleted = 'onboarding_completed';
