@@ -40,6 +40,8 @@ class CollegeRankingController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<CollegeRankingRow> _buildSampleRows() {
     return [
       CollegeRankingRow(

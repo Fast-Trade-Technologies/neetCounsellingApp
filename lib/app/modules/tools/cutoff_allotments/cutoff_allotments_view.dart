@@ -20,22 +20,26 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'An overview of college cut-offs & allotments, with round-wise closing ranks and fee structure by course, category, quota and rank type.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 16.h),
-            _buildFilterCard(context),
-            SizedBox(height: 16.h),
-            _buildResultsSection(context),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'An overview of college cut-offs & allotments, with round-wise closing ranks and fee structure by course, category, quota and rank type.',
+                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 16.h),
+              _buildFilterCard(context),
+              SizedBox(height: 16.h),
+              _buildResultsSection(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

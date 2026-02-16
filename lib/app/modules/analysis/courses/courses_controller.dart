@@ -52,6 +52,8 @@ class CoursesController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<CourseItem> _buildCourses() {
     return [
       CourseItem(sNo: 1, degreeType: 'Degree', degreeTerms: 'MBBS', year: '5.5 Years (1 Year Internship)', durationShort: '5.5Y + 1Y Int.'),

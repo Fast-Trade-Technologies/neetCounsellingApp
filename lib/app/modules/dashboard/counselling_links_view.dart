@@ -29,23 +29,27 @@ class CounsellingLinksView extends StatelessWidget {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Important NEET UG Counselling Links.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 16.h),
-            ..._items.map((item) => _ListTile(
-                  title: item['title']!,
-                  body: item['body']!,
-                )),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () async {},
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Important NEET UG Counselling Links.',
+                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 16.h),
+              ..._items.map((item) => _ListTile(
+                    title: item['title']!,
+                    body: item['body']!,
+                  )),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

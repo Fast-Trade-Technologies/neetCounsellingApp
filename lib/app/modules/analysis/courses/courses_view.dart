@@ -33,27 +33,31 @@ class CoursesView extends GetView<CoursesController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Courses',
-              style: AppTextStyles.titleM.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              'Browse all courses offered through NEET counselling to find the right fit for your career.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 16.h),
-            _buildFilterCard(context),
-            SizedBox(height: 16.h),
-            _buildResultsCard(context),
-            SizedBox(height: 24.h),
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Courses',
+                style: AppTextStyles.titleM.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Browse all courses offered through NEET counselling to find the right fit for your career.',
+                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 16.h),
+              _buildFilterCard(context),
+              SizedBox(height: 16.h),
+              _buildResultsCard(context),
+              SizedBox(height: 24.h),
           ],
+        ),
         ),
       ),
     );

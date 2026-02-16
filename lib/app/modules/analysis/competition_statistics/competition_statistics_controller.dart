@@ -21,6 +21,8 @@ class CompetitionStatisticsController extends GetxController {
   List<String> get yearsList => years;
   List<String> get statesList => states;
 
+  Future<void> refresh() async {}
+
   void setBreakdownTab(int index) => breakdownTabIndex.value = index;
   void setYearNationality(String v) => selectedYearNationality.value = v;
   void setYearCategory(String v) => selectedYearCategory.value = v;

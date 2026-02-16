@@ -46,6 +46,8 @@ class FeesSeatMatrixController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<FeesSeatRow> _buildSampleRows() {
     return [
       FeesSeatRow(

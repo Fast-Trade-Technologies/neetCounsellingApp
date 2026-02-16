@@ -106,20 +106,24 @@ class MainView extends GetView<MainController> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WelcomeCard(
-              bookNowImageAsset: 'assets/dashboard/dashboard-banner.png',
-              onBookNow: _onBookNow,
-            ),
-            SizedBox(height: 20.h),
-            Obx(() => _buildTabContent(controller.currentIndex.value)),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.loadDashboard(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WelcomeCard(
+                bookNowImageAsset: 'assets/dashboard/dashboard-banner.png',
+                onBookNow: _onBookNow,
+              ),
+              SizedBox(height: 20.h),
+              Obx(() => _buildTabContent(controller.currentIndex.value)),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(

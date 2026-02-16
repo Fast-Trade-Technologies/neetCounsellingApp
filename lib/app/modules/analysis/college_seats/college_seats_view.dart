@@ -22,15 +22,19 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
         onBack: () => Get.back(),
         onFilter: () => _openFilterSheet(context),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildCard(context),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCard(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

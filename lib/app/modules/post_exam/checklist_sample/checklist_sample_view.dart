@@ -21,22 +21,26 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Look at the correct format for uploading the required documents for different counselling types. Ensure zero errors in your application!',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 16.h),
-            _buildFilterCard(context),
-            SizedBox(height: 16.h),
-            _buildSearchAndSections(context),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Look at the correct format for uploading the required documents for different counselling types. Ensure zero errors in your application!',
+                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 16.h),
+              _buildFilterCard(context),
+              SizedBox(height: 16.h),
+              _buildSearchAndSections(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

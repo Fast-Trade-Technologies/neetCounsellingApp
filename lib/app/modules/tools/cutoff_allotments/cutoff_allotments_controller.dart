@@ -56,6 +56,8 @@ class CutoffAllotmentsController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<CutoffRow> _buildSampleRows() {
     return [
       CutoffRow(

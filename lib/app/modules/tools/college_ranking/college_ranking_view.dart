@@ -20,22 +20,26 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Best students deserve best institute. Examine the NC Ranking of medical college.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 16.h),
-            _buildFilterCard(context),
-            SizedBox(height: 16.h),
-            _buildResultsSection(context),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Best students deserve best institute. Examine the NC Ranking of medical college.',
+                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              ),
+              SizedBox(height: 16.h),
+              _buildFilterCard(context),
+              SizedBox(height: 16.h),
+              _buildResultsSection(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

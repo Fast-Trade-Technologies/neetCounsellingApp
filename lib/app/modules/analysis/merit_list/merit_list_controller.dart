@@ -48,6 +48,8 @@ class MeritListController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<MeritListEntry> _buildSampleEntries() {
     return [
       MeritListEntry(

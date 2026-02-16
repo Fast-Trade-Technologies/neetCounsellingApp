@@ -47,20 +47,24 @@ class WebinarsView extends StatelessWidget {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ..._items.map((item) => _WebinarCard(
-                  title: item['title']!,
-                  desc: item['desc']!,
-                  date: item['date']!,
-                  time: item['time']!,
-                )),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () async {},
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ..._items.map((item) => _WebinarCard(
+                    title: item['title']!,
+                    desc: item['desc']!,
+                    date: item['date']!,
+                    time: item['time']!,
+                  )),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

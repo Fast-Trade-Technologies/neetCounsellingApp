@@ -22,19 +22,23 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
         onBack: () => Get.back(),
         onFilter: () => _openFilterSheet(context),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTopCard(),
-            SizedBox(height: 14.h),
-            Obx(() => controller.showResults.value
-                ? _buildPieChartCard()
-                : SizedBox(height: 80.h)),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTopCard(),
+              SizedBox(height: 14.h),
+              Obx(() => controller.showResults.value
+                  ? _buildPieChartCard()
+                  : SizedBox(height: 80.h)),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

@@ -25,10 +25,13 @@ class ProfileView extends GetView<ProfileController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-        child: Column(
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileSummary(),
@@ -38,6 +41,7 @@ class ProfileView extends GetView<ProfileController> {
             _buildPersonalInfoCard(),
             SizedBox(height: 24.h),
           ],
+        ),
         ),
       ),
     );

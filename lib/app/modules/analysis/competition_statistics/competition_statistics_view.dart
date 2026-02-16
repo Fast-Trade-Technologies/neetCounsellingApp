@@ -20,25 +20,29 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBreakdownCard(context),
-            SizedBox(height: 16.h),
-            _buildYearlyInsightsCard(),
-            SizedBox(height: 16.h),
-            _buildNationalityCard(context),
-            SizedBox(height: 16.h),
-            _buildCategoryCard(context),
-            SizedBox(height: 16.h),
-            _buildGenderCard(context),
-            SizedBox(height: 16.h),
-            _buildStateWiseCard(context),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBreakdownCard(context),
+              SizedBox(height: 16.h),
+              _buildYearlyInsightsCard(),
+              SizedBox(height: 16.h),
+              _buildNationalityCard(context),
+              SizedBox(height: 16.h),
+              _buildCategoryCard(context),
+              SizedBox(height: 16.h),
+              _buildGenderCard(context),
+              SizedBox(height: 16.h),
+              _buildStateWiseCard(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );

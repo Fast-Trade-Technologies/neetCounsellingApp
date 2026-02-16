@@ -61,6 +61,8 @@ class UniversitiesInstitutesController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<UniversitiesInstitutesRow> _buildSampleRows() {
     return [
       UniversitiesInstitutesRow(

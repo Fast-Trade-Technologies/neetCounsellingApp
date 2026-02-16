@@ -59,6 +59,8 @@ class CounsellingController extends GetxController {
     _applyFilters();
   }
 
+  Future<void> refresh() async => _applyFilters();
+
   List<CounsellingRow> _buildSampleRows() {
     return [
       CounsellingRow(

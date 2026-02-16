@@ -21,8 +21,11 @@ class CounsellingView extends GetView<CounsellingController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,6 +40,7 @@ class CounsellingView extends GetView<CounsellingController> {
             _buildResultsSection(context),
             SizedBox(height: 24.h),
           ],
+        ),
         ),
       ),
     );

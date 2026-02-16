@@ -38,6 +38,8 @@ class ChecklistSampleController extends GetxController {
     ocipioDocuments = [];
   }
 
+  Future<void> refresh() async {}
+
   List<ChecklistDocument> _buildGeneralDocuments() {
     const names = [
       'Class 10th Marksheet',

@@ -20,6 +20,8 @@ class ProfileController extends GetxController {
     _loadFromStorage();
   }
 
+  Future<void> refresh() async => _loadFromStorage();
+
   void _loadFromStorage() {
     final name = AppStorage.userName ?? '';
     final parts = name.trim().split(RegExp(r'\s+'));

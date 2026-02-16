@@ -23,10 +23,13 @@ class ContentDetailView extends StatelessWidget {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Text(
+      body: RefreshIndicator(
+        onRefresh: () async {},
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Text(
           body.isEmpty
               ? 'Content will be displayed here. Expert support, personalized mentorship, and guidance for All India, State, Deemed, Management, and NRI quotas.'
               : body,
@@ -34,6 +37,7 @@ class ContentDetailView extends StatelessWidget {
             color: AppColors.textDark,
             height: 1.5,
           ),
+        ),
         ),
       ),
     );

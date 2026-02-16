@@ -25,18 +25,22 @@ class MenuView extends GetView<MoreMenuController> {
         hideFilter: true,
         onBack: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-        child: Column(
-          children: [
-            _buildProfileCard(),
-            SizedBox(height: 24.h),
-            _buildMenuCard(context),
-            SizedBox(height: 16.h),
-            _buildLogoutTile(),
-            SizedBox(height: 24.h),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.refresh(),
+        color: AppColors.primaryBlue,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          child: Column(
+            children: [
+              _buildProfileCard(),
+              SizedBox(height: 24.h),
+              _buildMenuCard(context),
+              SizedBox(height: 16.h),
+              _buildLogoutTile(),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );
