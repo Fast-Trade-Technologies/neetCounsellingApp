@@ -4,6 +4,7 @@ import '../../../core/storage/app_storage.dart';
 import '../../../routes/app_routes.dart';
 
 class MoreMenuController extends GetxController {
+  @override
   Future<void> refresh() async {}
 
   Future<void> onLogout() async {

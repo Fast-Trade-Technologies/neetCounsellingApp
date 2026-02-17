@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../../api_services/filters_api.dart';
+
 class CutoffRow {
   CutoffRow({
     required this.sNo,
@@ -36,7 +38,11 @@ class CutoffAllotmentsController extends GetxController {
   final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
 
-  static const List<String> states = ['Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka'];
+  final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  List<String> get states => stateFilters.isEmpty
+      ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
+      : ['Select State', ...stateFilters.map((e) => e.name)];
+
   static const List<String> instituteTypes = ['Select Institute Type', 'Government', 'Private', 'Deemed'];
   static const List<String> quotas = ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS'];
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
@@ -54,8 +60,15 @@ class CutoffAllotmentsController extends GetxController {
     super.onInit();
     _allRows = _buildSampleRows();
     _applyFilters();
+    _loadStateFilters();
   }
 
+  Future<void> _loadStateFilters() async {
+    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    if (success && stateList.isNotEmpty) stateFilters.assignAll(stateList);
+  }
+
+  @override
   Future<void> refresh() async => _applyFilters();
 
   List<CutoffRow> _buildSampleRows() {

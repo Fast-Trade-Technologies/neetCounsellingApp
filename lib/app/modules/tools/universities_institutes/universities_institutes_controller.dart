@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../../api_services/filters_api.dart';
+
 class UniversitiesInstitutesRow {
   UniversitiesInstitutesRow({
     required this.sNo,
@@ -30,13 +32,11 @@ class UniversitiesInstitutesController extends GetxController {
   final RxString selectedUniversity = 'Select University'.obs;
   final RxString searchQuery = ''.obs;
 
-  static const List<String> states = [
-    'Uttar Pradesh',
-    'Maharashtra',
-    'Rajasthan',
-    'Karnataka',
-    'Gujarat',
-  ];
+  final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  List<String> get states => stateFilters.isEmpty
+      ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka', 'Gujarat']
+      : ['Select State', ...stateFilters.map((e) => e.name)];
+
   static const List<String> instituteTypes = [
     'Select Institute Type',
     'Government',
@@ -59,8 +59,15 @@ class UniversitiesInstitutesController extends GetxController {
     super.onInit();
     _allRows = _buildSampleRows();
     _applyFilters();
+    _loadStateFilters();
   }
 
+  Future<void> _loadStateFilters() async {
+    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    if (success && stateList.isNotEmpty) stateFilters.assignAll(stateList);
+  }
+
+  @override
   Future<void> refresh() async => _applyFilters();
 
   List<UniversitiesInstitutesRow> _buildSampleRows() {

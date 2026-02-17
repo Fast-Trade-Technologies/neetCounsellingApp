@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
@@ -91,7 +90,7 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
                   isDense: true,
                   icon: Icon(Icons.keyboard_arrow_down_rounded, size: 20.sp, color: AppColors.textMuted),
                   style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 12.sp),
-                  items: ChecklistSampleController.states
+                  items: controller.states
                       .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (v) => v != null ? controller.setState(v) : null,
@@ -252,10 +251,6 @@ class _DocumentCard extends StatelessWidget {
 
   final ChecklistDocument doc;
 
-  void _onViewSample() {
-    AppSnackbar.info('Sample View', 'Sample for "${doc.documentName}" will open when configured.');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -308,7 +303,7 @@ class _DocumentCard extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _onViewSample,
+              onTap: () => Get.find<ChecklistSampleController>().openSample(doc),
               borderRadius: BorderRadius.circular(8.r),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),

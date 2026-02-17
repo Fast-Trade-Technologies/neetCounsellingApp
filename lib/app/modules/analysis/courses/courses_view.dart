@@ -276,7 +276,6 @@ class CoursesView extends GetView<CoursesController> {
         SizedBox(height: 12.h),
         Obx(() {
           final list = controller.paginatedCourses;
-          final total = controller.totalEntries;
           if (list.isEmpty) {
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),

@@ -1,5 +1,9 @@
 import 'package:get/get.dart';
 
+import '../../../../api_services/filters_api.dart';
+
+/// Past Years Competition screen. Uses GET /common/states for state filter dropdown.
+/// Competition breakdown data is static (no dedicated competition API in Postman collection).
 class CompetitionStatisticsController extends GetxController {
   final RxInt breakdownTabIndex = 0.obs;
   final RxString selectedYearNationality = '2025'.obs;
@@ -16,11 +20,25 @@ class CompetitionStatisticsController extends GetxController {
     'Exam',
   ];
   static const List<String> years = ['2025', '2024', '2023', '2022', '2021', '2020', '2019'];
-  static const List<String> states = ['All', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka'];
+  final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  List<String> get statesList => stateFilters.isEmpty
+      ? ['All', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
+      : ['All', ...stateFilters.map((e) => e.name)];
 
   List<String> get yearsList => years;
-  List<String> get statesList => states;
 
+  @override
+  void onInit() {
+    super.onInit();
+    _loadStateFilters();
+  }
+
+  Future<void> _loadStateFilters() async {
+    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    if (success && stateList.isNotEmpty) stateFilters.assignAll(stateList);
+  }
+
+  @override
   Future<void> refresh() async {}
 
   void setBreakdownTab(int index) => breakdownTabIndex.value = index;

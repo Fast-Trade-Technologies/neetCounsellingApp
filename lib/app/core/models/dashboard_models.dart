@@ -1,4 +1,4 @@
-/// Nullable model classes for Dashboard API response parsing.
+// Nullable model classes for Dashboard API response parsing.
 
 class NewsUpdateItem {
   NewsUpdateItem({

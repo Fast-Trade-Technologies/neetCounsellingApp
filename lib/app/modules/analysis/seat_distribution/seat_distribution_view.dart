@@ -17,8 +17,8 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
-        title: 'Analysis College &...',
-        subtitle: 'Seat distribution',
+        title: 'Seat Distribution',
+        subtitle: 'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
         onBack: () => Get.back(),
         onFilter: () => _openFilterSheet(context),
       ),
@@ -48,14 +48,215 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     showFilterSheet(
       context: context,
       onSubmit: controller.submit,
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(child: DetailDropdown(label: 'All States')),
-          SizedBox(width: 10.w),
-          Expanded(child: DetailDropdown(label: 'Select Course')),
-          SizedBox(width: 10.w),
-          Expanded(child: DetailDropdown(label: '2015')),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => _showStatePicker(context),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Obx(() => DetailDropdown(
+                    label: 'All States',
+                    value: controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
+                        ? null
+                        : controller.selectedStateName.value,
+                    items: null,
+                  )),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: InkWell(
+                  onTap: () => _showCoursePicker(context),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Obx(() => DetailDropdown(
+                    label: 'Select Course',
+                    value: controller.selectedCourseName.value == 'Select Course'
+                        ? null
+                        : controller.selectedCourseName.value,
+                    items: null,
+                  )),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: InkWell(
+                  onTap: () => _showYearPicker(context),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Obx(() => DetailDropdown(
+                    label: 'Year',
+                    value: controller.selectedYear.value,
+                    items: SeatDistributionController.yearOptions,
+                  )),
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showStatePicker(BuildContext context) {
+    final states = controller.stateFilters;
+    final scrollController = ScrollController();
+    final maxHeight = MediaQuery.of(context).size.height * 0.5;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text('Select State', style: AppTextStyles.welcomeHeading),
+              ),
+              SizedBox(
+                height: maxHeight,
+                child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
+                  child: ListView(
+                    controller: scrollController,
+                    shrinkWrap: true,
+                    children: [
+                      ListTile(
+                        title: Text('All States', style: AppTextStyles.bodyS),
+                        onTap: () {
+                          controller.setStateFilter(null);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      ...states.map((e) => ListTile(
+                        title: Text(e.name, style: AppTextStyles.bodyS),
+                        onTap: () {
+                          controller.setStateFilter(e);
+                          Navigator.pop(ctx);
+                        },
+                      )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCoursePicker(BuildContext context) {
+    final scrollController = ScrollController();
+    final maxHeight = MediaQuery.of(context).size.height * 0.45;
+    final options = SeatDistributionController.courseOptions;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text('Select Course', style: AppTextStyles.welcomeHeading),
+              ),
+              SizedBox(
+                height: maxHeight,
+                child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
+                  child: ListView(
+                    controller: scrollController,
+                    shrinkWrap: true,
+                    children: options
+                        .map((e) => ListTile(
+                              title: Text(
+                                e['name']!,
+                                style: AppTextStyles.bodyS.copyWith(
+                                  color: (e['id'] ?? '').isEmpty
+                                      ? AppColors.textMuted
+                                      : AppColors.textDark,
+                                ),
+                              ),
+                              onTap: () {
+                                controller.setCourseFilter(e['id'] ?? '', e['name'] ?? 'Select Course');
+                                Navigator.pop(ctx);
+                              },
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showYearPicker(BuildContext context) {
+    final scrollController = ScrollController();
+    final maxHeight = MediaQuery.of(context).size.height * 0.4;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text('Select Year', style: AppTextStyles.welcomeHeading),
+              ),
+              SizedBox(
+                height: maxHeight,
+                child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
+                  child: ListView(
+                    controller: scrollController,
+                    shrinkWrap: true,
+                    children: SeatDistributionController.yearOptions
+                        .map((y) => ListTile(
+                              title: Text(y, style: AppTextStyles.bodyS),
+                              onTap: () {
+                                controller.setYear(y);
+                                Navigator.pop(ctx);
+                              },
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(String label, String value) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: AppColors.chipBorder.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.chipBorder),
+      ),
+      child: Text(
+        '$label: $value',
+        style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -76,19 +277,47 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
           ),
         ],
       ),
-      child: Column(
+      child: Obx(() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Uttar Pradesh', style: AppTextStyles.welcomeHeading),
+          Text(
+            controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
+                ? 'All States'
+                : controller.selectedStateName.value,
+            style: AppTextStyles.welcomeHeading,
+          ),
+          SizedBox(height: 8.h),
+          Wrap(
+            children: [
+              _filterChip('State', controller.selectedStateName.value.isEmpty ? 'All States' : controller.selectedStateName.value),
+              SizedBox(width: 8.w,height: 5.h),
+              _filterChip('Course', controller.selectedCourseName.value),
+              SizedBox(width: 8.w,height: 5.h),
+              Padding(
+                padding: EdgeInsets.only(bottom: 5.h,right: 5.w,top: 5.h),
+                child: _filterChip('Year', controller.selectedYear.value)),
+            ],
+          ),
           SizedBox(height: 4.h),
           Text(
-            'Select 1 year to show the Seat Distribution Analysis',
+            'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
             style: AppTextStyles.detailScreenSubtitle,
           ),
         ],
-      ),
+      )),
     );
   }
+
+  static const List<Color> _chartColors = [
+    Color(0xFF1A5276),
+    Color(0xFF17A589),
+    Color(0xFFF4D03F),
+    Color(0xFFE74C3C),
+    Color(0xFF5DADE2),
+    Color(0xFFE67E22),
+    Color(0xFF9B59B6),
+    Color(0xFF1ABC9C),
+  ];
 
   Widget _buildPieChartCard() {
     return Container(
@@ -108,20 +337,46 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: 180.h,
-            child: CustomPaint(
-              size: Size(160.w, 160.w),
-              painter: _PieChartPainter(),
-            ),
-          ),
+          Obx(() {
+            final rows = controller.tableRows;
+            if (rows.isEmpty) {
+              return SizedBox(height: 180.h, child: Center(child: Text('No data for chart', style: AppTextStyles.detailScreenSubtitle)));
+            }
+            return SizedBox(
+              height: 220.h,
+              child: CustomPaint(
+                size: Size(200.w, 200.w),
+                painter: _SeatDistributionPiePainter(rows: rows.toList(), colors: _chartColors),
+              ),
+            );
+          }),
           SizedBox(height: 16.h),
           _buildTableHeader(),
           SizedBox(height: 8.h),
-          _buildTableRow(const Color(0xFF1A5276), 'Private', '6550', '8', '30'),
-          _buildTableRow(const Color(0xFF17A589), 'Government State Quota', '4389', '3', '50'),
-          _buildTableRow(const Color(0xFFF4D03F), 'Government State Quota', '4582', '3', '47'),
-          _buildTableRow(const Color(0xFFE74C3C), 'Private', '8780', '4', '39'),
+          Obx(() {
+            final rows = controller.tableRows;
+            if (rows.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text(
+                  'No seat distribution data found.',
+                  style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textMuted),
+                ),
+              );
+            }
+            return Column(
+              children: [
+                for (int i = 0; i < rows.length; i++)
+                  _buildTableRow(
+                    _chartColors[i % _chartColors.length],
+                    rows[i].seatTypeName,
+                    '${rows[i].totalSeats}',
+                    '${rows[i].totalColleges}',
+                    '${rows[i].totalCategories}',
+                  ),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -204,36 +459,40 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
   }
 }
 
-class _PieChartPainter extends CustomPainter {
+/// Pie chart painter driven by [SeatDistributionRow] data (totalSeats per seat type).
+class _SeatDistributionPiePainter extends CustomPainter {
+  _SeatDistributionPiePainter({required this.rows, required this.colors});
+
+  final List<SeatDistributionRow> rows;
+  final List<Color> colors;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final colors = [
-      const Color(0xFF1A5276),
-      const Color(0xFF17A589),
-      const Color(0xFFF4D03F),
-      const Color(0xFFE67E22),
-      const Color(0xFF5DADE2),
-      const Color(0xFF1A5276),
-    ];
-    final sweeps = [0.317, 0.081, 0.129, 0.056, 0.074, 0.037];
-    var start = -1.5708;
+    final total = rows.fold<int>(0, (sum, r) => sum + r.totalSeats);
+    if (total <= 0) return;
+
+    const startAngle = -3.14159 / 2;
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.45;
-    for (var i = 0; i < sweeps.length; i++) {
+    final radius = size.width * 0.42;
+
+    var sweepStart = startAngle;
+    for (var i = 0; i < rows.length; i++) {
+      final sweep = (rows[i].totalSeats / total) * 2 * 3.14159;
       final paint = Paint()
         ..color = colors[i % colors.length]
         ..style = PaintingStyle.fill;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
-        start,
-        sweeps[i] * 2 * 3.14159,
+        sweepStart,
+        sweep,
         true,
         paint,
       );
-      start += sweeps[i] * 2 * 3.14159;
+      sweepStart += sweep;
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SeatDistributionPiePainter oldDelegate) =>
+      oldDelegate.rows != rows;
 }

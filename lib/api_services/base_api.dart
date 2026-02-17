@@ -6,7 +6,7 @@ import 'package:curl_logger_dio_interceptor/curl_logger_dio_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' as X;
+import 'package:get/get.dart' as getx;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 
@@ -14,14 +14,14 @@ import 'package:neetcounsellingapp/app/core/snackbar/app_snackbar.dart';
 import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 /// Base URL from NEET Counseling API Postman collection (variable base_url).
-const String BASE_URL = 'http://neetcounseling.efasttrade.in/api/v1';
+const String baseUrl = 'http://neetcounseling.efasttrade.in/api/v1';
 
 /// Minimal overlay/loader and snackbar used by [BaseAPI]. Uses GetStorage via [AppStorage].
 class _BaseOverlays {
   void showLoader({bool? showLoader = true}) {
     if (showLoader != true) return;
-    if (X.Get.isDialogOpen == true) return;
-    X.Get.dialog(
+    if (getx.Get.isDialogOpen == true) return;
+    getx.Get.dialog(
       const Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
     );
@@ -29,7 +29,7 @@ class _BaseOverlays {
 
   void dismissOverlay({bool? showLoader = true}) {
     if (showLoader != true) return;
-    if (X.Get.isDialogOpen == true) X.Get.back();
+    if (getx.Get.isDialogOpen == true) getx.Get.back();
   }
 
   void showSnackBar({required String message}) {
@@ -62,7 +62,7 @@ class BaseAPI {
   BaseAPI._internal() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: BASE_URL,
+        baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 59),
         receiveTimeout: const Duration(seconds: 59),
         sendTimeout: const Duration(minutes: 1),
@@ -79,7 +79,10 @@ class BaseAPI {
         LogInterceptor(responseBody: true, request: true, requestBody: true));
   }
 
-  /// GET Method. Pass [headers] to add/override (e.g. nLoginUserIdNo for dashboard).
+  /// GET Method.
+  /// Convention: pass all parameters in [queryParameters] (Params). Do not pass request
+  /// parameters in headers — use headers only for header values (e.g. Accept, Content-Type).
+  /// POST: pass parameters in body.
   Future<Response?> get(
       {required String url,
       Map<String, dynamic>? queryParameters,
@@ -90,9 +93,9 @@ class BaseAPI {
       try {
         _BaseOverlays().showLoader(showLoader: showLoader ?? true);
         focusOff
-            ? FocusScope.of(X.Get.context!).requestFocus(FocusNode())
+            ? FocusScope.of(getx.Get.context!).requestFocus(FocusNode())
             : null;
-        final requestHeaders = <String, dynamic>{..._authHeaders(), ...?headers};
+        final requestHeaders = <String, dynamic>{...?headers};
         final response = await _dio.get(
           url,
           options: Options(headers: requestHeaders),
@@ -111,7 +114,8 @@ class BaseAPI {
     }
   }
 
-  /// POST Method
+  /// POST Method.
+  /// Convention: pass all request parameters in [data] (request body), not in query.
   /// Set [skipAuth] to true for public endpoints (login, verify-otp, resend-otp, register).
   /// Authenticated APIs use nLoginUserIdNo header (userId from verify-otp).
   Future<Response?> post(
@@ -123,7 +127,7 @@ class BaseAPI {
     if (await checkInternetConnection()) {
       try {
         _BaseOverlays().showLoader(showLoader: showLoader);
-        FocusScope.of(X.Get.context!).requestFocus(FocusNode());
+        FocusScope.of(getx.Get.context!).requestFocus(FocusNode());
         final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
         if (!skipAuth) requestHeaders.addAll(_authHeaders());
         final response = await _dio.post(url,
@@ -142,7 +146,7 @@ class BaseAPI {
     }
   }
 
-  /// PATCH Method
+  /// PATCH Method. Convention: pass parameters in body [data].
   Future<Response?> patch(
       {required String url,
       dynamic data,
@@ -151,7 +155,7 @@ class BaseAPI {
     if (await checkInternetConnection()) {
       try {
         _BaseOverlays().showLoader();
-        FocusScope.of(X.Get.context!).requestFocus(FocusNode());
+        FocusScope.of(getx.Get.context!).requestFocus(FocusNode());
         final String userId = AppStorage.userId ?? "";
         final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
         requestHeaders.addAll(_authHeaders());
@@ -172,7 +176,7 @@ class BaseAPI {
     }
   }
 
-  ///PUT Method
+  /// PUT Method. Convention: pass parameters in body [data].
   Future<Response?> put(
       {required String url,
       dynamic data,
@@ -180,7 +184,7 @@ class BaseAPI {
     if (await checkInternetConnection()) {
       try {
         _BaseOverlays().showLoader();
-        FocusScope.of(X.Get.context!).requestFocus(FocusNode());
+        FocusScope.of(getx.Get.context!).requestFocus(FocusNode());
         final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
         requestHeaders.addAll(_authHeaders());
         final response = await _dio.put(url,
@@ -204,7 +208,7 @@ class BaseAPI {
       {required String url,
       Map<String, dynamic>? headers,
       dynamic data}) async {
-    FocusScope.of(X.Get.context!).requestFocus(FocusNode());
+    FocusScope.of(getx.Get.context!).requestFocus(FocusNode());
     if (await checkInternetConnection()) {
       try {
         _BaseOverlays().showLoader();
@@ -229,7 +233,7 @@ class BaseAPI {
   /// Download Method
 
   Future<Response?> download(String? url, {String ext = ".pdf", Map<String, dynamic>? headers}) async {
-    print("url--$url");
+    log('download url: $url');
     if (url == 'null' || (url ?? "").isEmpty) {
       _BaseOverlays().showSnackBar(message: "Url not found");
       return null;
@@ -280,7 +284,7 @@ class BaseAPI {
     Timer timer;
     timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
        _secondsRemaining--;
-      print("timer--||$_secondsRemaining");
+      log('internet timer: $_secondsRemaining');
       if (_secondsRemaining == 10) {
         timer.cancel();
         _BaseOverlays().warningShowSnackBar(message: "Slow internet connection detected");

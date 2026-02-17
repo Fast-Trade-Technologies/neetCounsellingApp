@@ -77,7 +77,7 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
           SizedBox(height: 14.h),
           Obx(() => Column(
             children: [
-              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: CollegeRankingController.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CollegeRankingController.instituteTypes, onChanged: controller.setInstituteType))]),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CollegeRankingController.instituteTypes, onChanged: controller.setInstituteType))]),
               SizedBox(height: 10.h),
               Row(children: [Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: CollegeRankingController.courses, onChanged: controller.setCourse))]),
             ],

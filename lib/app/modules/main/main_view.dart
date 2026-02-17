@@ -340,6 +340,9 @@ class _DashboardContent extends StatelessWidget {
   }
 }
 
+/// Analysis tab: Past Years Competition, Seat Distribution, Merit List, Courses.
+/// APIs: GET /common/states (competition state filter), GET /seat-distribution,
+/// GET /merit-list, GET /courses — all wired in their respective controllers.
 class _AnalysisContent extends StatelessWidget {
   const _AnalysisContent();
 

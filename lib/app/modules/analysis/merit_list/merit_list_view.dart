@@ -59,56 +59,72 @@ class MeritListView extends GetView<MeritListController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Obx(() => Text(
-                controller.selectedState.value,
+                controller.selectedState.value.isEmpty
+                    ? 'Merit List'
+                    : controller.selectedState.value,
                 style: AppTextStyles.welcomeHeading,
               )),
           SizedBox(height: 6.h),
           Text(
-            'Select a year to view the Merit List analysis in Uttar Pradesh',
+            'Select counselling type, state and year to view the merit list.',
             style: AppTextStyles.detailScreenSubtitle.copyWith(
               color: AppColors.textDark,
             ),
           ),
           SizedBox(height: 14.h),
-          Obx(() => Column(
-            children: [
-              _SelectTile(
-                label: 'Counselling Type',
-                value: controller.selectedCounsellingType.value,
-                onTap: () => _showStringSheet(
-                  context,
-                  'Select Counselling Type',
-                  controller.counsellingTypes,
-                  controller.selectedCounsellingType.value,
-                  controller.setCounsellingType,
+          Obx(() {
+            if (controller.filtersLoading.value) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+            return Column(
+              children: [
+                _SelectTile(
+                  label: 'Counselling Type',
+                  value: controller.selectedCounsellingType.value,
+                  onTap: controller.counsellingTypes.isEmpty
+                      ? () {}
+                      : () => _showStringSheet(
+                            context,
+                            'Select Counselling Type',
+                            controller.counsellingTypes,
+                            controller.selectedCounsellingType.value,
+                            controller.setCounsellingType,
+                          ),
                 ),
-              ),
-              SizedBox(height: 10.h),
-              _SelectTile(
-                label: 'State',
-                value: controller.selectedState.value,
-                onTap: () => _showStringSheet(
-                  context,
-                  'Select State',
-                  controller.states,
-                  controller.selectedState.value,
-                  controller.setState,
+                SizedBox(height: 10.h),
+                _SelectTile(
+                  label: 'State',
+                  value: controller.selectedState.value.isEmpty
+                      ? 'Select State'
+                      : controller.selectedState.value,
+                  onTap: controller.states.isEmpty
+                      ? () {}
+                      : () => _showStringSheet(
+                            context,
+                            'Select State',
+                            controller.states,
+                            controller.selectedState.value,
+                            controller.setState,
+                          ),
                 ),
-              ),
-              SizedBox(height: 10.h),
-              _SelectTile(
-                label: 'Year',
-                value: controller.selectedYear.value,
-                onTap: () => _showStringSheet(
-                  context,
-                  'Select Year',
-                  controller.years,
-                  controller.selectedYear.value,
-                  controller.setYear,
+                SizedBox(height: 10.h),
+                _SelectTile(
+                  label: 'Year',
+                  value: controller.selectedYear.value,
+                  onTap: () => _showStringSheet(
+                    context,
+                    'Select Year',
+                    controller.years,
+                    controller.selectedYear.value,
+                    controller.setYear,
+                  ),
                 ),
-              ),
-            ],
-          )),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -168,6 +184,7 @@ class MeritListView extends GetView<MeritListController> {
           for (int i = 0; i < list.length; i++) ...[
             _MeritListCard(
               entry: list[i],
+              serialNumber: i + 1,
               onCheckNow: () => controller.onCheckNow(list[i]),
             ),
             if (i < list.length - 1) SizedBox(height: 12.h),
@@ -187,7 +204,11 @@ class MeritListView extends GetView<MeritListController> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.6,
+        ),
         decoration: BoxDecoration(
           color: AppColors.background,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -217,20 +238,27 @@ class MeritListView extends GetView<MeritListController> {
             SizedBox(height: 16.h),
             Text(title, style: AppTextStyles.welcomeHeading),
             SizedBox(height: 12.h),
-            ...List.generate(items.length, (i) {
-              final e = items[i];
-              return Padding(
-                padding: EdgeInsets.only(bottom: i < items.length - 1 ? 8.h : 0),
-                child: _SheetOptionTile(
-                  label: e,
-                  isSelected: e == currentValue,
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    onSelected(e);
-                  },
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(items.length, (i) {
+                    final e = items[i];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: i < items.length - 1 ? 8.h : 0),
+                      child: _SheetOptionTile(
+                        label: e,
+                        isSelected: e == currentValue,
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          onSelected(e);
+                        },
+                      ),
+                    );
+                  }),
                 ),
-              );
-            }),
+              ),
+            ),
           ],
         ),
       ),
@@ -447,10 +475,12 @@ class _SheetOptionTile extends StatelessWidget {
 class _MeritListCard extends StatelessWidget {
   const _MeritListCard({
     required this.entry,
+    required this.serialNumber,
     required this.onCheckNow,
   });
 
   final MeritListEntry entry;
+  final int serialNumber;
   final VoidCallback onCheckNow;
 
   @override
@@ -485,7 +515,7 @@ class _MeritListCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  '${entry.sNo}',
+                  '$serialNumber',
                   style: AppTextStyles.bodyS.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.w700,

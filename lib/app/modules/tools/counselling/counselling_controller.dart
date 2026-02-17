@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 
+import '../../../../api_services/counselling_api.dart';
+import '../../../../api_services/filters_api.dart';
+
 class CounsellingRow {
   CounsellingRow({
     required this.sNo,
@@ -40,26 +43,67 @@ class CounsellingController extends GetxController {
     'Open State',
     'Closed State',
   ];
-  static const List<String> states = [
-    'All State',
-    'Gujarat',
-    'Andaman and Nicobar Islands',
-    'Uttar Pradesh',
-    'Maharashtra',
-    'Rajasthan',
-  ];
 
-  late final List<CounsellingRow> _allRows;
+  final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  List<String> get states => ['All State', ...stateFilters.map((e) => e.name)];
+
+  late List<CounsellingRow> _allRows;
   final RxList<CounsellingRow> filteredRows = <CounsellingRow>[].obs;
+  final RxBool filtersLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _allRows = _buildSampleRows();
+    _allRows = [];
+    loadFilters();
+    loadCounsellingData();
+  }
+
+  Future<void> loadFilters() async {
+    filtersLoading.value = true;
+    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    filtersLoading.value = false;
+    if (success && stateList.isNotEmpty) {
+      stateFilters.assignAll(stateList);
+    }
+  }
+
+  Future<void> loadCounsellingData() async {
+    final (success, data, errorMessage) = await CounsellingApi.getCounselling(showLoader: false);
+    if (!success || data == null) {
+      _allRows = _buildSampleRows();
+      _applyFilters();
+      return;
+    }
+    final rawList = data['counselling'];
+    final rows = <CounsellingRow>[];
+    if (rawList is List) {
+      int sNo = 0;
+      for (final e in rawList) {
+        if (e is Map) {
+          sNo++;
+          rows.add(CounsellingRow(
+            sNo: sNo,
+            counselling: e['state']?.toString() ?? '',
+            state: e['state']?.toString() ?? '',
+            typeOfState: '',
+            counsellingType: e['counselling_type']?.toString() ?? 'State',
+            officialWebsiteUrl: null,
+            registrationUrl: null,
+            prospectsUrl: null,
+          ));
+        }
+      }
+    }
+    _allRows = rows.isEmpty ? _buildSampleRows() : rows;
     _applyFilters();
   }
 
-  Future<void> refresh() async => _applyFilters();
+  @override
+  Future<void> refresh() async {
+    await loadFilters();
+    await loadCounsellingData();
+  }
 
   List<CounsellingRow> _buildSampleRows() {
     return [

@@ -77,7 +77,7 @@ class FeesSeatMatrixView extends GetView<FeesSeatMatrixController> {
           SizedBox(height: 14.h),
           Obx(() => Column(
             children: [
-              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: FeesSeatMatrixController.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: FeesSeatMatrixController.instituteTypes, onChanged: controller.setInstituteType))]),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: FeesSeatMatrixController.instituteTypes, onChanged: controller.setInstituteType))]),
               SizedBox(height: 10.h),
               Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: FeesSeatMatrixController.quotas, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: FeesSeatMatrixController.categories, onChanged: controller.setCategory))]),
               SizedBox(height: 10.h),

@@ -77,7 +77,7 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           SizedBox(height: 14.h),
           Obx(() => Column(
             children: [
-              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: CutoffAllotmentsController.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType))]),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType))]),
               SizedBox(height: 10.h),
               Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory))]),
               SizedBox(height: 10.h),

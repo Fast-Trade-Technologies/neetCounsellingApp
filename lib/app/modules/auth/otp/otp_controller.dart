@@ -38,8 +38,12 @@ class OtpController extends GetxController {
   @override
   void onClose() {
     _resendTimer?.cancel();
-    for (final c in pinControllers) c.dispose();
-    for (final f in focusNodes) f.dispose();
+    for (final c in pinControllers) {
+      c.dispose();
+    }
+    for (final f in focusNodes) {
+      f.dispose();
+    }
     super.onClose();
   }
 

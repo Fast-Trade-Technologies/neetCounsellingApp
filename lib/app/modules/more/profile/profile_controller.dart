@@ -20,6 +20,7 @@ class ProfileController extends GetxController {
     _loadFromStorage();
   }
 
+  @override
   Future<void> refresh() async => _loadFromStorage();
 
   void _loadFromStorage() {
