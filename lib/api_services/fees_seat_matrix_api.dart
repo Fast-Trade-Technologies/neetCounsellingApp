@@ -6,25 +6,20 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 import 'base_api.dart';
 
-/// GET /cut-off-allotments from NEET Counseling API Postman collection.
-/// All params in query: nLoginUserIdNo, state_id_counselling, state_id, year;
-/// optional: institute_type_id, course_id, quota_id, sm_category_id.
-class CutOffAllotmentsApi {
-  static const String path = '/cut-off-allotments';
+/// GET /fees-seat-matrix from NEET Counseling API Postman collection.
+/// Required params: nLoginUserIdNo, state_id_counselling, state_id, year
+/// Optional: course_id, clinical_type_id, page, per_page
+class FeesSeatMatrixApi {
+  static const String path = '/fees-seat-matrix';
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/cut-off-allotments with query params (no header params).
-  /// According to Postman: Required params: nLoginUserIdNo, state_id_counselling, state_id, year
-  /// Optional: course_id, clinical_type_id, page, per_page
-  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getCutOffAllotments({
+  /// GET {{base_url}}/fees-seat-matrix with query params.
+  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getFeesSeatMatrix({
     required String stateIdCounselling,
     required String stateId,
     required String year,
-    String? instituteTypeId,
     String? courseId,
-    String? quotaId,
-    String? smCategoryId,
     String? clinicalTypeId,
     int? page,
     int? perPage,
@@ -32,7 +27,7 @@ class CutOffAllotmentsApi {
   }) async {
     final userId = AppStorage.userId;
     if (userId == null || userId.isEmpty) {
-      return (false, null, 'Please sign in to load cut-off allotments');
+      return (false, null, 'Please sign in to load fees seat matrix');
     }
     try {
       final query = <String, dynamic>{
@@ -43,9 +38,6 @@ class CutOffAllotmentsApi {
       };
       if (courseId != null && courseId.isNotEmpty) query['course_id'] = courseId;
       if (clinicalTypeId != null && clinicalTypeId.isNotEmpty) query['clinical_type_id'] = clinicalTypeId;
-      if (instituteTypeId != null && instituteTypeId.isNotEmpty) query['institute_type_id'] = instituteTypeId;
-      if (quotaId != null && quotaId.isNotEmpty) query['quota_id'] = quotaId;
-      if (smCategoryId != null && smCategoryId.isNotEmpty) query['sm_category_id'] = smCategoryId;
       if (page != null) query['page'] = page.toString();
       if (perPage != null) query['per_page'] = perPage.toString();
 
@@ -58,7 +50,7 @@ class CutOffAllotmentsApi {
       if (response == null) return (false, null, 'No response from server');
       if (response.statusCode != 200) {
         final msg = _messageFromResponse(response);
-        return (false, null, msg ?? 'Failed to load cut-off allotments');
+        return (false, null, msg ?? 'Failed to load fees seat matrix');
       }
 
       final body = _parseBody(response.data);
@@ -72,7 +64,7 @@ class CutOffAllotmentsApi {
         if (dataRaw is Map) return (true, Map<String, dynamic>.from(dataRaw), null);
         return (true, <String, dynamic>{}, null);
       }
-      return (false, null, message ?? 'Failed to load cut-off allotments');
+      return (false, null, message ?? 'Failed to load fees seat matrix');
     } on DioException catch (e) {
       final msg = e.response != null ? _messageFromResponse(e.response!) : e.message;
       return (false, null, msg ?? 'Something went wrong');

@@ -71,6 +71,8 @@ class CutoffRow {
 class CutoffAllotmentsController extends GetxController {
   final RxString selectedState = 'Select State'.obs;
   final RxString selectedStateId = ''.obs;
+  final RxString selectedCounsellingType = 'State'.obs;
+  final RxString selectedCounsellingTypeId = '1'.obs; // Default to '1' (State counselling)
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedQuota = 'Select Quota'.obs;
   final RxString selectedCategory = 'Select Category'.obs;
@@ -127,26 +129,46 @@ class CutoffAllotmentsController extends GetxController {
   late List<CutoffRow> _allRows;
   final RxList<CutoffRow> filteredRows = <CutoffRow>[].obs;
 
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
+  List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
+      ? ['State', 'MCC']
+      : counsellingTypeFilters.map((e) => e.name).toList();
+
   @override
   void onInit() {
     super.onInit();
     _allRows = [];
-    _loadStateFilters();
+    _loadFilters();
   }
 
-  Future<void> _loadStateFilters() async {
+  Future<void> _loadFilters() async {
     filtersLoading.value = true;
-    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
-    filtersLoading.value = false;
-    if (success && stateList.isNotEmpty) {
+    final statesFuture = FiltersApi.getStates(showLoader: false);
+    final counsellingFuture = FiltersApi.getCounsellingTypes(showLoader: false);
+    final (statesOk, stateList, _) = await statesFuture;
+    final (ctOk, counsellingList, _) = await counsellingFuture;
+    
+    if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
     }
+    if (ctOk && counsellingList.isNotEmpty) {
+      counsellingTypeFilters.assignAll(counsellingList);
+      if (selectedCounsellingTypeId.value.isEmpty || !counsellingList.any((e) => e.id == selectedCounsellingTypeId.value)) {
+        selectedCounsellingType.value = counsellingList.first.name;
+        selectedCounsellingTypeId.value = counsellingList.first.id;
+      } else {
+        final match = counsellingList.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+        if (match.isNotEmpty) selectedCounsellingType.value = match.first.name;
+      }
+    }
+    filtersLoading.value = false;
   }
 
   @override
   Future<void> refresh() async => loadCutOffAllotments(showLoader: false);
 
   bool get canLoad =>
+      selectedCounsellingTypeId.value.isNotEmpty &&
       selectedStateId.value.isNotEmpty &&
       selectedYear.value.isNotEmpty;
 
@@ -172,6 +194,7 @@ class CutoffAllotmentsController extends GetxController {
         : null;
 
     final (success, data, errorMessage) = await CutOffAllotmentsApi.getCutOffAllotments(
+      stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: selectedStateId.value,
       year: selectedYear.value,
       instituteTypeId: instituteTypeId,
@@ -204,6 +227,13 @@ class CutoffAllotmentsController extends GetxController {
     }
     _allRows = list;
     _applyFilters();
+  }
+
+  void setCounsellingType(String v) {
+    selectedCounsellingType.value = v;
+    final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+    selectedCounsellingTypeId.value = match.isEmpty ? '1' : match.first.id;
+    loadCutOffAllotments(showLoader: false);
   }
 
   void setState(String v) {

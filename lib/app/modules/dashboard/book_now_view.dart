@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/detail_app_bar.dart';
+import '../main/main_controller.dart';
 
 class BookNowView extends StatelessWidget {
   const BookNowView({super.key});
@@ -20,7 +21,16 @@ class BookNowView extends StatelessWidget {
         onBack: () => Get.back(),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {},
+        onRefresh: () async {
+          // Navigate back and refresh dashboard
+          Get.back();
+          try {
+            final mainController = Get.find<MainController>();
+            await mainController.loadDashboard();
+          } catch (e) {
+            // MainController not found, skip refresh
+          }
+        },
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),

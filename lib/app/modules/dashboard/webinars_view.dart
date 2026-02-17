@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
+import '../main/main_controller.dart';
 
 class WebinarsView extends StatelessWidget {
   const WebinarsView({super.key});
@@ -31,7 +32,16 @@ class WebinarsView extends StatelessWidget {
         onBack: () => Get.back(),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {},
+        onRefresh: () async {
+          // Navigate back and refresh dashboard to reload webinars
+          Get.back();
+          try {
+            final mainController = Get.find<MainController>();
+            await mainController.loadDashboard();
+          } catch (e) {
+            // MainController not found, skip refresh
+          }
+        },
         color: AppColors.primaryBlue,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),

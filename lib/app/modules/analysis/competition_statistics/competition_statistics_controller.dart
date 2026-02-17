@@ -39,7 +39,10 @@ class CompetitionStatisticsController extends GetxController {
   }
 
   @override
-  Future<void> refresh() async {}
+  Future<void> refresh() async {
+    // Reload state filters
+    await _loadStateFilters();
+  }
 
   void setBreakdownTab(int index) => breakdownTabIndex.value = index;
   void setYearNationality(String v) => selectedYearNationality.value = v;

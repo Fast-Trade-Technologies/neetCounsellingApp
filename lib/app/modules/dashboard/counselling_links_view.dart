@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
+import '../main/main_controller.dart';
 
 class CounsellingLinksView extends StatelessWidget {
   const CounsellingLinksView({super.key});
@@ -32,7 +33,16 @@ class CounsellingLinksView extends StatelessWidget {
         onBack: () => Get.back(),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {},
+        onRefresh: () async {
+          // Navigate back and refresh dashboard to reload counselling links
+          Get.back();
+          try {
+            final mainController = Get.find<MainController>();
+            await mainController.loadDashboard();
+          } catch (e) {
+            // MainController not found, skip refresh
+          }
+        },
         color: AppColors.primaryBlue,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
