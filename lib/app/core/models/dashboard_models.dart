@@ -91,17 +91,25 @@ class WebinarItem {
   WebinarItem({
     this.id,
     this.name,
+    this.heading,
     this.description,
     this.date,
+    this.dateFormatted,
     this.time,
+    this.location,
+    this.courseTypeId,
     this.image,
   });
 
   final String? id;
   final String? name;
+  final String? heading;
   final String? description;
   final String? date;
+  final String? dateFormatted;
   final String? time;
+  final String? location;
+  final String? courseTypeId;
   final String? image;
 
   factory WebinarItem.fromJson(Map<String, dynamic>? json) {
@@ -109,9 +117,13 @@ class WebinarItem {
     return WebinarItem(
       id: json['id']?.toString(),
       name: json['name']?.toString(),
+      heading: json['heading']?.toString(),
       description: json['description']?.toString(),
       date: json['date']?.toString(),
+      dateFormatted: json['date_formatted']?.toString(),
       time: json['time']?.toString(),
+      location: json['location']?.toString(),
+      courseTypeId: json['course_type_id']?.toString(),
       image: json['image']?.toString(),
     );
   }

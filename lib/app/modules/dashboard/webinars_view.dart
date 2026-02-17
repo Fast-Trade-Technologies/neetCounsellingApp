@@ -78,17 +78,25 @@ class _WebinarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = item.name ?? 'Webinar';
+    final title = item.name ?? item.heading ?? 'Webinar';
     final desc = item.description ?? '';
-    final date = item.date ?? '';
+    final date = item.dateFormatted ?? item.date ?? '';
     final time = item.time ?? '';
+    final imageUrl = item.image;
+    final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
+    
     final body = desc.isEmpty
         ? (date.isNotEmpty || time.isNotEmpty ? 'Date: $date\nTime: $time' : 'Details will be updated soon.')
         : '${desc.replaceAll(RegExp(r'<[^>]*>'), '').trim()}\n\nDate: $date\nTime: $time';
+    
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.contentDetail,
-        arguments: {'title': title, 'body': body},
+        arguments: {
+          'title': title,
+          'body': body,
+          'image': imageUrl,
+        },
       ),
       child: Container(
         padding: EdgeInsets.all(14.w),
@@ -107,6 +115,43 @@ class _WebinarCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (hasImage) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.r),
+                child: Image.network(
+                  imageUrl!,
+                  width: double.infinity,
+                  height: 180.h,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      width: double.infinity,
+                      height: 180.h,
+                      color: AppColors.chipBg,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
+                          strokeWidth: 2,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 180.h,
+                      color: AppColors.chipBg,
+                      child: Icon(Icons.image_not_supported, size: 48.sp, color: AppColors.textMuted),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 12.h),
+            ],
             Text(
               title,
               style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
@@ -128,9 +173,13 @@ class _WebinarCard extends StatelessWidget {
                 children: [
                   Icon(Icons.calendar_today_rounded, size: 14.sp, color: AppColors.textMuted),
                   SizedBox(width: 4.w),
-                  Text(
-                    date,
-                    style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+                  Flexible(
+                    child: Text(
+                      date,
+                      style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   SizedBox(width: 12.w),
                   Icon(Icons.access_time_rounded, size: 14.sp, color: AppColors.textMuted),
