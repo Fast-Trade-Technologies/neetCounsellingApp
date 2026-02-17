@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
+import '../../../../api_services/cut_off_allotments_api.dart';
 import '../../../../api_services/filters_api.dart';
+import '../../../core/snackbar/app_snackbar.dart';
 
 class CutoffRow {
   CutoffRow({
@@ -26,10 +28,49 @@ class CutoffRow {
   final String r2;
   final String r3;
   final String r4;
+
+  static String _instituteStr(Map<String, dynamic> json) {
+    String str(dynamic v) => (v?.toString() ?? '').trim();
+    final collegeName = str(json['college_name'] ?? json['institute_name'] ?? json['institute'] ?? json['institute_and_type']);
+    final instituteType = str(json['institute_type_name'] ?? json['institute_type']);
+    if (collegeName.isNotEmpty && instituteType.isNotEmpty) {
+      return '$collegeName ($instituteType)';
+    }
+    return collegeName.isNotEmpty ? collegeName : instituteType;
+  }
+
+  factory CutoffRow.fromJson(Map<String, dynamic> json) {
+    int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    String str(dynamic v) => (v?.toString() ?? '').trim();
+    
+    // Handle nested rounds object
+    final rounds = json['rounds'];
+    String getRound(String key) {
+      if (rounds is Map) {
+        final value = rounds[key];
+        return value == null ? '-' : str(value);
+      }
+      return str(json[key] ?? json['round${key.substring(1)}'] ?? json['round_${key.substring(1)}']);
+    }
+    
+    return CutoffRow(
+      sNo: toInt(json['s_no'] ?? json['sNo'] ?? json['serial_no']),
+      instituteAndType: CutoffRow._instituteStr(json),
+      course: str(json['course_name'] ?? json['course']),
+      quota: str(json['quota_name'] ?? json['quota']),
+      category: str(json['category_name'] ?? json['category'] ?? json['sm_category']),
+      fees: str(json['fees'] ?? json['fee'] ?? json['fee_structure']),
+      r1: getRound('r1'),
+      r2: getRound('r2'),
+      r3: getRound('r3'),
+      r4: getRound('r4'),
+    );
+  }
 }
 
 class CutoffAllotmentsController extends GetxController {
-  final RxString selectedState = 'Uttar Pradesh'.obs;
+  final RxString selectedState = 'Select State'.obs;
+  final RxString selectedStateId = ''.obs;
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedQuota = 'Select Quota'.obs;
   final RxString selectedCategory = 'Select Category'.obs;
@@ -37,6 +78,10 @@ class CutoffAllotmentsController extends GetxController {
   final RxString selectedYear = '2024'.obs;
   final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
+
+  final RxBool filtersLoading = true.obs;
+  final RxBool isLoading = false.obs;
+  final RxString error = ''.obs;
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   List<String> get states => stateFilters.isEmpty
@@ -47,102 +92,158 @@ class CutoffAllotmentsController extends GetxController {
   static const List<String> quotas = ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS'];
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
-  static const List<String> years = ['2024', '2023', '2022'];
+  static const List<String> years = ['2024', '2023', '2022', '2021'];
   static const List<int> entriesOptions = [10, 25, 50];
+
+  static const Map<String, String> instituteTypeIds = {
+    'Government': '1',
+    'Private': '2',
+    'Deemed': '3',
+  };
+  static const Map<String, String> quotaIds = {
+    'General': '1',
+    'OBC': '2',
+    'SC': '3',
+    'ST': '4',
+    'EWS': '5',
+  };
+  static const Map<String, String> categoryIds = {
+    'General': '1',
+    'OBC': '2',
+    'SC': '3',
+    'ST': '4',
+    'EWS': '5',
+    'N/A': '0',
+  };
+  static const Map<String, String> courseIds = {
+    'MBBS': '1',
+    'BDS': '2',
+    'BAMS': '3',
+    'BHMS': '4',
+  };
 
   List<int> get entriesOptionsList => entriesOptions;
 
-  late final List<CutoffRow> _allRows;
+  late List<CutoffRow> _allRows;
   final RxList<CutoffRow> filteredRows = <CutoffRow>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    _allRows = _buildSampleRows();
-    _applyFilters();
+    _allRows = [];
     _loadStateFilters();
   }
 
   Future<void> _loadStateFilters() async {
+    filtersLoading.value = true;
     final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
-    if (success && stateList.isNotEmpty) stateFilters.assignAll(stateList);
+    filtersLoading.value = false;
+    if (success && stateList.isNotEmpty) {
+      stateFilters.assignAll(stateList);
+    }
   }
 
   @override
-  Future<void> refresh() async => _applyFilters();
+  Future<void> refresh() async => loadCutOffAllotments(showLoader: false);
 
-  List<CutoffRow> _buildSampleRows() {
-    return [
-      CutoffRow(
-        sNo: 1,
-        instituteAndType: 'SRI RAM MURTI SMARAK INSTITUTE OF MEDICAL SCIENCES, BAREILLY (Private)',
-        course: 'MBBS',
-        quota: 'General',
-        category: 'N/A',
-        fees: '1648512',
-        r1: '101256',
-        r2: '98822',
-        r3: '68947',
-        r4: '-',
-      ),
-      CutoffRow(
-        sNo: 2,
-        instituteAndType: 'SRI RAM MURTI SMARAK INSTITUTE OF MEDICAL SCIENCES, BAREILLY (Private)',
-        course: 'MBBS',
-        quota: 'General',
-        category: 'N/A',
-        fees: '1648512',
-        r1: '101256',
-        r2: '98822',
-        r3: '68947',
-        r4: '-',
-      ),
-      CutoffRow(
-        sNo: 3,
-        instituteAndType: 'EXAMPLE GOVERNMENT MEDICAL COLLEGE (Government)',
-        course: 'MBBS',
-        quota: 'General',
-        category: 'N/A',
-        fees: 'N/A',
-        r1: '45210',
-        r2: '44100',
-        r3: '43800',
-        r4: '-',
-      ),
-      CutoffRow(
-        sNo: 4,
-        instituteAndType: 'ANOTHER PRIVATE MEDICAL COLLEGE, LUCKNOW (Private)',
-        course: 'MBBS',
-        quota: 'General',
-        category: 'N/A',
-        fees: '1850000',
-        r1: '112000',
-        r2: '108500',
-        r3: '-',
-        r4: '-',
-      ),
-      CutoffRow(
-        sNo: 5,
-        instituteAndType: 'DEEMED UNIVERSITY MEDICAL COLLEGE (Deemed)',
-        course: 'MBBS',
-        quota: 'General',
-        category: 'N/A',
-        fees: '2400000',
-        r1: '98500',
-        r2: '96200',
-        r3: '95100',
-        r4: '94500',
-      ),
-    ];
+  bool get canLoad =>
+      selectedStateId.value.isNotEmpty &&
+      selectedYear.value.isNotEmpty;
+
+  Future<void> loadCutOffAllotments({bool showLoader = true}) async {
+    if (!canLoad) {
+      _allRows = [];
+      filteredRows.clear();
+      return;
+    }
+    error.value = '';
+    isLoading.value = true;
+    final instituteTypeId = selectedInstituteType.value.isNotEmpty && instituteTypeIds.containsKey(selectedInstituteType.value)
+        ? instituteTypeIds[selectedInstituteType.value]
+        : null;
+    final courseId = selectedCourse.value.isNotEmpty && courseIds.containsKey(selectedCourse.value)
+        ? courseIds[selectedCourse.value]
+        : null;
+    final quotaId = selectedQuota.value.isNotEmpty && quotaIds.containsKey(selectedQuota.value)
+        ? quotaIds[selectedQuota.value]
+        : null;
+    final smCategoryId = selectedCategory.value.isNotEmpty && categoryIds.containsKey(selectedCategory.value)
+        ? categoryIds[selectedCategory.value]
+        : null;
+
+    final (success, data, errorMessage) = await CutOffAllotmentsApi.getCutOffAllotments(
+      stateId: selectedStateId.value,
+      year: selectedYear.value,
+      instituteTypeId: instituteTypeId,
+      courseId: courseId,
+      quotaId: quotaId,
+      smCategoryId: smCategoryId,
+      showLoader: showLoader,
+    );
+    isLoading.value = false;
+
+    if (!success || data == null) {
+      error.value = errorMessage ?? 'Failed to load cut-off allotments';
+      AppSnackbar.error('Cut-off allotments', error.value);
+      _allRows = [];
+      filteredRows.clear();
+      return;
+    }
+
+    final rawList = data['cutoffs'] ?? data['list'] ?? data['cut_off_allotments'] ?? data['data'] ?? data['allotments'];
+    final list = <CutoffRow>[];
+    if (rawList is List) {
+      for (var i = 0; i < rawList.length; i++) {
+        final e = rawList[i];
+        if (e is Map) {
+          final map = Map<String, dynamic>.from(e);
+          if (map['s_no'] == null && map['sNo'] == null) map['s_no'] = i + 1;
+          list.add(CutoffRow.fromJson(map));
+        }
+      }
+    }
+    _allRows = list;
+    _applyFilters();
   }
 
-  void setState(String v) => selectedState.value = v;
-  void setInstituteType(String v) => selectedInstituteType.value = v;
-  void setQuota(String v) => selectedQuota.value = v;
-  void setCategory(String v) => selectedCategory.value = v;
-  void setCourse(String v) => selectedCourse.value = v;
-  void setYear(String v) => selectedYear.value = v;
+  void setState(String v) {
+    selectedState.value = v;
+    if (v == 'Select State') {
+      selectedStateId.value = '';
+    } else {
+      final match = stateFilters.where((e) => e.name == v).toList();
+      selectedStateId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCutOffAllotments(showLoader: false);
+  }
+
+  void setInstituteType(String v) {
+    selectedInstituteType.value = v;
+    loadCutOffAllotments(showLoader: false);
+  }
+
+  void setQuota(String v) {
+    selectedQuota.value = v;
+    loadCutOffAllotments(showLoader: false);
+  }
+
+  void setCategory(String v) {
+    selectedCategory.value = v;
+    loadCutOffAllotments(showLoader: false);
+  }
+
+  void setCourse(String v) {
+    selectedCourse.value = v;
+    loadCutOffAllotments(showLoader: false);
+  }
+
+  void setYear(String v) {
+    selectedYear.value = v;
+    loadCutOffAllotments(showLoader: false);
+  }
+
   void setEntriesPerPage(int v) => entriesPerPage.value = v;
+
   void setSearchQuery(String value) {
     searchQuery.value = value;
     _applyFilters();

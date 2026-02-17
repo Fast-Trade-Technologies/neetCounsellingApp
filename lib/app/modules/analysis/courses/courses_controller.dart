@@ -3,6 +3,22 @@ import 'package:get/get.dart';
 import '../../../../api_services/courses_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
 
+/// Single filter option from /courses API response (data.filters).
+class CourseFilterItem {
+  CourseFilterItem({required this.id, required this.name});
+  final String id;
+  final String name;
+}
+
+/// Item for graph from data.tree_data.
+class TreeDataItem {
+  TreeDataItem({this.label, this.value, this.name});
+  final String? label;
+  final String? name;
+  final num? value;
+  String get displayName => label ?? name ?? '';
+}
+
 class CourseItem {
   CourseItem({
     required this.sNo,
@@ -25,7 +41,7 @@ class CourseItem {
           ? json['s_no'] as int
           : int.tryParse(json['s_no']?.toString() ?? '') ?? 0,
       degreeType: json['degree_type']?.toString() ?? '',
-      degreeTerms: json['degree_terms']?.toString() ?? '',
+      degreeTerms: json['degree_terms']?.toString() ?? json['name']?.toString() ?? '',
       year: year,
       durationShort: _shortenYear(year),
     );
@@ -34,7 +50,6 @@ class CourseItem {
   static String _shortenYear(String year) {
     final y = year.trim();
     if (y.isEmpty) return '';
-    // Common formats like: "5.5 Years (1 Year Internship)" → "5.5Y + 1Y Int."
     final lower = y.toLowerCase();
     if (lower.contains('internship')) {
       final parts = y.split('(');
@@ -53,33 +68,29 @@ class CourseItem {
 }
 
 class CoursesController extends GetxController {
-  final RxString selectedDegreeType = 'Degree'.obs;
-  final RxString selectedDegreeTerms = 'All'.obs;
+  final RxString selectedDegreeTypeName = 'Select'.obs;
+  final RxString selectedDegreeTypeId = ''.obs;
+  final RxString selectedCourseName = 'All'.obs;
+  final RxString selectedCourseId = ''.obs;
   final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
 
+  final RxBool filtersLoading = true.obs;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
-  static const List<String> degreeTypes = ['Degree', 'Diploma'];
-  static const List<String> degreeTermsList = [
-    'All',
-    'MBBS',
-    'BDS',
-    'BAMS',
-    'BHMS',
-    'BUMS',
-    'B.Sc. Nursing',
-    'BPT',
-    'BVSC',
-    'BNYS',
-    'Pharm.D.',
-  ];
-  static const List<int> entriesOptions = [10, 25, 50];
+  final RxList<CourseFilterItem> degreeTypesFromApi = <CourseFilterItem>[].obs;
+  final RxList<CourseFilterItem> seatMatrixCoursesFromApi = <CourseFilterItem>[].obs;
+  final RxList<TreeDataItem> treeDataForChart = <TreeDataItem>[].obs;
 
-  List<String> get degreeTypesList => degreeTypes;
-  List<String> get degreeTerms => degreeTermsList;
-  List<int> get entriesOptionsList => entriesOptions;
+  List<String> get degreeTypeNames =>
+      degreeTypesFromApi.isEmpty ? ['Select'] : degreeTypesFromApi.map((e) => e.name).toList();
+  List<String> get courseNames =>
+      seatMatrixCoursesFromApi.isEmpty
+          ? ['All']
+          : ['All', ...seatMatrixCoursesFromApi.map((e) => e.name.trim())];
+
+  static const List<int> entriesOptions = [10, 25, 50];
 
   final List<CourseItem> _allCourses = <CourseItem>[];
   final RxList<CourseItem> filteredCourses = <CourseItem>[].obs;
@@ -87,41 +98,72 @@ class CoursesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadCourses();
+    loadFiltersFirst();
   }
 
   @override
-  Future<void> refresh() async => loadCourses(showLoader: false);
+  Future<void> refresh() async {
+    await loadCoursesWithFilters(showLoader: false);
+  }
 
-  /// GET /courses params: course_id, roles, degree_type_id (Postman).
-  /// Maps UI: Degree=1, Diploma=2; MBBS=1, BDS=2, BAMS=3, etc.
-  static const Map<String, String> _degreeTypeIds = {'Degree': '1', 'Diploma': '2'};
-  static const Map<String, String> _courseIds = {
-    'All': '',
-    'MBBS': '1',
-    'BDS': '2',
-    'BAMS': '3',
-    'BHMS': '4',
-    'BUMS': '5',
-    'B.Sc. Nursing': '6',
-    'BPT': '7',
-    'BVSC': '8',
-    'BNYS': '9',
-    'Pharm.D.': '10',
-  };
+  /// First time: GET /courses with only nLoginUserIdNo to get filters.
+  Future<void> loadFiltersFirst() async {
+    filtersLoading.value = true;
+    error.value = '';
+    final (success, data, errorMessage) = await CoursesApi.getCourses(
+      queryParameters: null,
+      showLoader: false,
+    );
+    filtersLoading.value = false;
 
-  Future<void> loadCourses({bool showLoader = true}) async {
+    if (!success || data == null) {
+      error.value = errorMessage ?? 'Failed to load filters';
+      degreeTypesFromApi.clear();
+      seatMatrixCoursesFromApi.clear();
+      return;
+    }
+
+    final filters = data['filters'];
+    if (filters is Map) {
+      final map = Map<String, dynamic>.from(filters);
+      degreeTypesFromApi.assignAll(_parseFilterList(map['degree_types']));
+      seatMatrixCoursesFromApi.assignAll(_parseFilterList(map['seat_matrix_courses']));
+    }
+
+    if (degreeTypesFromApi.isNotEmpty && selectedDegreeTypeId.value.isEmpty) {
+      selectedDegreeTypeName.value = degreeTypesFromApi.first.name;
+      selectedDegreeTypeId.value = degreeTypesFromApi.first.id;
+    }
+    selectedCourseName.value = 'All';
+    selectedCourseId.value = '';
+
+    await loadCoursesWithFilters(showLoader: true);
+  }
+
+  static List<CourseFilterItem> _parseFilterList(dynamic raw) {
+    if (raw is! List) return [];
+    final list = <CourseFilterItem>[];
+    for (final e in raw) {
+      if (e is Map) {
+        final id = e['id']?.toString() ?? '';
+        final name = e['name']?.toString() ?? '';
+        if (name.isNotEmpty) list.add(CourseFilterItem(id: id, name: name));
+      }
+    }
+    return list;
+  }
+
+  /// GET /courses with selected filter params; update list and graph from data.courses and data.tree_data.
+  Future<void> loadCoursesWithFilters({bool showLoader = true}) async {
     error.value = '';
     isLoading.value = true;
     final query = <String, dynamic>{};
-    final dtId = _degreeTypeIds[selectedDegreeType.value];
-    if (dtId != null && dtId.isNotEmpty) query['degree_type_id'] = dtId;
-    final cId = _courseIds[selectedDegreeTerms.value];
-    if (cId != null && cId.isNotEmpty) query['course_id'] = cId;
-    query['roles'] = '2';
+    if (selectedDegreeTypeId.value.isNotEmpty) query['degree_type_id'] = selectedDegreeTypeId.value;
+    if (selectedCourseId.value.isNotEmpty) query['course_id'] = selectedCourseId.value;
+
     final (success, data, errorMessage) = await CoursesApi.getCourses(
-      showLoader: showLoader,
       queryParameters: query.isEmpty ? null : query,
+      showLoader: showLoader,
     );
     isLoading.value = false;
 
@@ -130,6 +172,7 @@ class CoursesController extends GetxController {
       AppSnackbar.error('Courses', error.value);
       _allCourses.clear();
       filteredCourses.clear();
+      treeDataForChart.clear();
       return;
     }
 
@@ -145,19 +188,45 @@ class CoursesController extends GetxController {
     _allCourses
       ..clear()
       ..addAll(list);
+
+    final rawTree = data['tree_data'];
+    final treeList = <TreeDataItem>[];
+    if (rawTree is List) {
+      for (final e in rawTree) {
+        if (e is Map) {
+          final m = Map<String, dynamic>.from(e);
+          final label = m['label']?.toString();
+          final name = m['name']?.toString();
+          final value = m['value'] is num ? m['value'] as num : num.tryParse(m['value']?.toString() ?? '');
+          treeList.add(TreeDataItem(label: label, name: name, value: value));
+        }
+      }
+    }
+    treeDataForChart.assignAll(treeList);
+
     _applyFilters();
   }
 
-  void setDegreeType(String v) {
-    selectedDegreeType.value = v;
-    loadCourses(showLoader: false);
+  void setDegreeType(String name) {
+    selectedDegreeTypeName.value = name;
+    final match = degreeTypesFromApi.where((e) => e.name == name).toList();
+    selectedDegreeTypeId.value = match.isEmpty ? '' : match.first.id;
+    loadCoursesWithFilters(showLoader: false);
   }
 
-  void setDegreeTerms(String v) {
-    selectedDegreeTerms.value = v;
-    loadCourses(showLoader: false);
+  void setCourse(String name) {
+    selectedCourseName.value = name;
+    if (name == 'All') {
+      selectedCourseId.value = '';
+    } else {
+      final match = seatMatrixCoursesFromApi.where((e) => e.name.trim() == name).toList();
+      selectedCourseId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCoursesWithFilters(showLoader: false);
   }
+
   void setEntriesPerPage(int v) => entriesPerPage.value = v;
+
   void setSearchQuery(String value) {
     searchQuery.value = value;
     _applyFilters();
@@ -166,12 +235,6 @@ class CoursesController extends GetxController {
   void _applyFilters() {
     final q = searchQuery.value.trim().toLowerCase();
     var list = _allCourses.where((c) {
-      if (selectedDegreeType.value.isNotEmpty && c.degreeType.isNotEmpty) {
-        if (selectedDegreeType.value != 'Degree' && selectedDegreeType.value != c.degreeType) {
-          return false;
-        }
-      }
-      if (selectedDegreeTerms.value != 'All' && c.degreeTerms != selectedDegreeTerms.value) return false;
       if (q.isEmpty) return true;
       return c.degreeType.toLowerCase().contains(q) ||
           c.degreeTerms.toLowerCase().contains(q) ||
@@ -183,7 +246,7 @@ class CoursesController extends GetxController {
   List<CourseItem> get paginatedCourses {
     final list = filteredCourses;
     final perPage = entriesPerPage.value;
-    final end = (list.length < perPage) ? list.length : perPage;
+    final end = list.length < perPage ? list.length : perPage;
     return list.take(end).toList();
   }
 

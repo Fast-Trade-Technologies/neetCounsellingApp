@@ -83,48 +83,86 @@ class CoursesView extends GetView<CoursesController> {
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Courses', style: AppTextStyles.welcomeHeading),
-          SizedBox(height: 14.h),
-          Row(
-            children: [
-              Expanded(
-                child: _LabelDropdown(
-                  label: 'Degree Type',
-                  value: controller.selectedDegreeType.value,
-                  items: controller.degreeTypesList,
-                  onChanged: controller.setDegreeType,
+      child: Obx(() {
+        if (controller.filtersLoading.value) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.h),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Courses', style: AppTextStyles.welcomeHeading),
+            SizedBox(height: 14.h),
+            Row(
+              children: [
+                Expanded(
+                  child: _LabelDropdown(
+                    label: 'Degree Type',
+                    value: controller.selectedDegreeTypeName.value,
+                    items: controller.degreeTypeNames,
+                    onChanged: controller.setDegreeType,
+                  ),
                 ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _LabelDropdown(
-                  label: 'Degree Terms',
-                  value: controller.selectedDegreeTerms.value,
-                  items: controller.degreeTerms,
-                  onChanged: controller.setDegreeTerms,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _LabelDropdown(
+                    label: 'Course',
+                    value: controller.selectedCourseName.value,
+                    items: controller.courseNames,
+                    onChanged: controller.setCourse,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+          ],
+        );
+      }),
     );
   }
 
   Widget _buildResultsCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Showing Results', style: AppTextStyles.welcomeHeading),
-          SizedBox(height: 16.h),
-          LayoutBuilder(
+    return Obx(() {
+      if (controller.isLoading.value && controller.filteredCourses.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(24.w),
+          decoration: _cardDecoration(),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+      if (controller.error.value.isNotEmpty && controller.filteredCourses.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.w),
+          decoration: _cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Showing Results', style: AppTextStyles.welcomeHeading),
+              SizedBox(height: 16.h),
+              Center(
+                child: Text(
+                  controller.error.value,
+                  style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Showing Results', style: AppTextStyles.welcomeHeading),
+            SizedBox(height: 16.h),
+            LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 400;
               if (isWide) {
@@ -152,10 +190,32 @@ class CoursesView extends GetView<CoursesController> {
         ],
       ),
     );
+    });
   }
 
   Widget _buildDonutChart() {
+    final treeData = controller.treeDataForChart;
     final courses = controller.filteredCourses;
+    final hasTree = treeData.isNotEmpty;
+    final chartItems = hasTree
+        ? treeData
+            .asMap()
+            .entries
+            .map((e) => (
+                  label: e.value.displayName,
+                  duration: e.value.value?.toString() ?? '',
+                  color: _chartColors[e.key % _chartColors.length],
+                ))
+            .toList()
+        : courses
+            .asMap()
+            .entries
+            .map((e) => (
+                  label: e.value.degreeTerms,
+                  duration: e.value.durationShort,
+                  color: _chartColors[e.key % _chartColors.length],
+                ))
+            .toList();
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -167,17 +227,7 @@ class CoursesView extends GetView<CoursesController> {
             children: [
               CustomPaint(
                 size: Size(200.w, 200.w),
-                painter: _DonutChartPainter(
-                  items: courses
-                      .asMap()
-                      .entries
-                      .map((e) => (
-                            label: e.value.degreeTerms,
-                            duration: e.value.durationShort,
-                            color: _chartColors[e.key % _chartColors.length],
-                          ))
-                      .toList(),
-                ),
+                painter: _DonutChartPainter(items: chartItems),
               ),
               SizedBox(
                 width: 84.w,
@@ -213,9 +263,9 @@ class CoursesView extends GetView<CoursesController> {
         Wrap(
           spacing: 8.w,
           runSpacing: 4.h,
-          children: controller.filteredCourses.asMap().entries.map((e) {
-            final c = e.value;
-            final color = _chartColors[e.key % _chartColors.length];
+          children: (chartItems).asMap().entries.map((e) {
+            final label = e.value.label;
+            final color = e.value.color;
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -226,7 +276,7 @@ class CoursesView extends GetView<CoursesController> {
                 ),
                 SizedBox(width: 4.w),
                 Text(
-                  c.degreeTerms,
+                  label,
                   style: AppTextStyles.bodyS.copyWith(fontSize: 9.sp, color: AppColors.textDark),
                 ),
               ],
@@ -245,7 +295,7 @@ class CoursesView extends GetView<CoursesController> {
           children: [
             Obx(() => _EntriesDropdown(
               value: controller.entriesPerPage.value,
-              options: controller.entriesOptionsList,
+              options: CoursesController.entriesOptions,
               onChanged: controller.setEntriesPerPage,
             )),
             SizedBox(width: 12.w),
@@ -289,7 +339,7 @@ class CoursesView extends GetView<CoursesController> {
             children: [
               ...list.asMap().entries.map((e) => Padding(
                     padding: EdgeInsets.only(bottom: e.key < list.length - 1 ? 12.h : 0),
-                    child: _CourseCard(course: e.value),
+                    child: _CourseCard(course: e.value, serialNumber: e.key + 1),
                   )),
               SizedBox(height: 10.h),
               // Text(
@@ -305,9 +355,10 @@ class CoursesView extends GetView<CoursesController> {
 }
 
 class _CourseCard extends StatelessWidget {
-  const _CourseCard({required this.course});
+  const _CourseCard({required this.course, required this.serialNumber});
 
   final CourseItem course;
+  final int serialNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -338,7 +389,7 @@ class _CourseCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
-              '${course.sNo}',
+              '$serialNumber',
               style: AppTextStyles.bodyS.copyWith(
                 color: AppColors.primaryBlue,
                 fontWeight: FontWeight.w700,
