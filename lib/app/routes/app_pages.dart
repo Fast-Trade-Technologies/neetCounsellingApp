@@ -15,6 +15,7 @@ import '../bindings/register_binding.dart';
 import '../bindings/menu_binding.dart';
 import '../bindings/profile_binding.dart';
 import '../bindings/about_binding.dart';
+import '../bindings/webinar_detail_binding.dart';
 import '../bindings/competition_statistics_binding.dart';
 import '../bindings/courses_binding.dart';
 import '../bindings/merit_list_binding.dart';
@@ -30,6 +31,7 @@ import '../modules/dashboard/counselling_links_view.dart';
 import '../modules/dashboard/important_links_view.dart';
 import '../modules/dashboard/news_list_view.dart';
 import '../modules/dashboard/webinars_view.dart';
+import '../modules/dashboard/webinar_detail_view.dart';
 import '../modules/analysis/merit_list/merit_list_view.dart';
 import '../modules/analysis/seat_distribution/seat_distribution_view.dart';
 import '../modules/auth/login/login_view.dart';
@@ -182,6 +184,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.contentDetail,
       page: () => const ContentDetailView(),
+    ),
+    GetPage(
+      name: AppRoutes.webinarDetail,
+      page: () => const WebinarDetailView(),
+      binding: WebinarDetailBinding(),
     ),
   ];
 }

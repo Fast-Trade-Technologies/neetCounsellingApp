@@ -90,14 +90,41 @@ class _WebinarCard extends StatelessWidget {
         : '${desc.replaceAll(RegExp(r'<[^>]*>'), '').trim()}\n\nDate: $date\nTime: $time';
     
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.contentDetail,
-        arguments: {
-          'title': title,
-          'body': body,
-          'image': imageUrl,
-        },
-      ),
+      onTap: () {
+        final webinarId = item.id;
+        if (webinarId != null && webinarId.isNotEmpty) {
+          // Navigate to webinar detail page with webinar data from list
+          // Convert WebinarItem to Map for GetX navigation
+          Get.toNamed(
+            AppRoutes.webinarDetail,
+            arguments: {
+              'webinarId': webinarId,
+              'webinarItem': {
+                'id': item.id,
+                'name': item.name,
+                'heading': item.heading,
+                'description': item.description,
+                'date': item.date,
+                'dateFormatted': item.dateFormatted,
+                'time': item.time,
+                'location': item.location,
+                'courseTypeId': item.courseTypeId,
+                'image': item.image,
+              },
+            },
+          );
+        } else {
+          // Fallback to content detail if no ID
+          Get.toNamed(
+            AppRoutes.contentDetail,
+            arguments: {
+              'title': title,
+              'body': body,
+              'image': imageUrl,
+            },
+          );
+        }
+      },
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
@@ -115,24 +142,25 @@ class _WebinarCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasImage) ...[
+            if (hasImage && imageUrl != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(
-                  imageUrl!,
+                  imageUrl,
                   width: double.infinity,
                   height: 180.h,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
+                    final expectedBytes = loadingProgress.expectedTotalBytes;
                     return Container(
                       width: double.infinity,
                       height: 180.h,
                       color: AppColors.chipBg,
                       child: Center(
                         child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                          value: expectedBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / expectedBytes
                               : null,
                           strokeWidth: 2,
                           color: AppColors.primaryBlue,

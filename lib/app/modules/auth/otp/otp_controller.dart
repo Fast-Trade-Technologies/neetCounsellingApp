@@ -95,6 +95,7 @@ class OtpController extends GetxController {
       // Fetch and save profile data after successful OTP verification
       await _fetchAndSaveProfile();
       
+      AppSnackbar.success('OTP Verified', 'Login successful! Welcome back.');
       Get.offAllNamed(AppRoutes.home);
     } else {
       AppSnackbar.error('Verification failed', errorMessage ?? 'Invalid OTP');

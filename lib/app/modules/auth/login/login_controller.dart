@@ -39,6 +39,7 @@ class LoginController extends GetxController {
 
     if (success) {
       AppStorage.userPhone = phone;
+      AppSnackbar.success('OTP Sent', 'Verification code sent to $phone');
       Get.toNamed(AppRoutes.otp, arguments: phone);
     } else {
       AppSnackbar.error('Login', errorMessage ?? 'Failed to send OTP');

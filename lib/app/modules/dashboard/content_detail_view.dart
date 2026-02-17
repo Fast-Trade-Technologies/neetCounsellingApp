@@ -38,7 +38,7 @@ class ContentDetailView extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: Image.network(
-                    imageUrl!,
+                    imageUrl,
                     width: double.infinity,
                     height: 250.h,
                     fit: BoxFit.cover,
