@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 
 import '../../../api_services/dashboard_api.dart';
+import '../../core/models/dashboard_models.dart';
 
 class MainController extends GetxController {
   final RxInt currentIndex = 0.obs;
-  final Rxn<Map<String, dynamic>> dashboardData = Rxn<Map<String, dynamic>>();
+  final Rxn<DashboardData> dashboardData = Rxn<DashboardData>();
   final RxBool dashboardLoading = false.obs;
   final RxString dashboardError = ''.obs;
 

@@ -44,7 +44,7 @@ class OnboardingView extends GetView<OnboardingController> {
             ),
             SizedBox(height: 8.h),
             Obx(
-              () => InkWell(
+              () => controller.pageIndex.value < 3 ? InkWell(
                 onTap: controller.goNextOrFinish,
                 borderRadius: BorderRadius.circular(999),
                 child: Padding(
@@ -55,7 +55,7 @@ class OnboardingView extends GetView<OnboardingController> {
                     index: controller.pageIndex.value,
                   ),
                 ),
-              ),
+              ) : const SizedBox.shrink(),
             ),
             SizedBox(height: 14.h),
           ],
@@ -384,27 +384,29 @@ class _OnboardingPage4 extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10.h),
-            InkWell(
-              onTap: () {
-                Get.toNamed(AppRoutes.login);
-              },
-              child: Container(
-                height: 48.h,
-                width: 150.w,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Center(
-                  child: Text(
-                    'Get Started',
-                    style: AppTextStyles.label.copyWith(
-                      color: Colors.white,
+            Center(
+              child: InkWell(
+                onTap: () {
+                  Get.toNamed(AppRoutes.login);
+                },
+                child: Container(
+                  height: 48.h,
+                  width: 150.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Get Started',
+                      style: AppTextStyles.label.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

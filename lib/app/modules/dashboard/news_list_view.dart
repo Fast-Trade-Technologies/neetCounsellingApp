@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../core/models/dashboard_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
 
 class NewsListView extends StatelessWidget {
   const NewsListView({super.key});
 
-  static const List<Map<String, String>> _items = [
-    {'title': 'MBBS Special Stray Round - Additional Allotment & Reporting Notice', 'body': 'Details about MBBS Special Stray Round additional allotment and reporting notice for NEET UG candidates.'},
-    {'title': 'MBBS/BDS/BAMS/BHMS Round-05: Candidates Removed from Merit List Due to Non-Reporting (Security Deposit Forfeited)', 'body': 'Information on candidates removed from merit list and security deposit forfeiture in Round 5.'},
-    {'title': 'ACPUGMEC Gujarat 2025-26: Final Admitted List for UG Medical Courses', 'body': 'Final admitted list for UG medical courses in Gujarat for the academic year 2025-26.'},
-    {'title': 'NEET-UG 2025: Special Stray Round & Round 5 Counseling Schedule (MBBS/BDS/B.Sc Nursing)', 'body': 'Complete schedule for Special Stray Round and Round 5 counseling for MBBS, BDS, and B.Sc Nursing.'},
-    {'title': 'UP NEET PG 2025: Important Guidelines for Third Round of Online Counselling', 'body': 'Guidelines for the third round of online counselling for NEET PG in Uttar Pradesh.'},
-    {'title': 'Dr. NTRUHS AP: MBBS MQ 2025-26 Special Stray Round-2 Allotment List', 'body': 'Special Stray Round-2 allotment list for MBBS in Andhra Pradesh for 2025-26.'},
-  ];
+  static List<T> _listFromArguments<T>(dynamic arguments) {
+    if (arguments == null) return [];
+    if (arguments is List<T>) return arguments;
+    if (arguments is List) return arguments.cast<T>();
+    return [];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final list = _listFromArguments<NewsUpdateItem>(Get.arguments);
+    final itemCount = list.length;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -32,40 +34,68 @@ class NewsListView extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async {},
         color: AppColors.primaryBlue,
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Get timely alerts on all the NEET UG-related news and updates.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  Text(
+                    'Get timely alerts on all the NEET UG-related news and updates.',
+                    style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                  ),
+                  SizedBox(height: 16.h),
+                ]),
+              ),
             ),
-            SizedBox(height: 16.h),
-            ..._items.map((item) => _ListTile(
-                  title: item['title']!,
-                  body: item['body']!,
-                )),
-            SizedBox(height: 24.h),
+            if (itemCount == 0)
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: Text(
+                      'No news updates at the moment.',
+                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = list[index];
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 12.h),
+                        child: _NewsTile(item: item),
+                      );
+                    },
+                    childCount: itemCount,
+                  ),
+                ),
+              ),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
           ],
-        ),
         ),
       ),
     );
   }
 }
 
-class _ListTile extends StatelessWidget {
-  const _ListTile({required this.title, required this.body});
-
-  final String title;
-  final String body;
+class _NewsTile extends StatelessWidget {
+  const _NewsTile({required this.item});
+  final NewsUpdateItem item;
 
   @override
   Widget build(BuildContext context) {
+    final title = item.heading ?? 'News';
+    final body = item.link?.trim().isNotEmpty == true
+        ? 'Link: ${item.link}'
+        : 'Details will be updated soon.';
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -100,10 +130,16 @@ class _ListTile extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 InkWell(
-                  onTap: () => Get.toNamed(
-                    AppRoutes.contentDetail,
-                    arguments: {'title': title, 'body': body},
-                  ),
+                  onTap: () async {
+                    if (item.link?.trim().isNotEmpty == true) {
+                      await openLinkInBrowser(item.link);
+                    } else {
+                      Get.toNamed(
+                        AppRoutes.contentDetail,
+                        arguments: {'title': title, 'body': body},
+                      );
+                    }
+                  },
                   child: Text(
                     'Check Now',
                     style: AppTextStyles.bodyS.copyWith(

@@ -293,17 +293,23 @@ class _DashboardContent extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-          LayoutGrid(
+            LayoutGrid(
             children: [
               MenuGridButton(
                 label: 'News & Updates',
                 iconAsset: '${MainView._icons}/news-update.png',
-                onTap: () => Get.toNamed(AppRoutes.dashboardNews),
+                onTap: () => Get.toNamed(
+                  AppRoutes.dashboardNews,
+                  arguments: controller.dashboardData.value?.newsUpdates,
+                ),
               ),
               MenuGridButton(
                 label: 'Counselling Links',
                 iconAsset: '${MainView._icons}/Counselling-Links.png',
-                onTap: () => Get.toNamed(AppRoutes.dashboardCounsellingLinks),
+                onTap: () => Get.toNamed(
+                  AppRoutes.dashboardCounsellingLinks,
+                  arguments: controller.dashboardData.value?.counsellingLinks,
+                ),
               ),
               MenuGridButton(
                 label: 'Colleges & Seats',
@@ -313,12 +319,18 @@ class _DashboardContent extends StatelessWidget {
               MenuGridButton(
                 label: 'Webinars',
                 iconAsset: '${MainView._icons}/webinar.png',
-                onTap: () => Get.toNamed(AppRoutes.dashboardWebinars),
+                onTap: () => Get.toNamed(
+                  AppRoutes.dashboardWebinars,
+                  arguments: controller.dashboardData.value?.webinars,
+                ),
               ),
               MenuGridButton(
                 label: 'Important Links',
                 iconAsset: '${MainView._icons}/links.png',
-                onTap: () => Get.toNamed(AppRoutes.dashboardImportantLinks),
+                onTap: () => Get.toNamed(
+                  AppRoutes.dashboardImportantLinks,
+                  arguments: controller.dashboardData.value?.importantLinks,
+                ),
               ),
             ],
           ),

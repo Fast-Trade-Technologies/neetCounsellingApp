@@ -2,21 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../core/models/dashboard_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
 
 class ImportantLinksView extends StatelessWidget {
   const ImportantLinksView({super.key});
 
-  static const List<Map<String, String>> _items = [
-    {'title': 'Uttar Pradesh Private Colleges FEE 2025', 'body': 'Fee structure and details for Uttar Pradesh private medical colleges for 2025.'},
-    {'title': 'Deemed Colleges FEE 2025', 'body': 'Fee structure and details for deemed medical colleges for 2025.'},
-  ];
+  static List<T> _listFromArguments<T>(dynamic arguments) {
+    if (arguments == null) return [];
+    if (arguments is List<T>) return arguments;
+    if (arguments is List) return arguments.cast<T>();
+    return [];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final list = _listFromArguments<ImportantLinkItem>(Get.arguments);
+    final itemCount = list.length;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -28,40 +34,68 @@ class ImportantLinksView extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async {},
         color: AppColors.primaryBlue,
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Optimize and boost your confidence with these essential resources.',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  Text(
+                    'Optimize and boost your confidence with these essential resources.',
+                    style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                  ),
+                  SizedBox(height: 16.h),
+                ]),
               ),
-              SizedBox(height: 16.h),
-              ..._items.map((item) => _ListTile(
-                    title: item['title']!,
-                    body: item['body']!,
-                  )),
-              SizedBox(height: 24.h),
-            ],
-          ),
+            ),
+            if (itemCount == 0)
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: Text(
+                      'No important links at the moment.',
+                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = list[index];
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 12.h),
+                        child: _ImportantLinkTile(item: item),
+                      );
+                    },
+                    childCount: itemCount,
+                  ),
+                ),
+              ),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ListTile extends StatelessWidget {
-  const _ListTile({required this.title, required this.body});
-
-  final String title;
-  final String body;
+class _ImportantLinkTile extends StatelessWidget {
+  const _ImportantLinkTile({required this.item});
+  final ImportantLinkItem item;
 
   @override
   Widget build(BuildContext context) {
+    final title = item.heading ?? 'Important Link';
+    final body = item.link?.trim().isNotEmpty == true
+        ? 'Link: ${item.link}'
+        : 'Link will be updated soon.';
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -96,10 +130,16 @@ class _ListTile extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 InkWell(
-                  onTap: () => Get.toNamed(
-                    AppRoutes.contentDetail,
-                    arguments: {'title': title, 'body': body},
-                  ),
+                  onTap: () async {
+                    if (item.link?.trim().isNotEmpty == true) {
+                      await openLinkInBrowser(item.link);
+                    } else {
+                      Get.toNamed(
+                        AppRoutes.contentDetail,
+                        arguments: {'title': title, 'body': body},
+                      );
+                    }
+                  },
                   child: Text(
                     'Check Now',
                     style: AppTextStyles.bodyS.copyWith(

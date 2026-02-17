@@ -2,20 +2,21 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import 'package:neetcounsellingapp/app/core/models/dashboard_models.dart';
 import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 import 'base_api.dart';
 
 /// Dashboard API from NEET Counseling API Postman collection.
-/// Get Dashboard: GET {{base_url}}/dashboard with header nLoginUserIdNo.
+/// Get Dashboard: GET {{base_url}}/dashboard with nLoginUserIdNo as query param.
 class DashboardApi {
   static const String dashboardPath = '/dashboard';
 
   static final BaseAPI _api = BaseAPI();
 
-  /// Fetches dashboard data. Sends [nLoginUserIdNo] header from [AppStorage.userId].
-  /// Returns (true, data map, null) on success, (false, null, errorMessage) on failure.
-  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getDashboard({
+  /// Fetches dashboard data. Sends [nLoginUserIdNo] as query param from [AppStorage.userId].
+  /// Returns (true, DashboardData, null) on success, (false, null, errorMessage) on failure.
+  static Future<(bool success, DashboardData? data, String? errorMessage)> getDashboard({
     bool showLoader = true,
   }) async {
     final userId = AppStorage.userId;
@@ -25,7 +26,7 @@ class DashboardApi {
     try {
       final response = await _api.get(
         url: dashboardPath,
-        headers: {'nLoginUserIdNo': userId},
+        queryParameters: {'nLoginUserIdNo': userId},
         showLoader: showLoader,
       );
 
@@ -42,11 +43,12 @@ class DashboardApi {
       final message = body['message']?.toString();
 
       if (isSuccess) {
-        final data = body['data'];
-        if (data is Map) {
-          return (true, Map<String, dynamic>.from(data), null);
+        final dataRaw = body['data'];
+        if (dataRaw is Map) {
+          final data = DashboardData.fromJson(Map<String, dynamic>.from(dataRaw));
+          return (true, data, null);
         }
-        return (true, body, null);
+        return (true, DashboardData.fromJson(null), null);
       }
       return (false, null, message ?? 'Failed to load dashboard');
     } on DioException catch (e) {
