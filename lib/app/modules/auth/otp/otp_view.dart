@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -41,7 +41,72 @@ class OtpView extends GetView<OtpController> {
                     textAlign: TextAlign.center,
                   )),
               SizedBox(height: 32.h),
-              _OtpPinBoxes(controller: controller),
+             Pinput(
+                    length: OtpController.otpLength,
+                    controller: controller.pinputController,
+                    focusNode: controller.pinputFocusNode,
+                    defaultPinTheme: PinTheme(
+                      width: 56.w,
+                      height: 56.h,
+                      textStyle: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.border, width: 1.5),
+                      ),
+                    ),
+                    focusedPinTheme: PinTheme(
+                      width: 56.w,
+                      height: 56.h,
+                      textStyle: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.primaryBlue, width: 2),
+                      ),
+                    ),
+                    submittedPinTheme: PinTheme(
+                      width: 56.w,
+                      height: 56.h,
+                      textStyle: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.primaryBlue, width: 2),
+                      ),
+                    ),
+                    errorPinTheme: PinTheme(
+                      width: 56.w,
+                      height: 56.h,
+                      textStyle: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.red, width: 1.5),
+                      ),
+                    ),
+                    pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                    showCursor: true,
+                    onCompleted: (pin) => controller.onSubmit(),
+                    onChanged: (value) => controller.onOtpChanged(value),
+                    keyboardType: TextInputType.number,
+                  ),
               SizedBox(height: 28.h),
               Obx(() => AppPrimaryButton(
                     text: controller.isLoading.value ? 'Verifying...' : 'Verify & Continue',
@@ -79,89 +144,6 @@ class OtpView extends GetView<OtpController> {
                   )),
               SizedBox(height: 32.h),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OtpPinBoxes extends StatelessWidget {
-  const _OtpPinBoxes({required this.controller});
-
-  final OtpController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(
-        OtpController.otpLength,
-        (index) => _OtpBox(
-          index: index,
-          controller: controller.pinControllers[index],
-          focusNode: controller.focusNodes[index],
-          onChanged: (v) {
-            if (v.length == 1) controller.onOtpDigitChanged(index, v);
-            if (v.isEmpty) controller.onOtpKeyBackspace(index);
-          },
-          onSubmit: controller.onSubmit,
-        ),
-      ),
-    );
-  }
-}
-
-class _OtpBox extends StatelessWidget {
-  const _OtpBox({
-    required this.index,
-    required this.controller,
-    required this.focusNode,
-    required this.onChanged,
-    required this.onSubmit,
-  });
-
-  final int index;
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 46.w,
-      height: 54.h,
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        style: TextStyle(
-          fontSize: 22.sp,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textDark,
-        ),
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        onChanged: onChanged,
-        onSubmitted: (_) => onSubmit(),
-        decoration: InputDecoration(
-          counterText: '',
-          contentPadding: EdgeInsets.zero,
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: const BorderSide(color: AppColors.border),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
           ),
         ),
       ),

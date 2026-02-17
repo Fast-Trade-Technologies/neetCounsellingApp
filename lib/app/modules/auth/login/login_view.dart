@@ -65,24 +65,25 @@ class LoginView extends GetView<LoginController> {
               ),
               SizedBox(height: 14.h),
               AppPrimaryButton(text: 'Get OTP', onTap: () { controller.onGetOtp(); }),
-              SizedBox(height: 12.h),
-              const AuthOrDivider(),
-              SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  AppSocialButton(
-                    label: 'Google',
-                    iconAsset: 'assets/auth/google-icon.png',
-                    onTap: () {},
-                  ),
-                  AppSocialButton(
-                    label: 'Apple',
-                    iconAsset: 'assets/auth/IOS.png',
-                    onTap: () {},
-                  ),
-                ],
-              ),
+              // TODO: Uncomment below code for Google and Apple Sign-In functionality
+              // SizedBox(height: 12.h),
+              // const AuthOrDivider(),
+              // SizedBox(height: 12.h),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     AppSocialButton(
+              //       label: 'Google',
+              //       iconAsset: 'assets/auth/google-icon.png',
+              //       onTap: () {},
+              //     ),
+              //     AppSocialButton(
+              //       label: 'Apple',
+              //       iconAsset: 'assets/auth/IOS.png',
+              //       onTap: () {},
+              //     ),
+              //   ],
+              // ),
               SizedBox(height: 18.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

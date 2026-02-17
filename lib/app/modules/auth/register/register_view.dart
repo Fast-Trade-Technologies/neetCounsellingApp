@@ -72,24 +72,25 @@ class RegisterView extends GetView<RegisterController> {
               ),
               SizedBox(height: 14.h),
               AppPrimaryButton(text: 'Sign up', onTap: () { controller.onSignUp(); }),
-              SizedBox(height: 12.h),
-              const AuthOrDivider(),
-              SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  AppSocialButton(
-                    label: 'Google',
-                    iconAsset: 'assets/auth/google-icon.png',
-                    onTap: () {},
-                  ),
-                  AppSocialButton(
-                    label: 'Apple',
-                    iconAsset: 'assets/auth/IOS.png',
-                    onTap: () {},
-                  ),
-                ],
-              ),
+              // TODO: Uncomment below code for Google and Apple Sign-In functionality
+              // SizedBox(height: 12.h),
+              // const AuthOrDivider(),
+              // SizedBox(height: 12.h),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     AppSocialButton(
+              //       label: 'Google',
+              //       iconAsset: 'assets/auth/google-icon.png',
+              //       onTap: () {},
+              //     ),
+              //     AppSocialButton(
+              //       label: 'Apple',
+              //       iconAsset: 'assets/auth/IOS.png',
+              //       onTap: () {},
+              //     ),
+              //   ],
+              // ),
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
