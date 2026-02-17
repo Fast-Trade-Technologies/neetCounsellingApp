@@ -22,6 +22,7 @@ class AppRoutes {
   static const String postExamChecklistSample = '/post-exam/checklist-sample';
   static const String moreMenu = '/more/menu';
   static const String profile = '/profile';
+  static const String about = '/about';
 
   // Dashboard detail pages (from web dashboard)
   static const String dashboardBookNow = '/dashboard/book-now';

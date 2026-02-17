@@ -137,7 +137,7 @@ class MenuView extends GetView<MoreMenuController> {
           _MenuListTile(
             iconAsset: '$_icons/About-Us.png',
             label: 'About Us',
-            onTap: () {},
+            onTap: () => Get.toNamed(AppRoutes.about),
           ),
           _buildDivider(),
           _MenuListTile(
