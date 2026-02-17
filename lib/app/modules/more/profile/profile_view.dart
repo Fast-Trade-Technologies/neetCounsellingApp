@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_asset_image.dart';
 import '../../../core/widgets/app_primary_button.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/profile_image.dart';
 import 'profile_controller.dart';
 
 class ProfileView extends GetView<ProfileController> {
@@ -31,17 +31,42 @@ class ProfileView extends GetView<ProfileController> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-          child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfileSummary(),
-            SizedBox(height: 20.h),
-            _buildProfileTab(),
-            SizedBox(height: 16.h),
-            _buildPersonalInfoCard(),
-            SizedBox(height: 24.h),
-          ],
-        ),
+          child: Obx(() {
+            if (controller.isLoading.value && controller.firstNameController.text.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 100.h),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProfileSummary(),
+                SizedBox(height: 20.h),
+                _buildProfileTab(),
+                SizedBox(height: 16.h),
+                if (controller.error.value.isNotEmpty && controller.firstNameController.text.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Text(
+                        controller.error.value,
+                        style: AppTextStyles.bodyS.copyWith(color: Colors.red.shade700),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                _buildPersonalInfoCard(),
+                SizedBox(height: 24.h),
+              ],
+            );
+          }),
         ),
       ),
     );
@@ -65,7 +90,7 @@ class ProfileView extends GetView<ProfileController> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
+            Obx(() => Stack(
               clipBehavior: Clip.none,
               children: [
                 Container(
@@ -79,13 +104,11 @@ class ProfileView extends GetView<ProfileController> {
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child: AppAssetImage(
-                      _profileAsset,
-                      width: 80.w,
-                      height: 80.w,
-                      fit: BoxFit.cover,
-                    ),
+                  child: ProfileImage(
+                    size: 80.w,
+                    placeholderAsset: _profileAsset,
+                    fit: BoxFit.cover,
+                    imageUrl: controller.imageUrl.value.isEmpty ? null : controller.imageUrl.value,
                   ),
                 ),
                 Positioned(
@@ -102,7 +125,7 @@ class ProfileView extends GetView<ProfileController> {
                   ),
                 ),
               ],
-            ),
+            )),
             SizedBox(width: 20.w),
             Expanded(
               child: Obx(() => Column(
@@ -237,13 +260,13 @@ class ProfileView extends GetView<ProfileController> {
             ),
           ),
           SizedBox(height: 24.h),
-          SizedBox(
+          Obx(() => SizedBox(
             width: double.infinity,
             child: AppPrimaryButton(
-              text: 'Submit',
-              onTap: controller.onSubmit,
+              text: controller.isUpdating.value ? 'Updating...' : 'Submit',
+              onTap: controller.isUpdating.value ? null : controller.onSubmit,
             ),
-          ),
+          )),
         ],
       ),
     );

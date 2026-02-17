@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/menu_grid_button.dart';
+import '../../core/widgets/profile_image.dart';
 import '../../core/widgets/welcome_card.dart';
 import '../../core/storage/app_storage.dart';
 import '../../routes/app_routes.dart';
@@ -59,8 +60,11 @@ class MainView extends GetView<MainController> {
                       padding: EdgeInsets.symmetric(vertical: 4.h),
                       child: Row(
                         children: [
-                          Icon(Icons.person_outline_rounded,
-                              size: 40.w, color: AppColors.primaryBlue),
+                          ProfileImage(
+                            size: 40.w,
+                            placeholderAsset: null,
+                            imageUrl: AppStorage.userImageUrl,
+                          ),
                           SizedBox(width: 10.w),
                           Expanded(
                             child: Column(

@@ -6,6 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_asset_image.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/profile_image.dart';
+import '../../../core/storage/app_storage.dart';
 import '../../../routes/app_routes.dart';
 import 'menu_controller.dart';
 
@@ -47,7 +49,7 @@ class MenuView extends GetView<MoreMenuController> {
   }
 
   Widget _buildProfileCard() {
-    return Container(
+    return Obx(() => Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       decoration: BoxDecoration(
@@ -74,23 +76,21 @@ class MenuView extends GetView<MoreMenuController> {
                 ),
               ],
             ),
-            child: ClipOval(
-              child: AppAssetImage(
-                _profileAsset,
-                width: 88.w,
-                height: 88.w,
-                fit: BoxFit.cover,
-              ),
+            child: ProfileImage(
+              size: 88.w,
+              placeholderAsset: _profileAsset,
+              fit: BoxFit.cover,
+              imageUrl: controller.userImageUrl.value.isEmpty ? null : controller.userImageUrl.value,
             ),
           ),
           SizedBox(height: 16.h),
           Text(
-            'Meet Kaur',
+            controller.userName.value,
             style: AppTextStyles.welcomeHeading.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w700),
           ),
           SizedBox(height: 6.h),
           Text(
-            'meetkaur39@gmail.com',
+            controller.userEmail.value,
             style: AppTextStyles.detailScreenSubtitle.copyWith(fontSize: 12.sp),
             textAlign: TextAlign.center,
           ),
@@ -109,7 +109,7 @@ class MenuView extends GetView<MoreMenuController> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildMenuCard(BuildContext context) {

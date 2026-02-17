@@ -47,6 +47,12 @@ class AppStorage {
   static String? get userImage => _box.read(AppStorageKeys.userImage) as String?;
   static set userImage(String? v) => _box.write(AppStorageKeys.userImage, v);
 
+  static String? get userImageUrl => _box.read(AppStorageKeys.userImageUrl) as String?;
+  static set userImageUrl(String? v) => _box.write(AppStorageKeys.userImageUrl, v);
+
+  static String? get userStreamName => _box.read(AppStorageKeys.userStreamName) as String?;
+  static set userStreamName(String? v) => _box.write(AppStorageKeys.userStreamName, v);
+
   // Onboarding
   static bool get onboardingCompleted => _box.read(AppStorageKeys.onboardingCompleted) as bool? ?? false;
   static set onboardingCompleted(bool v) => _box.write(AppStorageKeys.onboardingCompleted, v);
@@ -68,6 +74,8 @@ class AppStorage {
     _box.remove(AppStorageKeys.userStream);
     _box.remove(AppStorageKeys.userPaidStatus);
     _box.remove(AppStorageKeys.userImage);
+    _box.remove(AppStorageKeys.userImageUrl);
+    _box.remove(AppStorageKeys.userStreamName);
   }
 
   static Future<void> clearAll() => _box.erase();
