@@ -96,6 +96,7 @@ class CutoffAllotmentsController extends GetxController {
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> quotaFilters = <FilterItem>[].obs;
   List<String> get states => stateFilters.isEmpty
       ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
       : ['Select State', ...stateFilters.map((e) => e.name)];
@@ -103,7 +104,10 @@ class CutoffAllotmentsController extends GetxController {
   List<String> get instituteTypesForDropdown => instituteTypeFilters.isEmpty
       ? ['Select Institute Type', 'Government', 'Private', 'Deemed']
       : ['Select Institute Type', ...instituteTypeFilters.map((e) => e.name)];
-  static const List<String> quotas = ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS'];
+
+  List<String> get quotasForDropdown => quotaFilters.isEmpty
+      ? ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS']
+      : ['Select Quota', ...quotaFilters.map((e) => e.name)];
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022', '2021'];
@@ -176,6 +180,7 @@ class CutoffAllotmentsController extends GetxController {
       stateFilters.assignAll(stateList);
     }
     await _loadInstituteTypes();
+    await _loadQuotas();
     await _loadFiltersFromCutOffApi();
     filtersLoading.value = false;
   }
@@ -188,6 +193,53 @@ class CutoffAllotmentsController extends GetxController {
     );
     if (success && list.isNotEmpty) {
       instituteTypeFilters.assignAll(list);
+    }
+  }
+
+  Future<void> _loadQuotas() async {
+    // All parameters are required, so provide defaults if not selected
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '0';
+    
+    // state_id is required - use first state if none selected, or '0' as fallback
+    String stateId = selectedStateId.value.isNotEmpty 
+        ? selectedStateId.value 
+        : (stateFilters.isNotEmpty ? stateFilters.first.id : '0');
+    
+    // institute_type_id is required - use first institute type if none selected, or '0' as fallback
+    String instituteTypeId = '0';
+    if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
+      if (instituteTypeFilters.isNotEmpty) {
+        final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+        instituteTypeId = match.isNotEmpty ? match.first.id : (instituteTypeIds[selectedInstituteType.value] ?? '0');
+      } else {
+        instituteTypeId = instituteTypeIds[selectedInstituteType.value] ?? '0';
+      }
+    } else if (instituteTypeFilters.isNotEmpty) {
+      instituteTypeId = instituteTypeFilters.first.id;
+    }
+    
+    // course_type_id is required - use first course if none selected, or '0' as fallback
+    String courseTypeId = '0';
+    if (selectedCourse.value.isNotEmpty && selectedCourse.value != 'Select Course') {
+      if (courseFilters.isNotEmpty) {
+        final match = courseFilters.where((e) => e.name == selectedCourse.value).toList();
+        courseTypeId = match.isNotEmpty ? match.first.id : (courseIds[selectedCourse.value] ?? '0');
+      } else {
+        courseTypeId = courseIds[selectedCourse.value] ?? '0';
+      }
+    } else if (courseFilters.isNotEmpty) {
+      courseTypeId = courseFilters.first.id;
+    }
+    
+    final (success, list, _) = await FiltersApi.getQuota(
+      counsellingId: counsellingId,
+      stateId: stateId,
+      instituteTypeId: instituteTypeId,
+      courseTypeId: courseTypeId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      quotaFilters.assignAll(list);
     }
   }
 
@@ -379,6 +431,14 @@ class CutoffAllotmentsController extends GetxController {
 
   void setCounsellingType(String v) {
     selectedCounsellingType.value = v;
+    // Update counselling type ID (assuming 'State' = '1', 'MCC' = '2', etc.)
+    if (counsellingTypeFilters.isNotEmpty) {
+      final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+      selectedCounsellingTypeId.value = match.isNotEmpty ? match.first.id : '1';
+    } else {
+      selectedCounsellingTypeId.value = v == 'MCC' ? '2' : '1';
+    }
+    _loadQuotas();
     final match = counsellingTypeFilters.where((e) => e.name == v).toList();
     selectedCounsellingTypeId.value = match.isEmpty ? '1' : match.first.id;
     loadCutOffAllotments(showLoader: false, page: 1);
@@ -392,16 +452,20 @@ class CutoffAllotmentsController extends GetxController {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
     }
+    _loadQuotas();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
+    _loadQuotas();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setQuota(String v) {
     selectedQuota.value = v;
+    // Reload quotas when filters change
+    _loadQuotas();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
@@ -412,6 +476,7 @@ class CutoffAllotmentsController extends GetxController {
 
   void setCourse(String v) {
     selectedCourse.value = v;
+    _loadQuotas();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 

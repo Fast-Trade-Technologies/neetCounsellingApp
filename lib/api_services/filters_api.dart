@@ -79,16 +79,21 @@ class FiltersApi {
     );
   }
 
-  /// GET /common/quota?counselling_id=&state_id=&institute_type_id=
+  /// GET /common/quota?counselling_id=&state_id=&institute_type_id=&course_type_id=
+  /// All parameters are required by the API.
   static Future<(bool success, List<FilterItem> list, String? errorMessage)> getQuota({
     required String counsellingId,
-    String? stateId,
-    String? instituteTypeId,
+    required String stateId,
+    required String instituteTypeId,
+    required String courseTypeId,
     bool showLoader = false,
   }) async {
-    final q = <String, dynamic>{'counselling_id': counsellingId};
-    if (stateId != null && stateId.isNotEmpty) q['state_id'] = stateId;
-    if (instituteTypeId != null && instituteTypeId.isNotEmpty) q['institute_type_id'] = instituteTypeId;
+    final q = <String, dynamic>{
+      'counselling_id': counsellingId,
+      'state_id': stateId,
+      'institute_type_id': instituteTypeId,
+      'course_type_id': courseTypeId,
+    };
     return _getCommonList(quotaPath, queryParameters: q, showLoader: showLoader);
   }
 
