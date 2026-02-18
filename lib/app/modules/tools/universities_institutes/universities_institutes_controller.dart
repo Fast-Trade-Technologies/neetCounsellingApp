@@ -116,8 +116,20 @@ class UniversitiesInstitutesController extends GetxController {
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
     }
+    await _loadInstituteTypes();
     await _loadFiltersFromUniversitiesInstitutesApi();
     filtersLoading.value = false;
+  }
+
+  Future<void> _loadInstituteTypes() async {
+    final counsellingId = '1'; // Default counselling type
+    final (success, list, _) = await FiltersApi.getInstituteTypes(
+      counsellingId: counsellingId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      instituteTypeFilters.assignAll(list);
+    }
   }
 
   Future<void> _loadFiltersFromUniversitiesInstitutesApi() async {

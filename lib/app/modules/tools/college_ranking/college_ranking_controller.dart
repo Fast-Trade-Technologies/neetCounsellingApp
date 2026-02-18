@@ -69,6 +69,7 @@ class CollegeRankingController extends GetxController {
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
 
@@ -80,7 +81,10 @@ class CollegeRankingController extends GetxController {
       ? ['Select Counselling Type']
       : ['Select Counselling Type', ...counsellingTypeFilters.map((e) => e.name)];
 
-  static const List<String> instituteTypes = ['Select Institute Type', 'Government', 'Private', 'Deemed'];
+  List<String> get instituteTypesForDropdown => instituteTypeFilters.isEmpty
+      ? ['Select Institute Type']
+      : ['Select Institute Type', ...instituteTypeFilters.map((e) => e.name)];
+
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'MD/MS', 'BAMS', 'BHMS'];
   static const List<int> entriesOptions = [10, 25, 50, 100];
 
@@ -117,7 +121,21 @@ class CollegeRankingController extends GetxController {
       stateFilters.assignAll(stateList);
     }
     await _loadFiltersFromCollegeRankingApi();
+    await _loadInstituteTypes();
     filtersLoading.value = false;
+  }
+
+  Future<void> _loadInstituteTypes() async {
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
+    final (success, list, _) = await FiltersApi.getInstituteTypes(
+      counsellingId: counsellingId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      instituteTypeFilters.assignAll(list);
+    }
   }
 
   Future<void> _loadFiltersFromCollegeRankingApi() async {
@@ -300,10 +318,15 @@ class CollegeRankingController extends GetxController {
       final match = counsellingTypeFilters.where((e) => e.name == v).toList();
       selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
     }
+    // Reload institute types when counselling type changes
+    _loadInstituteTypes();
     loadCollegeRanking(showLoader: false, page: 1);
   }
 
-  void setInstituteType(String v) => selectedInstituteType.value = v;
+  void setInstituteType(String v) {
+    selectedInstituteType.value = v;
+    loadCollegeRanking(showLoader: false, page: 1);
+  }
 
   void setCourse(String v) {
     selectedCourse.value = v;

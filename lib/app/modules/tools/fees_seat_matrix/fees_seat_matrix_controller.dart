@@ -71,6 +71,7 @@ class FeesSeatMatrixController extends GetxController {
   final RxString error = ''.obs;
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<String> yearFilters = <String>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
@@ -79,7 +80,9 @@ class FeesSeatMatrixController extends GetxController {
       ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
       : ['Select State', ...stateFilters.map((e) => e.name)];
 
-  static const List<String> instituteTypes = ['Select Institute Type', 'Government', 'Private', 'Deemed'];
+  List<String> get instituteTypesForDropdown => instituteTypeFilters.isEmpty
+      ? ['Select Institute Type', 'Government', 'Private', 'Deemed']
+      : ['Select Institute Type', ...instituteTypeFilters.map((e) => e.name)];
   static const List<String> quotas = ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS'];
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
@@ -119,8 +122,20 @@ class FeesSeatMatrixController extends GetxController {
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
     }
+    await _loadInstituteTypes();
     await _loadFiltersFromFeesSeatApi();
     filtersLoading.value = false;
+  }
+
+  Future<void> _loadInstituteTypes() async {
+    final counsellingId = '1'; // Default counselling type
+    final (success, list, _) = await FiltersApi.getInstituteTypes(
+      counsellingId: counsellingId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      instituteTypeFilters.assignAll(list);
+    }
   }
 
   Future<void> _loadFiltersFromFeesSeatApi() async {
