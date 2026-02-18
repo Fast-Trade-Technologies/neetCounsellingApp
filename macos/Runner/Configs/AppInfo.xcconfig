@@ -8,7 +8,7 @@
 PRODUCT_NAME = neetcounsellingapp
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.neetcounsellingapp
+PRODUCT_BUNDLE_IDENTIFIER = com.bsky.neetcounsellingapp
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.

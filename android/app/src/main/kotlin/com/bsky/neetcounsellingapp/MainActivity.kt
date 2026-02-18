@@ -1,4 +1,4 @@
-package com.example.neetcounsellingapp
+package com.bsky.neetcounsellingapp
 
 import io.flutter.embedding.android.FlutterActivity
 
