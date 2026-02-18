@@ -446,7 +446,7 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
             child: Text(
               type,
               style: AppTextStyles.detailScreenSubtitle,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -457,6 +457,7 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
       ),
     );
   }
+
 }
 
 /// Pie chart painter driven by [SeatDistributionRow] data (totalSeats per seat type).

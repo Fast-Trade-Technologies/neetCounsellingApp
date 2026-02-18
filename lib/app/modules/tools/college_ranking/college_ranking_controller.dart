@@ -49,6 +49,8 @@ class CollegeRankingRow {
 class CollegeRankingController extends GetxController {
   final RxString selectedState = 'Select State'.obs;
   final RxString selectedStateId = ''.obs;
+  final RxString selectedCounsellingType = 'Select Counselling Type'.obs;
+  final RxString selectedCounsellingTypeId = ''.obs;
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedCourse = 'Select Course'.obs;
   final RxString selectedClinicalType = 'Select Clinical Type'.obs;
@@ -66,12 +68,17 @@ class CollegeRankingController extends GetxController {
   final RxString error = ''.obs;
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
 
   List<String> get states => stateFilters.isEmpty
       ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
       : ['Select State', ...stateFilters.map((e) => e.name)];
+
+  List<String> get counsellingTypesForDropdown => counsellingTypeFilters.isEmpty
+      ? ['Select Counselling Type']
+      : ['Select Counselling Type', ...counsellingTypeFilters.map((e) => e.name)];
 
   static const List<String> instituteTypes = ['Select Institute Type', 'Government', 'Private', 'Deemed'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'MD/MS', 'BAMS', 'BHMS'];
@@ -115,8 +122,9 @@ class CollegeRankingController extends GetxController {
 
   Future<void> _loadFiltersFromCollegeRankingApi() async {
     final stateId = stateFilters.isNotEmpty ? stateFilters.first.id : '2';
+    final counsellingTypeId = counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1';
     final (success, data, _) = await CollegeRankingApi.getCollegeRanking(
-      stateIdCounselling: '1',
+      stateIdCounselling: counsellingTypeId,
       stateId: stateId,
       page: 1,
       perPage: 10,
@@ -129,6 +137,16 @@ class CollegeRankingController extends GetxController {
     final filters = data['filters'];
     if (filters is! Map) return;
     final map = Map<String, dynamic>.from(filters);
+
+    final counsellingList = map['counselling_types'];
+    if (counsellingList is List) {
+      counsellingTypeFilters.assignAll(_parseFilterItemList(counsellingList));
+      // Auto-select first counselling type if none selected
+      if (selectedCounsellingTypeId.value.isEmpty && counsellingTypeFilters.isNotEmpty) {
+        selectedCounsellingType.value = counsellingTypeFilters.first.name;
+        selectedCounsellingTypeId.value = counsellingTypeFilters.first.id;
+      }
+    }
 
     final coursesList = map['courses'];
     if (coursesList is List) {
@@ -161,7 +179,7 @@ class CollegeRankingController extends GetxController {
     return loadCollegeRanking(showLoader: false, page: 1);
   }
 
-  bool get canLoad => selectedStateId.value.isNotEmpty;
+  bool get canLoad => selectedStateId.value.isNotEmpty && selectedCounsellingTypeId.value.isNotEmpty;
 
   Future<void> loadCollegeRanking({bool showLoader = true, int? page}) async {
     if (!canLoad) {
@@ -193,9 +211,12 @@ class CollegeRankingController extends GetxController {
       clinicalTypeId = match.isNotEmpty ? match.first.id : null;
     }
 
+    final counsellingTypeId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
     final perPage = entriesPerPage.value.clamp(1, CollegeRankingApi.maxPerPage);
     final (success, data, errorMessage) = await CollegeRankingApi.getCollegeRanking(
-      stateIdCounselling: '1',
+      stateIdCounselling: counsellingTypeId,
       stateId: selectedStateId.value,
       courseId: courseId,
       clinicalTypeId: clinicalTypeId,
@@ -267,6 +288,17 @@ class CollegeRankingController extends GetxController {
     } else {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCollegeRanking(showLoader: false, page: 1);
+  }
+
+  void setCounsellingType(String v) {
+    selectedCounsellingType.value = v;
+    if (v == 'Select Counselling Type') {
+      selectedCounsellingTypeId.value = '';
+    } else {
+      final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+      selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
     }
     loadCollegeRanking(showLoader: false, page: 1);
   }

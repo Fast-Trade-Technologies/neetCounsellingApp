@@ -23,17 +23,60 @@ class SeatDistributionRow {
   final int totalColleges;
   final String year;
 
-  factory SeatDistributionRow.fromJson(Map<String, dynamic> json) {
+  factory SeatDistributionRow.fromJson(Map<String, dynamic> json, {int index = 0}) {
     int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
     return SeatDistributionRow(
-      sNo: toInt(json['s_no']),
-      seatTypeName: json['seat_type_name']?.toString() ?? '',
+      sNo: toInt(json['s_no'] ?? json['sNo'] ?? (index + 1)),
+      seatTypeName: json['seat_type_name']?.toString().trim() ?? '',
       totalSeats: toInt(json['total_seats']),
       totalCategories: toInt(json['total_categories']),
       totalColleges: toInt(json['total_colleges']),
       year: json['year']?.toString() ?? '',
     );
   }
+}
+
+/// One node in tree_data: name, value, optional children.
+class SeatTreeNode {
+  SeatTreeNode({
+    required this.name,
+    required this.value,
+    this.children = const [],
+  });
+
+  final String name;
+  final int value;
+  final List<SeatTreeChild> children;
+
+  static SeatTreeNode? fromJson(dynamic json) {
+    if (json is! Map) return null;
+    final map = Map<String, dynamic>.from(json);
+    int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    final childrenRaw = map['children'];
+    final childList = <SeatTreeChild>[];
+    if (childrenRaw is List) {
+      for (final c in childrenRaw) {
+        if (c is Map) {
+          final cm = Map<String, dynamic>.from(c);
+          childList.add(SeatTreeChild(
+            name: (cm['name']?.toString() ?? '').trim(),
+            value: toInt(cm['value']),
+          ));
+        }
+      }
+    }
+    return SeatTreeNode(
+      name: (map['name']?.toString() ?? '').trim(),
+      value: toInt(map['value']),
+      children: childList,
+    );
+  }
+}
+
+class SeatTreeChild {
+  SeatTreeChild({required this.name, required this.value});
+  final String name;
+  final int value;
 }
 
 class SeatDistributionController extends GetxController {
@@ -43,8 +86,13 @@ class SeatDistributionController extends GetxController {
 
   final RxString year = ''.obs;
   final RxList<SeatDistributionRow> tableRows = <SeatDistributionRow>[].obs;
+  /// From API tree_data: hierarchical breakdown (e.g. Government State Quota → EWS, ST, SC...).
+  final RxList<SeatTreeNode> treeData = <SeatTreeNode>[].obs;
+  /// From API seat_labels / seat_series for chart (fallback if table_data empty).
+  final RxList<String> seatLabels = <String>[].obs;
+  final RxList<int> seatSeries = <int>[].obs;
 
-  /// State filter: GET /seat-distribution params state_id_counselling, state_id, year, course_id (optional).
+  /// State filter: GET /seat-distribution params state_id, year, course_id (optional).
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxString selectedStateId = ''.obs;
   final RxString selectedStateName = 'All States'.obs;
@@ -109,7 +157,6 @@ class SeatDistributionController extends GetxController {
     isLoading.value = true;
     final stateId = selectedStateId.value.isNotEmpty ? selectedStateId.value : '0';
     final extraQuery = <String, dynamic>{
-      'state_id_counselling': stateId,
       'state_id': stateId,
       'year': selectedYear.value,
     };
@@ -131,13 +178,30 @@ class SeatDistributionController extends GetxController {
     final rawTable = data['table_data'];
     final rows = <SeatDistributionRow>[];
     if (rawTable is List) {
-      for (final e in rawTable) {
+      for (int i = 0; i < rawTable.length; i++) {
+        final e = rawTable[i];
         if (e is Map) {
-          rows.add(SeatDistributionRow.fromJson(Map<String, dynamic>.from(e)));
+          rows.add(SeatDistributionRow.fromJson(Map<String, dynamic>.from(e), index: i));
         }
       }
     }
     tableRows.assignAll(rows);
+
+    final rawTree = data['tree_data'];
+    final treeList = <SeatTreeNode>[];
+    if (rawTree is List) {
+      for (final e in rawTree) {
+        final node = SeatTreeNode.fromJson(e);
+        if (node != null) treeList.add(node);
+      }
+    }
+    treeData.assignAll(treeList);
+
+    final labelsRaw = data['seat_labels'];
+    final seriesRaw = data['seat_series'];
+    seatLabels.assignAll(labelsRaw is List ? (labelsRaw).map((e) => e?.toString() ?? '').toList() : []);
+    seatSeries.assignAll(seriesRaw is List ? (seriesRaw).map((e) => e is int ? e : int.tryParse(e?.toString() ?? '') ?? 0).toList() : []);
+
     showResults.value = true;
   }
 }

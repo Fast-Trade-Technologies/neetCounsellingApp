@@ -12,7 +12,7 @@ class SeatDistributionApi {
   static final BaseAPI _api = BaseAPI();
 
   /// GET {{base_url}}/seat-distribution. All params in query (no userId in header).
-  /// Query: nLoginUserIdNo, state_id_counselling, state_id, year.
+  /// Query: nLoginUserIdNo, state_id, year.
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getSeatDistribution({
     bool showLoader = true,
     Map<String, dynamic>? extraQuery,
@@ -24,7 +24,6 @@ class SeatDistributionApi {
     try {
       final query = <String, dynamic>{
         'nLoginUserIdNo': userId,
-        'state_id_counselling': extraQuery?['state_id_counselling'] ?? '1',
         'state_id': extraQuery?['state_id'] ?? '1',
         'year': extraQuery?['year'] ?? '2025',
       };
