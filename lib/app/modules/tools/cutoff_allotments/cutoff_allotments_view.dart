@@ -60,6 +60,18 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
     );
   }
 
+  Widget _buildClinicalTypeDropdown(BuildContext context) {
+    if (controller.clinicalTypeFilters.isEmpty) return const Expanded(child: SizedBox());
+    return Expanded(
+      child: _FilterDropdown(
+        label: 'Clinical Type',
+        value: controller.selectedClinicalType.value,
+        items: controller.clinicalTypesForDropdown,
+        onChanged: controller.setClinicalType,
+      ),
+    );
+  }
+
   Widget _buildFilterCard(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -84,13 +96,13 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
             SizedBox(height: 14.h),
             Column(
               children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypes, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: controller.yearsForDropdown, onChanged: controller.setYear))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: CutoffAllotmentsController.years, onChanged: controller.setYear)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: CutoffAllotmentsController.courses, onChanged: controller.setCourse)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory)), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
+                Row(children: [_buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
               ],
             ),
           ],

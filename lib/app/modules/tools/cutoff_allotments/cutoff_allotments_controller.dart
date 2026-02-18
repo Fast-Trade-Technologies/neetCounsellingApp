@@ -78,6 +78,8 @@ class CutoffAllotmentsController extends GetxController {
   final RxString selectedCategory = 'Select Category'.obs;
   final RxString selectedCourse = 'Select Course'.obs;
   final RxString selectedYear = '2024'.obs;
+  final RxString selectedClinicalType = 'Select Clinical Type'.obs;
+  final RxString selectedClinicalTypeId = ''.obs;
   final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
   final RxInt currentPage = 1.obs;
@@ -137,9 +139,25 @@ class CutoffAllotmentsController extends GetxController {
   final RxList<CutoffRow> filteredRows = <CutoffRow>[].obs;
 
   final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
+  final RxList<String> yearFilters = <String>[].obs;
+  final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
+
   List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
       ? ['State', 'MCC']
       : counsellingTypeFilters.map((e) => e.name).toList();
+
+  List<String> get coursesForDropdown => courseFilters.isEmpty
+      ? ['Select Course', ...CutoffAllotmentsController.courses.where((c) => c != 'Select Course')]
+      : ['Select Course', ...courseFilters.map((e) => e.name)];
+
+  List<String> get yearsForDropdown => yearFilters.isEmpty
+      ? CutoffAllotmentsController.years
+      : yearFilters;
+
+  List<String> get clinicalTypesForDropdown => clinicalTypeFilters.isEmpty
+      ? ['Select Clinical Type']
+      : ['Select Clinical Type', ...clinicalTypeFilters.map((e) => e.name)];
 
   @override
   void onInit() {
@@ -150,25 +168,79 @@ class CutoffAllotmentsController extends GetxController {
 
   Future<void> _loadFilters() async {
     filtersLoading.value = true;
-    final statesFuture = FiltersApi.getStates(showLoader: false);
-    final counsellingFuture = FiltersApi.getCounsellingTypes(showLoader: false);
-    final (statesOk, stateList, _) = await statesFuture;
-    final (ctOk, counsellingList, _) = await counsellingFuture;
-    
+    final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
     }
-    if (ctOk && counsellingList.isNotEmpty) {
-      counsellingTypeFilters.assignAll(counsellingList);
-      if (selectedCounsellingTypeId.value.isEmpty || !counsellingList.any((e) => e.id == selectedCounsellingTypeId.value)) {
-        selectedCounsellingType.value = counsellingList.first.name;
-        selectedCounsellingTypeId.value = counsellingList.first.id;
-      } else {
-        final match = counsellingList.where((e) => e.id == selectedCounsellingTypeId.value).toList();
-        if (match.isNotEmpty) selectedCounsellingType.value = match.first.name;
+    await _loadFiltersFromCutOffApi();
+    filtersLoading.value = false;
+  }
+
+  /// Load filter options (counselling_types, courses, years, clinical_types) from cut-off allotments API.
+  /// Uses default state/year so we can get filters when user lands on page; data is loaded after user applies filters.
+  Future<void> _loadFiltersFromCutOffApi() async {
+    final stateId = stateFilters.isNotEmpty ? stateFilters.first.id : '2';
+    final (success, data, _) = await CutOffAllotmentsApi.getCutOffAllotments(
+      stateIdCounselling: '1',
+      stateId: stateId,
+      year: '2024',
+      page: 1,
+      perPage: 10,
+      showLoader: false,
+    );
+    if (success && data != null) _parseFiltersFromResponse(data);
+  }
+
+  void _parseFiltersFromResponse(Map<String, dynamic> data) {
+    final filters = data['filters'];
+    if (filters is! Map) return;
+    final map = Map<String, dynamic>.from(filters);
+
+    final ctList = map['counselling_types'];
+    if (ctList is List && ctList.isNotEmpty) {
+      final list = _parseFilterItemList(ctList);
+      if (list.isNotEmpty) {
+        counsellingTypeFilters.assignAll(list);
+        if (selectedCounsellingTypeId.value.isEmpty || !list.any((e) => e.id == selectedCounsellingTypeId.value)) {
+          selectedCounsellingType.value = list.first.name;
+          selectedCounsellingTypeId.value = list.first.id;
+        }
       }
     }
-    filtersLoading.value = false;
+
+    final coursesList = map['courses'];
+    if (coursesList is List && coursesList.isNotEmpty) {
+      courseFilters.assignAll(_parseFilterItemList(coursesList));
+    }
+
+    final yearsList = map['years'];
+    if (yearsList is List && yearsList.isNotEmpty) {
+      yearFilters.assignAll(
+        yearsList.map((e) => e is int ? e.toString() : (e?.toString() ?? '')).where((s) => s.isNotEmpty).toList(),
+      );
+      if (yearFilters.isNotEmpty && !yearFilters.contains(selectedYear.value)) {
+        selectedYear.value = yearFilters.first;
+      }
+    }
+
+    final clinicalList = map['clinical_types'];
+    if (clinicalList is List && clinicalList.isNotEmpty) {
+      clinicalTypeFilters.assignAll(_parseFilterItemList(clinicalList));
+    }
+  }
+
+  static List<FilterItem> _parseFilterItemList(dynamic raw) {
+    final list = <FilterItem>[];
+    if (raw is! List) return list;
+    for (final e in raw) {
+      if (e is Map) {
+        final m = Map<String, dynamic>.from(e);
+        final id = (m['id']?.toString() ?? '').trim();
+        final name = (m['name']?.toString() ?? '').trim();
+        if (name.isNotEmpty) list.add(FilterItem(id: id, name: name));
+      }
+    }
+    return list;
   }
 
   @override
@@ -197,9 +269,20 @@ class CutoffAllotmentsController extends GetxController {
     final instituteTypeId = selectedInstituteType.value.isNotEmpty && instituteTypeIds.containsKey(selectedInstituteType.value)
         ? instituteTypeIds[selectedInstituteType.value]
         : null;
-    final courseId = selectedCourse.value.isNotEmpty && courseIds.containsKey(selectedCourse.value)
-        ? courseIds[selectedCourse.value]
-        : null;
+    String? courseId;
+    if (selectedCourse.value.isNotEmpty && selectedCourse.value != 'Select Course') {
+      if (courseFilters.isNotEmpty) {
+        final match = courseFilters.where((e) => e.name == selectedCourse.value).toList();
+        courseId = match.isNotEmpty ? match.first.id : courseIds[selectedCourse.value];
+      } else {
+        courseId = courseIds[selectedCourse.value];
+      }
+    }
+    String? clinicalTypeId;
+    if (clinicalTypeFilters.isNotEmpty && selectedClinicalType.value.isNotEmpty && selectedClinicalType.value != 'Select Clinical Type') {
+      final match = clinicalTypeFilters.where((e) => e.name == selectedClinicalType.value).toList();
+      clinicalTypeId = match.isNotEmpty ? match.first.id : null;
+    }
     final quotaId = selectedQuota.value.isNotEmpty && quotaIds.containsKey(selectedQuota.value)
         ? quotaIds[selectedQuota.value]
         : null;
@@ -216,6 +299,7 @@ class CutoffAllotmentsController extends GetxController {
       courseId: courseId,
       quotaId: quotaId,
       smCategoryId: smCategoryId,
+      clinicalTypeId: clinicalTypeId,
       page: pageToLoad,
       perPage: perPage,
       showLoader: showLoader,
@@ -275,6 +359,7 @@ class CutoffAllotmentsController extends GetxController {
     }
     _allRows = list;
     _applyFilters();
+    _parseFiltersFromResponse(data);
   }
 
   void setCounsellingType(String v) {
@@ -312,6 +397,17 @@ class CutoffAllotmentsController extends GetxController {
 
   void setCourse(String v) {
     selectedCourse.value = v;
+    loadCutOffAllotments(showLoader: false, page: 1);
+  }
+
+  void setClinicalType(String v) {
+    selectedClinicalType.value = v;
+    if (v == 'Select Clinical Type') {
+      selectedClinicalTypeId.value = '';
+    } else {
+      final match = clinicalTypeFilters.where((e) => e.name == v).toList();
+      selectedClinicalTypeId.value = match.isEmpty ? '' : match.first.id;
+    }
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
