@@ -44,7 +44,6 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
       ),
     );
   }
-
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
       color: Colors.white,
@@ -200,7 +199,7 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
                     children: [
                       Expanded(
                         child: Text(
-                          '$title ($count)',
+                          '$title (${documents.length})',
                           style: AppTextStyles.bodyS.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textDark,
@@ -303,25 +302,37 @@ class _DocumentCard extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => Get.find<ChecklistSampleController>().openSample(doc),
+              onTap: (doc.sampleAvailable && !doc.isLocked)
+                  ? () => Get.find<ChecklistSampleController>().openSample(doc)
+                  : null,
               borderRadius: BorderRadius.circular(8.r),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                  color: (doc.sampleAvailable && !doc.isLocked)
+                      ? AppColors.primaryBlue.withValues(alpha: 0.12)
+                      : AppColors.chipBg,
                   borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: (doc.sampleAvailable && !doc.isLocked)
+                        ? AppColors.primaryBlue.withValues(alpha: 0.4)
+                        : AppColors.chipBorder,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.visibility_rounded, size: 16.sp, color: AppColors.primaryBlue),
+                    Icon(
+                      Icons.visibility_rounded,
+                      size: 16.sp,
+                      color: (doc.sampleAvailable && !doc.isLocked) ? AppColors.primaryBlue : AppColors.textMuted,
+                    ),
                     SizedBox(width: 6.w),
                     Text(
                       'View',
                       style: AppTextStyles.bodyS.copyWith(
                         fontSize: 11.sp,
-                        color: AppColors.primaryBlue,
+                        color: (doc.sampleAvailable && !doc.isLocked) ? AppColors.primaryBlue : AppColors.textMuted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -14,6 +14,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onBack,
     this.onFilter,
     this.hideFilter = false,
+    this.trailing,
   });
 
   final String title;
@@ -22,6 +23,8 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final VoidCallback? onFilter;
   final bool hideFilter;
+  /// Optional widget shown at the end of the app bar (e.g. count badge).
+  final Widget? trailing;
 
   @override
   Size get preferredSize => Size.fromHeight(72.h);
@@ -89,6 +92,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
             ),
+            if (trailing != null) trailing!,
             if (!hideFilter)
               Material(
                 color: AppColors.chipBg,

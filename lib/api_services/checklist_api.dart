@@ -6,13 +6,17 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 import 'base_api.dart';
 
+/// GET /checklist-sample from NEET Counseling API Postman collection.
+/// Query: nLoginUserIdNo, state_id (optional, default: Uttar Pradesh).
 class ChecklistApi {
   static const String checklistSamplePath = '/checklist-sample';
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/checklist-sample with nLoginUserIdNo as query param.
+  /// GET {{base_url}}/checklist-sample
+  /// Query: nLoginUserIdNo, state_id (optional)
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getChecklistSample({
+    String? stateId,
     bool showLoader = true,
     Map<String, dynamic>? extraQuery,
   }) async {
@@ -21,7 +25,11 @@ class ChecklistApi {
       return (false, null, 'Please sign in to load checklist');
     }
     try {
-      final query = <String, dynamic>{'nLoginUserIdNo': userId, ...?extraQuery};
+      final query = <String, dynamic>{
+        'nLoginUserIdNo': userId,
+        if (stateId != null && stateId.isNotEmpty) 'state_id': stateId,
+        ...?extraQuery,
+      };
       final response = await _api.get(
         url: checklistSamplePath,
         queryParameters: query,
