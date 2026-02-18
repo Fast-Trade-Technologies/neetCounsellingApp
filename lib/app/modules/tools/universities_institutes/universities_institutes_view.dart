@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/url_launcher_util.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import 'universities_institutes_controller.dart';
@@ -66,93 +67,194 @@ class UniversitiesInstitutesView extends GetView<UniversitiesInstitutesControlle
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Obx(() => Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading)),
-          SizedBox(height: 4.h),
-          Text(
-            'Necessary particulars of medical institutes of your desired universities.',
-            style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-          ),
-          SizedBox(height: 14.h),
-          Obx(() => Column(
-            children: [
-              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: UniversitiesInstitutesController.instituteTypes, onChanged: controller.setInstituteType))]),
-              SizedBox(height: 10.h),
-              Row(children: [Expanded(child: _FilterDropdown(label: 'University', value: controller.selectedUniversity.value, items: UniversitiesInstitutesController.universities, onChanged: controller.setUniversity))]),
-            ],
-          )),
-        ],
-      ),
+      child: Obx(() {
+        if (controller.filtersLoading.value) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.h),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Obx(() => Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading)),
+            SizedBox(height: 4.h),
+            Text(
+              'Necessary particulars of medical institutes of your desired universities.',
+              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+            ),
+            SizedBox(height: 14.h),
+            Column(
+              children: [
+                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType))]),
+                SizedBox(height: 10.h),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'University', value: controller.selectedUniversity.value, items: controller.universitiesForDropdown, onChanged: controller.setUniversity)), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
+              ],
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _buildPaginationBar(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Obx(() {
+            final total = controller.totalCount.value;
+            final fromApi = controller.totalCountFromApi.value;
+            final start = controller.paginationStart;
+            final end = controller.paginationEnd;
+            final text = controller.filteredRows.isEmpty
+                ? 'Showing 0-0 of 0'
+                : (fromApi && total > 0 ? 'Showing $start-$end of $total' : 'Showing $start-$end');
+            return Text(
+              text,
+              style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp),
+            );
+          }),
+        ),
+        SizedBox(width: 8.w),
+        Obx(() {
+          final perPage = controller.entriesPerPage.value;
+          return SizedBox(
+            width: 72.w,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: UniversitiesInstitutesController.entriesOptions.contains(perPage) ? perPage : UniversitiesInstitutesController.entriesOptions.first,
+                isExpanded: true,
+                isDense: true,
+                icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18.sp, color: AppColors.textMuted),
+                style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 11.sp),
+                items: UniversitiesInstitutesController.entriesOptions
+                    .map((e) => DropdownMenuItem<int>(value: e, child: Text('$e')))
+                    .toList(),
+                onChanged: (v) => v != null ? controller.setEntriesPerPage(v) : null,
+              ),
+            ),
+          );
+        }),
+        Text(' per page', style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp)),
+        SizedBox(width: 12.w),
+        Obx(() {
+          final hasPrev = controller.hasPreviousPage;
+          return IconButton(
+            onPressed: hasPrev ? controller.previousPage : null,
+            icon: Icon(Icons.chevron_left_rounded, size: 24.sp, color: hasPrev ? AppColors.primaryBlue : AppColors.textMuted),
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
+          );
+        }),
+        Obx(() {
+          final hasNext = controller.hasNextPage;
+          return IconButton(
+            onPressed: hasNext ? controller.nextPage : null,
+            icon: Icon(Icons.chevron_right_rounded, size: 24.sp, color: hasNext ? AppColors.primaryBlue : AppColors.textMuted),
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
+          );
+        }),
+      ],
     );
   }
 
   Widget _buildResultsSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Showing Results', style: AppTextStyles.welcomeHeading),
-          SizedBox(height: 12.h),
-          TextField(
-            onChanged: controller.setSearchQuery,
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              hintStyle: AppTextStyles.fieldHint,
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              isDense: true,
-            ),
-            style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
-          ),
-          SizedBox(height: 12.h),
-          Obx(() {
-            final list = controller.filteredRows;
-            if (list.isEmpty) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
+    return Obx(() {
+      if (controller.isLoading.value && controller.filteredRows.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(24.w),
+          decoration: _cardDecoration(),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+      if (controller.error.value.isNotEmpty && controller.filteredRows.isEmpty && controller.canLoad) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.w),
+          decoration: _cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Showing Results', style: AppTextStyles.welcomeHeading),
+              SizedBox(height: 16.h),
+              Center(
                 child: Text(
-                  'No results found.',
+                  controller.error.value,
                   style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                  textAlign: TextAlign.center,
                 ),
-              );
-            }
-            return Column(
-              children: [
-                for (int i = 0; i < list.length; i++) ...[
-                  _InstituteCard(row: list[i]),
-                  if (i < list.length - 1) SizedBox(height: 12.h),
+              ),
+            ],
+          ),
+        );
+      }
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Showing Results', style: AppTextStyles.welcomeHeading),
+            SizedBox(height: 12.h),
+            TextField(
+              onChanged: controller.setSearchQuery,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                hintStyle: AppTextStyles.fieldHint,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: AppColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: AppColors.border)),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                isDense: true,
+              ),
+              style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
+            ),
+            SizedBox(height: 12.h),
+            _buildPaginationBar(context),
+            SizedBox(height: 12.h),
+            Obx(() {
+              final list = controller.filteredRows;
+              if (list.isEmpty) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: Text(
+                    controller.canLoad ? 'No results found.' : 'Select State to load data.',
+                    style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+              final perPage = controller.entriesPerPage.value;
+              final startIndex = (controller.currentPage.value - 1) * perPage;
+              return Column(
+                children: [
+                  for (int i = 0; i < list.length; i++) ...[
+                    _InstituteCard(row: list[i], serialNumber: startIndex + i + 1),
+                    if (i < list.length - 1) SizedBox(height: 12.h),
+                  ],
                 ],
-              ],
-            );
-          }),
-        ],
-      ),
-    );
+              );
+            }),
+          ],
+        ),
+      );
+    });
   }
 }
 
 class _InstituteCard extends StatelessWidget {
-  const _InstituteCard({required this.row});
+  const _InstituteCard({required this.row, required this.serialNumber});
 
   final UniversitiesInstitutesRow row;
+  final int serialNumber;
 
   void _onResourceTap(String? url, String label) {
-    if (url != null && url.isNotEmpty) {
-      AppSnackbar.info(label, 'Link will open in browser when configured.');
+    if (url != null && url.trim().isNotEmpty) {
+      openLinkInBrowser(url);
     } else {
       AppSnackbar.warning(label, 'No link available for this resource.');
     }
@@ -190,7 +292,7 @@ class _InstituteCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  '${row.sNo}',
+                  '$serialNumber',
                   style: AppTextStyles.bodyS.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.w700,

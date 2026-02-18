@@ -7,14 +7,16 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 import 'base_api.dart';
 
 /// GET /universities-institutes from NEET Counseling API Postman collection.
-/// Required params: nLoginUserIdNo, state_id_counselling, state_id
-/// Optional: institute_type_id, university_id, page, per_page
+/// Required: nLoginUserIdNo, state_id_counselling, state_id.
+/// Optional: institute_type_id, university_id, page (default 1), per_page (default 20, max 100).
 class UniversitiesInstitutesApi {
   static const String path = '/universities-institutes';
+  static const int maxPerPage = 100;
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/universities-institutes with query params.
+  /// GET {{base_url}}/universities-institutes
+  /// Query: nLoginUserIdNo, state_id_counselling, state_id, [institute_type_id], [university_id], [page], [per_page]
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getUniversitiesInstitutes({
     required String stateIdCounselling,
     required String stateId,
@@ -36,8 +38,8 @@ class UniversitiesInstitutesApi {
       };
       if (instituteTypeId != null && instituteTypeId.isNotEmpty) query['institute_type_id'] = instituteTypeId;
       if (universityId != null && universityId.isNotEmpty) query['university_id'] = universityId;
-      if (page != null) query['page'] = page.toString();
-      if (perPage != null) query['per_page'] = perPage.toString();
+      if (page != null && page > 0) query['page'] = page.toString();
+      if (perPage != null && perPage > 0) query['per_page'] = (perPage > maxPerPage ? maxPerPage : perPage).toString();
 
       final response = await _api.get(
         url: path,
