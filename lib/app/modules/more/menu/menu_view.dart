@@ -7,7 +7,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_asset_image.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import '../../../core/widgets/profile_image.dart';
-import '../../../core/storage/app_storage.dart';
 import '../../../routes/app_routes.dart';
 import 'menu_controller.dart';
 

@@ -27,7 +27,7 @@ class ProfileImage extends StatelessWidget {
     final url = imageUrl ?? AppStorage.userImageUrl;
     final hasImage = url != null && url.trim().isNotEmpty;
 
-    if (hasImage && url != null) {
+    if (hasImage) {
       return ClipOval(
         child: Image.network(
           url,

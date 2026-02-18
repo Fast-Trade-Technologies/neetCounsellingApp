@@ -6,10 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_asset_image.dart';
 import '../../../core/widgets/app_primary_button.dart';
-import '../../../core/widgets/app_social_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/auth_brand_header.dart';
-import '../../../core/widgets/auth_or_divider.dart';
 import 'login_controller.dart';
 
 class LoginView extends GetView<LoginController> {

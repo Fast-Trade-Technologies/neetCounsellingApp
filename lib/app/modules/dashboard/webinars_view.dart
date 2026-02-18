@@ -152,7 +152,7 @@ class _WebinarCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasImage && imageUrl != null) ...[
+            if (hasImage) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(

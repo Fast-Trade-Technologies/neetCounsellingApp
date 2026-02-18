@@ -92,7 +92,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            trailing ?? const SizedBox.shrink(),
             if (!hideFilter)
               Material(
                 color: AppColors.chipBg,

@@ -1,4 +1,4 @@
-/// Model classes for About page API response.
+// Model classes for About page API response.
 
 class AboutValue {
   final String title;
