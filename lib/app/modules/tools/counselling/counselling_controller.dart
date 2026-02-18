@@ -27,17 +27,12 @@ class CounsellingRow {
 
 class CounsellingController extends GetxController {
   final RxString selectedCounsellingType = 'Select Counselling Type'.obs;
+  final RxString selectedCounsellingTypeId = ''.obs;
   final RxString selectedStateType = 'Select State Type'.obs;
   final RxString selectedState = 'All State'.obs;
+  final RxString selectedStateId = ''.obs;
   final RxString searchQuery = ''.obs;
 
-  static const List<String> counsellingTypes = [
-    'Select Counselling Type',
-    'State',
-    'MCC',
-    'Deemed',
-    'Central',
-  ];
   static const List<String> stateTypes = [
     'Select State Type',
     'Open State',
@@ -45,7 +40,11 @@ class CounsellingController extends GetxController {
   ];
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
   List<String> get states => ['All State', ...stateFilters.map((e) => e.name)];
+  List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
+      ? ['Select Counselling Type', 'State', 'MCC']
+      : ['Select Counselling Type', ...counsellingTypeFilters.map((e) => e.name)];
 
   late List<CounsellingRow> _allRows;
   final RxList<CounsellingRow> filteredRows = <CounsellingRow>[].obs;
@@ -61,15 +60,35 @@ class CounsellingController extends GetxController {
 
   Future<void> loadFilters() async {
     filtersLoading.value = true;
-    final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    final statesFuture = FiltersApi.getStates(showLoader: false);
+    final counsellingFuture = FiltersApi.getCounsellingTypes(showLoader: false);
+    final (success, stateList, _) = await statesFuture;
+    final (ctOk, counsellingList, _) = await counsellingFuture;
     filtersLoading.value = false;
     if (success && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
     }
+    if (ctOk && counsellingList.isNotEmpty) {
+      counsellingTypeFilters.assignAll(counsellingList);
+      if (selectedCounsellingTypeId.value.isEmpty) {
+        selectedCounsellingType.value = counsellingList.first.name;
+        selectedCounsellingTypeId.value = counsellingList.first.id;
+      }
+    }
   }
 
   Future<void> loadCounsellingData() async {
-    final (success, data, errorMessage) = await CounsellingApi.getCounselling(showLoader: false);
+    final stateId = selectedStateId.value.isNotEmpty 
+        ? selectedStateId.value 
+        : (stateFilters.isNotEmpty ? stateFilters.first.id : '0');
+    final counsellingTypeId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
+    final (success, data, errorMessage) = await CounsellingApi.getCounselling(
+      stateId: stateId,
+      counsellingTypeId: counsellingTypeId,
+      showLoader: false,
+    );
     if (!success || data == null) {
       _allRows = _buildSampleRows();
       _applyFilters();
@@ -148,9 +167,27 @@ class CounsellingController extends GetxController {
     ];
   }
 
-  void setCounsellingType(String v) => selectedCounsellingType.value = v;
+  void setCounsellingType(String v) {
+    selectedCounsellingType.value = v;
+    if (v == 'Select Counselling Type') {
+      selectedCounsellingTypeId.value = '';
+    } else {
+      final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+      selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCounsellingData();
+  }
   void setStateType(String v) => selectedStateType.value = v;
-  void setState(String v) => selectedState.value = v;
+  void setState(String v) {
+    selectedState.value = v;
+    if (v == 'All State') {
+      selectedStateId.value = '';
+    } else {
+      final match = stateFilters.where((e) => e.name == v).toList();
+      selectedStateId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCounsellingData();
+  }
   void setSearchQuery(String value) {
     searchQuery.value = value;
     _applyFilters();

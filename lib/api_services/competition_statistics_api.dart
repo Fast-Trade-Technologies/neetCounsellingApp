@@ -6,24 +6,23 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 import 'base_api.dart';
 
-class MeritListApi {
-  static const String meritListPath = '/merit-list';
+class CompetitionStatisticsApi {
+  static const String competitionPath = '/5-year-competition';
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/merit-list
-  /// Required params: user_stream, state_id, year, counselling_type_id
+  /// GET {{base_url}}/5-year-competition
+  /// Required params: user_stream, state_id, year
   /// Also includes nLoginUserIdNo
-  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getMeritList({
+  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getCompetitionStatistics({
     required String stateId,
     required String year,
-    required String counsellingTypeId,
     bool showLoader = true,
     Map<String, dynamic>? extraQuery,
   }) async {
     final userId = AppStorage.userId;
     if (userId == null || userId.isEmpty) {
-      return (false, null, 'Please sign in to load merit list');
+      return (false, null, 'Please sign in to load competition statistics');
     }
     final userStream = AppStorage.userStream ?? '1'; // Default to '1' if not set
     try {
@@ -32,18 +31,17 @@ class MeritListApi {
         'user_stream': userStream,
         'state_id': stateId,
         'year': year,
-        'counselling_type_id': counsellingTypeId,
         ...?extraQuery,
       };
       final response = await _api.get(
-        url: meritListPath,
+        url: competitionPath,
         queryParameters: query,
         showLoader: showLoader,
       );
       if (response == null) return (false, null, 'No response from server');
       if (response.statusCode != 200) {
         final msg = _messageFromResponse(response);
-        return (false, null, msg ?? 'Failed to load merit list');
+        return (false, null, msg ?? 'Failed to load competition statistics');
       }
 
       final body = _parseBody(response.data);
@@ -56,7 +54,7 @@ class MeritListApi {
       if (isSuccess && dataRaw is Map) {
         return (true, Map<String, dynamic>.from(dataRaw), null);
       }
-      return (false, null, message ?? 'Failed to load merit list');
+      return (false, null, message ?? 'Failed to load competition statistics');
     } on DioException catch (e) {
       final msg = e.response != null ? _messageFromResponse(e.response!) : e.message;
       return (false, null, msg ?? 'Something went wrong');
@@ -85,4 +83,3 @@ class MeritListApi {
     return null;
   }
 }
-

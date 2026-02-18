@@ -39,7 +39,11 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: AppRoutes.splash,
         getPages: AppPages.pages,
-        builder: (context, child) => ResponsiveWrapper(child: child ?? const SizedBox.shrink()),
+        builder: (context, child) => SafeArea(
+          top: false,
+          bottom: true,
+          child: ResponsiveWrapper(child: child ?? const SizedBox.shrink()),
+        ),
       ),
     );
   }

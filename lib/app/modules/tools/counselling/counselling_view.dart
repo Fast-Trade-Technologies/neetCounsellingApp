@@ -78,7 +78,7 @@ class CounsellingView extends GetView<CounsellingController> {
           SizedBox(height: 14.h),
           Obx(() => Column(
             children: [
-              Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: CounsellingController.counsellingTypes, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'State Type', value: controller.selectedStateType.value, items: CounsellingController.stateTypes, onChanged: controller.setStateType))]),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypes, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'State Type', value: controller.selectedStateType.value, items: CounsellingController.stateTypes, onChanged: controller.setStateType))]),
               SizedBox(height: 10.h),
               Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState))]),
             ],

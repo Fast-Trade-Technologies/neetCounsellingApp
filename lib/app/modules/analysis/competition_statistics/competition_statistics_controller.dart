@@ -1,16 +1,21 @@
 import 'package:get/get.dart';
 
 import '../../../../api_services/filters_api.dart';
+import '../../../../api_services/competition_statistics_api.dart';
 
 /// Past Years Competition screen. Uses GET /common/states for state filter dropdown.
-/// Competition breakdown data is static (no dedicated competition API in Postman collection).
+/// Loads data from GET /5-year-competition API.
 class CompetitionStatisticsController extends GetxController {
   final RxInt breakdownTabIndex = 0.obs;
   final RxString selectedYearNationality = '2025'.obs;
   final RxString selectedYearCategory = '2025'.obs;
   final RxString selectedYearGender = '2025'.obs;
   final RxString selectedState = 'All'.obs;
+  final RxString selectedStateId = ''.obs;
   final RxString selectedYearState = '2025'.obs;
+  
+  final RxBool isLoading = false.obs;
+  final RxString error = ''.obs;
 
   static const List<String> breakdownTabs = [
     'Candidates',
@@ -31,25 +36,67 @@ class CompetitionStatisticsController extends GetxController {
   void onInit() {
     super.onInit();
     _loadStateFilters();
+    loadCompetitionData();
   }
 
   Future<void> _loadStateFilters() async {
     final (success, stateList, _) = await FiltersApi.getStates(showLoader: false);
-    if (success && stateList.isNotEmpty) stateFilters.assignAll(stateList);
+    if (success && stateList.isNotEmpty) {
+      stateFilters.assignAll(stateList);
+      if (selectedStateId.value.isEmpty && stateList.isNotEmpty) {
+        selectedState.value = stateList.first.name;
+        selectedStateId.value = stateList.first.id;
+      }
+    }
+  }
+
+  Future<void> loadCompetitionData() async {
+    error.value = '';
+    isLoading.value = true;
+    final stateId = selectedStateId.value.isNotEmpty 
+        ? selectedStateId.value 
+        : (stateFilters.isNotEmpty ? stateFilters.first.id : '0');
+    final (success, data, errorMessage) = await CompetitionStatisticsApi.getCompetitionStatistics(
+      stateId: stateId,
+      year: selectedYearState.value,
+      showLoader: false,
+    );
+    isLoading.value = false;
+    
+    if (!success || data == null) {
+      error.value = errorMessage ?? 'Failed to load competition statistics';
+      // Keep using static data if API fails
+      return;
+    }
+    
+    // Parse API response data here if needed
+    // For now, keeping static data as fallback
   }
 
   @override
   Future<void> refresh() async {
-    // Reload state filters
     await _loadStateFilters();
+    await loadCompetitionData();
   }
 
   void setBreakdownTab(int index) => breakdownTabIndex.value = index;
   void setYearNationality(String v) => selectedYearNationality.value = v;
   void setYearCategory(String v) => selectedYearCategory.value = v;
   void setYearGender(String v) => selectedYearGender.value = v;
-  void setState(String v) => selectedState.value = v;
-  void setYearState(String v) => selectedYearState.value = v;
+  void setState(String v) {
+    selectedState.value = v;
+    if (v == 'All') {
+      selectedStateId.value = '';
+    } else {
+      final match = stateFilters.where((e) => e.name == v).toList();
+      selectedStateId.value = match.isEmpty ? '' : match.first.id;
+    }
+    loadCompetitionData();
+  }
+  void setYearState(String v) {
+    selectedYearState.value = v;
+    loadCompetitionData();
+  }
 
   // Sample: row label, then per year (2019..2025): value, trend up/down, change
   static const List<Map<String, dynamic>> breakdownRows = [

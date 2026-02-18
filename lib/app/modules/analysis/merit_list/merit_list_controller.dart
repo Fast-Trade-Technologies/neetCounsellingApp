@@ -82,8 +82,15 @@ class MeritListController extends GetxController {
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
       if (selectedStateId.value.isEmpty) {
-        selectedState.value = stateList.first.name;
-        selectedStateId.value = stateList.first.id;
+        // Default to "Uttar Pradesh" if available, otherwise use first state
+        final upState = stateList.where((e) => e.name.toLowerCase().contains('uttar pradesh') || e.name.toLowerCase().contains('up')).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
       } else {
         final match = stateList.where((e) => e.id == selectedStateId.value).toList();
         if (match.isNotEmpty) selectedState.value = match.first.name;
@@ -105,13 +112,17 @@ class MeritListController extends GetxController {
   Future<void> loadMeritList({bool showLoader = true}) async {
     error.value = '';
     isLoading.value = true;
-    final extraQuery = <String, dynamic>{
-      'state_id': selectedStateId.value.isEmpty ? '1' : selectedStateId.value,
-      'year': selectedYear.value,
-    };
+    final stateId = selectedStateId.value.isNotEmpty ? selectedStateId.value : (stateFilters.isNotEmpty ? stateFilters.first.id : '1');
+    String counsellingTypeId = '1';
+    if (counsellingTypeFilters.isNotEmpty) {
+      final match = counsellingTypeFilters.where((e) => e.name == selectedCounsellingType.value).toList();
+      counsellingTypeId = match.isNotEmpty ? match.first.id : counsellingTypeFilters.first.id;
+    }
     final (success, data, errorMessage) = await MeritListApi.getMeritList(
+      stateId: stateId,
+      year: selectedYear.value,
+      counsellingTypeId: counsellingTypeId,
       showLoader: showLoader,
-      extraQuery: extraQuery,
     );
     isLoading.value = false;
 
@@ -148,6 +159,7 @@ class MeritListController extends GetxController {
   void setCounsellingType(String value) {
     selectedCounsellingType.value = value;
     _applyFilters();
+    loadMeritList(showLoader: false);
   }
   void setYear(String value) {
     selectedYear.value = value;
