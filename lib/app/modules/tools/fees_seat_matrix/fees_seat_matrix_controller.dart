@@ -438,6 +438,11 @@ class FeesSeatMatrixController extends GetxController {
     if (hasPreviousPage) loadFeesSeatMatrix(showLoader: false, page: currentPage.value - 1);
   }
 
+  void goToPage(int page) {
+    if (page < 1 || page > totalPages) return;
+    loadFeesSeatMatrix(showLoader: false, page: page);
+  }
+
   int get paginationStart {
     if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationFromApi.value;
     final perPage = entriesPerPage.value.clamp(1, FeesSeatMatrixApi.maxPerPage);

@@ -336,6 +336,11 @@ class UniversitiesInstitutesController extends GetxController {
     if (hasPreviousPage) loadUniversitiesInstitutes(showLoader: false, page: currentPage.value - 1);
   }
 
+  void goToPage(int page) {
+    if (page < 1 || page > totalPages) return;
+    loadUniversitiesInstitutes(showLoader: false, page: page);
+  }
+
   int get paginationStart {
     if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationFromApi.value;
     final perPage = entriesPerPage.value.clamp(1, UniversitiesInstitutesApi.maxPerPage);

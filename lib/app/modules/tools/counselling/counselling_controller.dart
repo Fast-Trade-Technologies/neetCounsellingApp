@@ -5,46 +5,72 @@ import '../../../../api_services/filters_api.dart';
 
 class CounsellingRow {
   CounsellingRow({
-    required this.sNo,
-    required this.counselling,
+    required this.id,
+    required this.name,
     required this.state,
-    required this.typeOfState,
+    required this.stateType,
     required this.counsellingType,
     this.officialWebsiteUrl,
     this.registrationUrl,
     this.prospectsUrl,
+    this.round,
+    this.startDate,
+    this.endDate,
+    this.sNo,
   });
 
-  final int sNo;
-  final String counselling;
+  final int id;
+  final String name;
   final String state;
-  final String typeOfState;
+  final String stateType;
   final String counsellingType;
   final String? officialWebsiteUrl;
   final String? registrationUrl;
   final String? prospectsUrl;
+  final String? round;
+  final String? startDate;
+  final String? endDate;
+  final int? sNo; // For display purposes
+
+  factory CounsellingRow.fromJson(Map<String, dynamic> json, {int? serialNumber}) {
+    final resources = json['resources'] is Map ? Map<String, dynamic>.from(json['resources']) : <String, dynamic>{};
+    return CounsellingRow(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['name']?.toString().trim() ?? '',
+      state: json['state']?.toString().trim() ?? '',
+      stateType: json['state_type']?.toString().trim() ?? '',
+      counsellingType: json['counselling_type']?.toString().trim() ?? '',
+      officialWebsiteUrl: resources['official_website']?.toString().trim(),
+      registrationUrl: resources['registration']?.toString().trim(),
+      prospectsUrl: resources['prospects']?.toString().trim(),
+      round: json['round']?.toString().trim(),
+      startDate: json['start_date']?.toString().trim(),
+      endDate: json['end_date']?.toString().trim(),
+      sNo: serialNumber,
+    );
+  }
 }
 
 class CounsellingController extends GetxController {
   final RxString selectedCounsellingType = 'Select Counselling Type'.obs;
   final RxString selectedCounsellingTypeId = ''.obs;
   final RxString selectedStateType = 'Select State Type'.obs;
+  final RxString selectedStateTypeId = ''.obs;
   final RxString selectedState = 'All State'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString searchQuery = ''.obs;
 
-  static const List<String> stateTypes = [
-    'Select State Type',
-    'Open State',
-    'Closed State',
-  ];
-
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> stateTypeFilters = <FilterItem>[].obs;
+  
   List<String> get states => ['All State', ...stateFilters.map((e) => e.name)];
   List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
       ? ['Select Counselling Type', 'State', 'MCC']
       : ['Select Counselling Type', ...counsellingTypeFilters.map((e) => e.name)];
+  List<String> get stateTypes => stateTypeFilters.isEmpty
+      ? ['Select State Type', 'All India', 'Closed State', 'Northeast Closed State', 'Open State']
+      : ['Select State Type', ...stateTypeFilters.map((e) => e.name)];
 
   late List<CounsellingRow> _allRows;
   final RxList<CounsellingRow> filteredRows = <CounsellingRow>[].obs;
@@ -75,6 +101,7 @@ class CounsellingController extends GetxController {
         selectedCounsellingTypeId.value = counsellingList.first.id;
       }
     }
+    // State types will be loaded from API response
   }
 
   Future<void> loadCounsellingData() async {
@@ -94,6 +121,11 @@ class CounsellingController extends GetxController {
       _applyFilters();
       return;
     }
+    
+    // Parse filters from response
+    _parseFiltersFromResponse(data);
+    
+    // Parse counselling list
     final rawList = data['counselling'];
     final rows = <CounsellingRow>[];
     if (rawList is List) {
@@ -101,21 +133,65 @@ class CounsellingController extends GetxController {
       for (final e in rawList) {
         if (e is Map) {
           sNo++;
-          rows.add(CounsellingRow(
-            sNo: sNo,
-            counselling: e['state']?.toString() ?? '',
-            state: e['state']?.toString() ?? '',
-            typeOfState: '',
-            counsellingType: e['counselling_type']?.toString() ?? 'State',
-            officialWebsiteUrl: null,
-            registrationUrl: null,
-            prospectsUrl: null,
-          ));
+          try {
+            rows.add(CounsellingRow.fromJson(Map<String, dynamic>.from(e), serialNumber: sNo));
+          } catch (ex) {
+            // Skip invalid entries
+            continue;
+          }
         }
       }
     }
+    
+    // Parse pagination info (stored for future use if needed)
+    // final pagination = data['pagination'];
+    
     _allRows = rows.isEmpty ? _buildSampleRows() : rows;
     _applyFilters();
+  }
+  
+  void _parseFiltersFromResponse(Map<String, dynamic> data) {
+    final filters = data['filters'];
+    if (filters is! Map) return;
+    final map = Map<String, dynamic>.from(filters);
+    
+    // Parse counselling types
+    final counsellingList = map['counselling_types'];
+    if (counsellingList is List) {
+      final list = <FilterItem>[];
+      for (final e in counsellingList) {
+        if (e is Map) {
+          final m = Map<String, dynamic>.from(e);
+          final id = (m['id']?.toString() ?? '').trim();
+          final name = (m['name']?.toString() ?? '').trim();
+          if (name.isNotEmpty) list.add(FilterItem(id: id, name: name));
+        }
+      }
+      if (list.isNotEmpty) {
+        counsellingTypeFilters.assignAll(list);
+        if (selectedCounsellingTypeId.value.isEmpty && list.isNotEmpty) {
+          selectedCounsellingType.value = list.first.name;
+          selectedCounsellingTypeId.value = list.first.id;
+        }
+      }
+    }
+    
+    // Parse state types
+    final stateTypeList = map['state_types'];
+    if (stateTypeList is List) {
+      final list = <FilterItem>[];
+      for (final e in stateTypeList) {
+        if (e is Map) {
+          final m = Map<String, dynamic>.from(e);
+          final id = (m['id']?.toString() ?? '').trim();
+          final name = (m['name']?.toString() ?? '').trim();
+          if (name.isNotEmpty) list.add(FilterItem(id: id, name: name));
+        }
+      }
+      if (list.isNotEmpty) {
+        stateTypeFilters.assignAll(list);
+      }
+    }
   }
 
   @override
@@ -127,42 +203,15 @@ class CounsellingController extends GetxController {
   List<CounsellingRow> _buildSampleRows() {
     return [
       CounsellingRow(
-        sNo: 1,
-        counselling: 'Admission Committee for Professional Medical Educational Courses (ACPMEC)',
+        id: 1,
+        name: 'Admission Committee for Professional Medical Educational Courses (ACPMEC)',
         state: 'Gujarat',
-        typeOfState: 'Closed State',
+        stateType: 'Closed State',
         counsellingType: 'State',
-        officialWebsiteUrl: 'https://example.com',
-        registrationUrl: 'https://example.com/reg',
-        prospectsUrl: 'https://example.com/prospects',
-      ),
-      CounsellingRow(
-        sNo: 2,
-        counselling: 'Andaman & Nicobar Islands Institute of Medical Sciences (ANIIMS)',
-        state: 'Andaman and Nicobar Islands',
-        typeOfState: 'Open State',
-        counsellingType: 'State',
-      ),
-      CounsellingRow(
-        sNo: 3,
-        counselling: 'Uttar Pradesh NEET UG Counselling Authority',
-        state: 'Uttar Pradesh',
-        typeOfState: 'Closed State',
-        counsellingType: 'State',
-      ),
-      CounsellingRow(
-        sNo: 4,
-        counselling: 'Directorate of Medical Education (DME) Maharashtra',
-        state: 'Maharashtra',
-        typeOfState: 'Open State',
-        counsellingType: 'State',
-      ),
-      CounsellingRow(
-        sNo: 5,
-        counselling: 'Rajasthan NEET UG Counselling Board',
-        state: 'Rajasthan',
-        typeOfState: 'Closed State',
-        counsellingType: 'State',
+        officialWebsiteUrl: 'https://medadmgujarat.org/',
+        registrationUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScyvhOx8RI5jePjaP3ub9ZJHb3vWHoCYa4Jx3LlU2ShFj7fjQ/viewform',
+        prospectsUrl: 'https://drive.google.com/file/d/1GUfqUqOV5rByoldY-TAwir1tnerAPO_f/view',
+        sNo: 1,
       ),
     ];
   }
@@ -177,7 +226,18 @@ class CounsellingController extends GetxController {
     }
     loadCounsellingData();
   }
-  void setStateType(String v) => selectedStateType.value = v;
+  
+  void setStateType(String v) {
+    selectedStateType.value = v;
+    if (v == 'Select State Type') {
+      selectedStateTypeId.value = '';
+    } else {
+      final match = stateTypeFilters.where((e) => e.name == v).toList();
+      selectedStateTypeId.value = match.isEmpty ? '' : match.first.id;
+    }
+    _applyFilters(); // Apply filter locally since state type is in the data
+  }
+  
   void setState(String v) {
     selectedState.value = v;
     if (v == 'All State') {
@@ -188,25 +248,32 @@ class CounsellingController extends GetxController {
     }
     loadCounsellingData();
   }
+  
   void setSearchQuery(String value) {
     searchQuery.value = value;
     _applyFilters();
   }
 
   void _applyFilters() {
-    final q = searchQuery.value.trim().toLowerCase();
-    if (q.isEmpty) {
-      filteredRows.assignAll(_allRows);
-    } else {
-      filteredRows.assignAll(
-        _allRows.where(
-          (r) =>
-              r.counselling.toLowerCase().contains(q) ||
-              r.state.toLowerCase().contains(q) ||
-              r.typeOfState.toLowerCase().contains(q) ||
-              r.counsellingType.toLowerCase().contains(q),
-        ),
-      );
+    var filtered = _allRows;
+    
+    // Apply state type filter
+    if (selectedStateTypeId.value.isNotEmpty) {
+      filtered = filtered.where((r) => r.stateType.toLowerCase() == selectedStateType.value.toLowerCase()).toList();
     }
+    
+    // Apply search query
+    final q = searchQuery.value.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      filtered = filtered.where(
+        (r) =>
+            r.name.toLowerCase().contains(q) ||
+            r.state.toLowerCase().contains(q) ||
+            r.stateType.toLowerCase().contains(q) ||
+            r.counsellingType.toLowerCase().contains(q),
+      ).toList();
+    }
+    
+    filteredRows.assignAll(filtered);
   }
 }

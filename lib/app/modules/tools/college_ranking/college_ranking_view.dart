@@ -180,6 +180,9 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
                 hasNextPage: controller.hasNextPage,
                 onPreviousPage: controller.previousPage,
                 onNextPage: controller.nextPage,
+                currentPage: controller.currentPage.value,
+                totalPages: controller.totalPages,
+                onPageTap: controller.goToPage,
               );
             }),
             SizedBox(height: 12.h),
@@ -201,7 +204,7 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
                 children: [
                   for (int i = 0; i < list.length; i++) ...[
                     _CollegeRankingCard(row: list[i], serialNumber: startIndex + i + 1),
-                    if (i < list.length - 1) SizedBox(height: 12.h),
+                    if (i < list.length - 1) SizedBox(height: 16.h),
                   ],
                 ],
               );
@@ -223,16 +226,17 @@ class _CollegeRankingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AppColors.chipBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: AppColors.textDark.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -243,22 +247,24 @@ class _CollegeRankingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 28.w,
-                height: 28.w,
+                width: 32.w,
+                height: 32.w,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.chipBg,
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   '$serialNumber',
                   style: AppTextStyles.bodyS.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.w700,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,16 +273,17 @@ class _CollegeRankingCard extends StatelessWidget {
                       row.instituteAndType,
                       style: AppTextStyles.bodyS.copyWith(
                         color: AppColors.textDark,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.sp,
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 12.h),
                     Wrap(
                       spacing: 8.w,
-                      runSpacing: 6.h,
+                      runSpacing: 8.h,
                       children: [
                         _Chip(label: 'State', value: row.state),
                         _Chip(label: 'Degree(s)', value: row.degreesOffered),
@@ -305,15 +312,26 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: AppColors.chipBg,
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: AppColors.chipBorder),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.chipBorder, width: 1),
       ),
-      child: Text(
-        '$label: $value',
-        style: AppTextStyles.bodyS.copyWith(fontSize: 10.sp, color: AppColors.textDark),
+      child: RichText(
+        text: TextSpan(
+          style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+          children: [
+            TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
