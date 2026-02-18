@@ -7,16 +7,16 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 import 'base_api.dart';
 
 /// GET /cut-off-allotments from NEET Counseling API Postman collection.
-/// All params in query: nLoginUserIdNo, state_id_counselling, state_id, year;
-/// optional: institute_type_id, course_id, quota_id, sm_category_id.
+/// Postman "Get Cut-Off Allotments": Required: nLoginUserIdNo, state_id_counselling, state_id, year.
+/// Optional: course_id, clinical_type_id, page (default 1), per_page (default 20, max 100).
 class CutOffAllotmentsApi {
   static const String path = '/cut-off-allotments';
+  static const int maxPerPage = 100;
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/cut-off-allotments with query params (no header params).
-  /// According to Postman: Required params: nLoginUserIdNo, state_id_counselling, state_id, year
-  /// Optional: course_id, clinical_type_id, page, per_page
+  /// GET {{base_url}}/cut-off-allotments
+  /// Query: nLoginUserIdNo, state_id_counselling, state_id, year, [course_id], [clinical_type_id], [page], [per_page]
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getCutOffAllotments({
     required String stateIdCounselling,
     required String stateId,
@@ -46,8 +46,8 @@ class CutOffAllotmentsApi {
       if (instituteTypeId != null && instituteTypeId.isNotEmpty) query['institute_type_id'] = instituteTypeId;
       if (quotaId != null && quotaId.isNotEmpty) query['quota_id'] = quotaId;
       if (smCategoryId != null && smCategoryId.isNotEmpty) query['sm_category_id'] = smCategoryId;
-      if (page != null) query['page'] = page.toString();
-      if (perPage != null) query['per_page'] = perPage.toString();
+      if (page != null && page > 0) query['page'] = page.toString();
+      if (perPage != null && perPage > 0) query['per_page'] = (perPage > maxPerPage ? maxPerPage : perPage).toString();
 
       final response = await _api.get(
         url: path,

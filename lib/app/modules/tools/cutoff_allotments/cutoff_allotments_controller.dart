@@ -80,6 +80,13 @@ class CutoffAllotmentsController extends GetxController {
   final RxString selectedYear = '2024'.obs;
   final RxInt entriesPerPage = 10.obs;
   final RxString searchQuery = ''.obs;
+  final RxInt currentPage = 1.obs;
+  final RxInt totalCount = 0.obs;
+  /// True when totalCount was set from API response; false when inferred from current page size.
+  final RxBool totalCountFromApi = false.obs;
+  /// When API returns pagination.from and pagination.to, use these for "Showing X-Y"
+  final RxInt paginationFromApi = 0.obs;
+  final RxInt paginationToApi = 0.obs;
 
   final RxBool filtersLoading = true.obs;
   final RxBool isLoading = false.obs;
@@ -95,7 +102,7 @@ class CutoffAllotmentsController extends GetxController {
   static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022', '2021'];
-  static const List<int> entriesOptions = [10, 25, 50];
+  static const List<int> entriesOptions = [10, 25, 50, 100];
 
   static const Map<String, String> instituteTypeIds = {
     'Government': '1',
@@ -165,19 +172,26 @@ class CutoffAllotmentsController extends GetxController {
   }
 
   @override
-  Future<void> refresh() async => loadCutOffAllotments(showLoader: false);
+  Future<void> refresh() async {
+    currentPage.value = 1;
+    return loadCutOffAllotments(showLoader: false, page: 1);
+  }
 
   bool get canLoad =>
       selectedCounsellingTypeId.value.isNotEmpty &&
       selectedStateId.value.isNotEmpty &&
       selectedYear.value.isNotEmpty;
 
-  Future<void> loadCutOffAllotments({bool showLoader = true}) async {
+  Future<void> loadCutOffAllotments({bool showLoader = true, int? page}) async {
     if (!canLoad) {
       _allRows = [];
       filteredRows.clear();
+      totalCount.value = 0;
       return;
     }
+    final pageToLoad = page ?? currentPage.value;
+    if (pageToLoad < 1) return;
+    currentPage.value = pageToLoad;
     error.value = '';
     isLoading.value = true;
     final instituteTypeId = selectedInstituteType.value.isNotEmpty && instituteTypeIds.containsKey(selectedInstituteType.value)
@@ -193,6 +207,7 @@ class CutoffAllotmentsController extends GetxController {
         ? categoryIds[selectedCategory.value]
         : null;
 
+    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
     final (success, data, errorMessage) = await CutOffAllotmentsApi.getCutOffAllotments(
       stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: selectedStateId.value,
@@ -201,6 +216,8 @@ class CutoffAllotmentsController extends GetxController {
       courseId: courseId,
       quotaId: quotaId,
       smCategoryId: smCategoryId,
+      page: pageToLoad,
+      perPage: perPage,
       showLoader: showLoader,
     );
     isLoading.value = false;
@@ -210,20 +227,51 @@ class CutoffAllotmentsController extends GetxController {
       AppSnackbar.error('Cut-off allotments', error.value);
       _allRows = [];
       filteredRows.clear();
+      totalCount.value = 0;
+      totalCountFromApi.value = false;
+      paginationFromApi.value = 0;
+      paginationToApi.value = 0;
       return;
     }
 
-    final rawList = data['cutoffs'] ?? data['list'] ?? data['cut_off_allotments'] ?? data['data'] ?? data['allotments'];
+    // Parse pagination from API (e.g. pagination: { current_page, per_page, total, total_pages, from, to })
+    final pagination = data['pagination'];
+    if (pagination is Map) {
+      final map = Map<String, dynamic>.from(pagination);
+      final rawTotal = map['total'];
+      if (rawTotal != null) {
+        totalCount.value = rawTotal is int ? rawTotal : int.tryParse(rawTotal.toString()) ?? 0;
+        totalCountFromApi.value = true;
+      }
+      final fromVal = map['from'];
+      final toVal = map['to'];
+      paginationFromApi.value = fromVal is int ? fromVal : int.tryParse(fromVal?.toString() ?? '') ?? 0;
+      paginationToApi.value = toVal is int ? toVal : int.tryParse(toVal?.toString() ?? '') ?? 0;
+    } else {
+      final rawTotal = data['total'] ?? data['total_count'] ?? data['totalCount'] ?? data['total_records'];
+      if (rawTotal != null) {
+        totalCount.value = rawTotal is int ? rawTotal : int.tryParse(rawTotal.toString()) ?? 0;
+        totalCountFromApi.value = true;
+      } else {
+        totalCountFromApi.value = false;
+      }
+      paginationFromApi.value = 0;
+      paginationToApi.value = 0;
+    }
+
+    // API may return list in data.data (paginated) or data.cutoffs / data.list
+    final rawList = data['data'] ?? data['cutoffs'] ?? data['list'] ?? data['cut_off_allotments'] ?? data['allotments'];
     final list = <CutoffRow>[];
     if (rawList is List) {
       for (var i = 0; i < rawList.length; i++) {
         final e = rawList[i];
         if (e is Map) {
           final map = Map<String, dynamic>.from(e);
-          if (map['s_no'] == null && map['sNo'] == null) map['s_no'] = i + 1;
+          if (map['s_no'] == null && map['sNo'] == null) map['s_no'] = (pageToLoad - 1) * perPage + i + 1;
           list.add(CutoffRow.fromJson(map));
         }
       }
+      if (totalCount.value == 0) totalCount.value = (pageToLoad - 1) * perPage + list.length;
     }
     _allRows = list;
     _applyFilters();
@@ -233,7 +281,7 @@ class CutoffAllotmentsController extends GetxController {
     selectedCounsellingType.value = v;
     final match = counsellingTypeFilters.where((e) => e.name == v).toList();
     selectedCounsellingTypeId.value = match.isEmpty ? '1' : match.first.id;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setState(String v) {
@@ -244,35 +292,85 @@ class CutoffAllotmentsController extends GetxController {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
     }
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setQuota(String v) {
     selectedQuota.value = v;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setCategory(String v) {
     selectedCategory.value = v;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setCourse(String v) {
     selectedCourse.value = v;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setYear(String v) {
     selectedYear.value = v;
-    loadCutOffAllotments(showLoader: false);
+    loadCutOffAllotments(showLoader: false, page: 1);
   }
 
-  void setEntriesPerPage(int v) => entriesPerPage.value = v;
+  void setEntriesPerPage(int v) {
+    entriesPerPage.value = v;
+    currentPage.value = 1;
+    if (canLoad) loadCutOffAllotments(showLoader: false, page: 1);
+  }
+
+  int get totalPages {
+    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    final total = totalCount.value;
+    if (total <= 0 || perPage <= 0) return 0;
+    return (total / perPage).ceil();
+  }
+
+  bool get hasNextPage {
+    if (totalCountFromApi.value) return currentPage.value < totalPages;
+    // When API doesn't send total: show Next if current page is full (more may exist)
+    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    return filteredRows.length >= perPage;
+  }
+
+  bool get hasPreviousPage => currentPage.value > 1;
+
+  void nextPage() {
+    if (hasNextPage) loadCutOffAllotments(showLoader: false, page: currentPage.value + 1);
+  }
+
+  void previousPage() {
+    if (hasPreviousPage) loadCutOffAllotments(showLoader: false, page: currentPage.value - 1);
+  }
+
+  void goToPage(int page) {
+    if (page < 1 || page > totalPages) return;
+    loadCutOffAllotments(showLoader: false, page: page);
+  }
+
+  /// 1-based start index for "Showing X-Y of Z" (uses API pagination.from when available)
+  int get paginationStart {
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationFromApi.value;
+    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    if (filteredRows.isEmpty) return 0;
+    return (currentPage.value - 1) * perPage + 1;
+  }
+
+  /// 1-based end index for "Showing X-Y of Z" (uses API pagination.to when available)
+  int get paginationEnd {
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationToApi.value;
+    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    final count = filteredRows.length;
+    if (count == 0) return 0;
+    return (currentPage.value - 1) * perPage + count;
+  }
 
   void setSearchQuery(String value) {
     searchQuery.value = value;
@@ -297,11 +395,4 @@ class CutoffAllotmentsController extends GetxController {
     }
   }
 
-  List<CutoffRow> get paginatedRows {
-    final list = filteredRows;
-    final perPage = entriesPerPage.value;
-    return list.take(perPage).toList();
-  }
-
-  int get totalEntries => filteredRows.length;
 }

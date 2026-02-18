@@ -84,16 +84,80 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
             SizedBox(height: 14.h),
             Column(
               children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: CutoffAllotmentsController.years, onChanged: controller.setYear))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypes, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: CutoffAllotmentsController.courses, onChanged: controller.setCourse))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: CutoffAllotmentsController.years, onChanged: controller.setYear)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: CutoffAllotmentsController.instituteTypes, onChanged: controller.setInstituteType))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: CutoffAllotmentsController.courses, onChanged: controller.setCourse)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: CutoffAllotmentsController.quotas, onChanged: controller.setQuota))]),
+                SizedBox(height: 10.h),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: CutoffAllotmentsController.categories, onChanged: controller.setCategory)), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
               ],
             ),
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildPaginationBar(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Obx(() {
+            final total = controller.totalCount.value;
+            final fromApi = controller.totalCountFromApi.value;
+            final start = controller.paginationStart;
+            final end = controller.paginationEnd;
+            final text = controller.filteredRows.isEmpty
+                ? 'Showing 0-0 of 0'
+                : (fromApi && total > 0 ? 'Showing $start-$end of $total' : 'Showing $start-$end');
+            return Text(
+              text,
+              style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp),
+            );
+          }),
+        ),
+        SizedBox(width: 8.w),
+        Obx(() {
+          final perPage = controller.entriesPerPage.value;
+          return SizedBox(
+            width: 72.w,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: CutoffAllotmentsController.entriesOptions.contains(perPage) ? perPage : CutoffAllotmentsController.entriesOptions.first,
+                isExpanded: true,
+                isDense: true,
+                icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18.sp, color: AppColors.textMuted),
+                style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 11.sp),
+                items: CutoffAllotmentsController.entriesOptions
+                    .map((e) => DropdownMenuItem<int>(value: e, child: Text('$e')))
+                    .toList(),
+                onChanged: (v) => v != null ? controller.setEntriesPerPage(v) : null,
+              ),
+            ),
+          );
+        }),
+        Text(' per page', style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp)),
+        SizedBox(width: 12.w),
+        Obx(() {
+          final hasPrev = controller.hasPreviousPage;
+          return IconButton(
+            onPressed: hasPrev ? controller.previousPage : null,
+            icon: Icon(Icons.chevron_left_rounded, size: 24.sp, color: hasPrev ? AppColors.primaryBlue : AppColors.textMuted),
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
+          );
+        }),
+        Obx(() {
+          final hasNext = controller.hasNextPage;
+          return IconButton(
+            onPressed: hasNext ? controller.nextPage : null,
+            icon: Icon(Icons.chevron_right_rounded, size: 24.sp, color: hasNext ? AppColors.primaryBlue : AppColors.textMuted),
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
+          );
+        }),
+      ],
     );
   }
 
@@ -152,6 +216,8 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
               style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
             ),
             SizedBox(height: 12.h),
+            _buildPaginationBar(context),
+            SizedBox(height: 12.h),
             Obx(() {
               final list = controller.filteredRows;
               if (list.isEmpty) {
@@ -164,10 +230,12 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
                   ),
                 );
               }
+              final perPage = controller.entriesPerPage.value;
+              final startIndex = (controller.currentPage.value - 1) * perPage;
               return Column(
                 children: [
                   for (int i = 0; i < list.length; i++) ...[
-                    _CutoffCard(row: list[i], serialNumber: i + 1),
+                    _CutoffCard(row: list[i], serialNumber: startIndex + i + 1),
                     if (i < list.length - 1) SizedBox(height: 12.h),
                   ],
                 ],
