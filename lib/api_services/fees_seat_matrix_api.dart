@@ -7,14 +7,16 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 import 'base_api.dart';
 
 /// GET /fees-seat-matrix from NEET Counseling API Postman collection.
-/// Required params: nLoginUserIdNo, state_id_counselling, state_id, year
-/// Optional: course_id, clinical_type_id, page, per_page
+/// Required: nLoginUserIdNo, state_id_counselling, state_id, year.
+/// Optional: course_id, clinical_type_id, page (default 1), per_page (default 20, max 100).
 class FeesSeatMatrixApi {
   static const String path = '/fees-seat-matrix';
+  static const int maxPerPage = 100;
 
   static final BaseAPI _api = BaseAPI();
 
-  /// GET {{base_url}}/fees-seat-matrix with query params.
+  /// GET {{base_url}}/fees-seat-matrix
+  /// Query: nLoginUserIdNo, state_id_counselling, state_id, year, [course_id], [clinical_type_id], [page], [per_page]
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getFeesSeatMatrix({
     required String stateIdCounselling,
     required String stateId,
@@ -38,8 +40,8 @@ class FeesSeatMatrixApi {
       };
       if (courseId != null && courseId.isNotEmpty) query['course_id'] = courseId;
       if (clinicalTypeId != null && clinicalTypeId.isNotEmpty) query['clinical_type_id'] = clinicalTypeId;
-      if (page != null) query['page'] = page.toString();
-      if (perPage != null) query['per_page'] = perPage.toString();
+      if (page != null && page > 0) query['page'] = page.toString();
+      if (perPage != null && perPage > 0) query['per_page'] = (perPage > maxPerPage ? maxPerPage : perPage).toString();
 
       final response = await _api.get(
         url: path,
