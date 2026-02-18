@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/pagination_bar.dart';
 import 'cutoff_allotments_controller.dart';
 
 class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
@@ -111,68 +112,6 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
     );
   }
 
-  Widget _buildPaginationBar(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Obx(() {
-            final total = controller.totalCount.value;
-            final fromApi = controller.totalCountFromApi.value;
-            final start = controller.paginationStart;
-            final end = controller.paginationEnd;
-            final text = controller.filteredRows.isEmpty
-                ? 'Showing 0-0 of 0'
-                : (fromApi && total > 0 ? 'Showing $start-$end of $total' : 'Showing $start-$end');
-            return Text(
-              text,
-              style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp),
-            );
-          }),
-        ),
-        SizedBox(width: 8.w),
-        Obx(() {
-          final perPage = controller.entriesPerPage.value;
-          return SizedBox(
-            width: 72.w,
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: CutoffAllotmentsController.entriesOptions.contains(perPage) ? perPage : CutoffAllotmentsController.entriesOptions.first,
-                isExpanded: true,
-                isDense: true,
-                icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18.sp, color: AppColors.textMuted),
-                style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 11.sp),
-                items: CutoffAllotmentsController.entriesOptions
-                    .map((e) => DropdownMenuItem<int>(value: e, child: Text('$e')))
-                    .toList(),
-                onChanged: (v) => v != null ? controller.setEntriesPerPage(v) : null,
-              ),
-            ),
-          );
-        }),
-        Text(' per page', style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted, fontSize: 11.sp)),
-        SizedBox(width: 12.w),
-        Obx(() {
-          final hasPrev = controller.hasPreviousPage;
-          return IconButton(
-            onPressed: hasPrev ? controller.previousPage : null,
-            icon: Icon(Icons.chevron_left_rounded, size: 24.sp, color: hasPrev ? AppColors.primaryBlue : AppColors.textMuted),
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
-          );
-        }),
-        Obx(() {
-          final hasNext = controller.hasNextPage;
-          return IconButton(
-            onPressed: hasNext ? controller.nextPage : null,
-            icon: Icon(Icons.chevron_right_rounded, size: 24.sp, color: hasNext ? AppColors.primaryBlue : AppColors.textMuted),
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
-          );
-        }),
-      ],
-    );
-  }
-
   Widget _buildResultsSection(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value && controller.filteredRows.isEmpty) {
@@ -228,7 +167,25 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
               style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
             ),
             SizedBox(height: 12.h),
-            _buildPaginationBar(context),
+            Obx(() {
+              final total = controller.totalCount.value;
+              final fromApi = controller.totalCountFromApi.value;
+              final start = controller.paginationStart;
+              final end = controller.paginationEnd;
+              final showingText = controller.filteredRows.isEmpty
+                  ? 'Showing 0–0 of 0'
+                  : (fromApi && total > 0 ? 'Showing $start–$end of $total' : 'Showing $start–$end');
+              return PaginationBar(
+                showingText: showingText,
+                entriesPerPage: controller.entriesPerPage.value,
+                entriesOptions: CutoffAllotmentsController.entriesOptions,
+                onEntriesPerPageChanged: controller.setEntriesPerPage,
+                hasPreviousPage: controller.hasPreviousPage,
+                hasNextPage: controller.hasNextPage,
+                onPreviousPage: controller.previousPage,
+                onNextPage: controller.nextPage,
+              );
+            }),
             SizedBox(height: 12.h),
             Obx(() {
               final list = controller.filteredRows;

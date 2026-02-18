@@ -4,19 +4,16 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_asset_image.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import 'sycc_report_controller.dart';
 
 class SyccReportView extends GetView<SyccReportController> {
   const SyccReportView({super.key});
 
-  static const List<String> _bullets = [
-    'Preferred Courses & Specializations',
-    'Target Colleges & Locations',
-    'NEET Marks / Expected Rank',
-    'Quotas',
-    'Counselling Bodies Of Interest (AIQ, State, Deemed, Etc.)',
-  ];
+  static const String _identifyIcon = 'assets/sycc-reports/identify.png';
+  static const String _collegeIcon = 'assets/sycc-reports/college.png';
+  static const String _reportIcon = 'assets/sycc-reports/report.png';
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +21,7 @@ class SyccReportView extends GetView<SyccReportController> {
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
         title: 'SYCC Report',
-        titleColor: AppColors.primaryBlue,
+        subtitle: 'Neet Counselling / Post-Exam / SYCC Report',
         hideFilter: true,
         onBack: () => Get.back(),
       ),
@@ -32,14 +29,18 @@ class SyccReportView extends GetView<SyccReportController> {
         onRefresh: () => controller.refresh(),
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFirstCard(),
-              SizedBox(height: 14.h),
-              _buildSecondCard(),
+              _buildHeader(),
+              SizedBox(height: 24.h),
+              _buildCard1(),
+              SizedBox(height: 16.h),
+              _buildCard2(),
+              SizedBox(height: 16.h),
+              _buildCard3(),
               SizedBox(height: 24.h),
             ],
           ),
@@ -48,101 +49,161 @@ class SyccReportView extends GetView<SyccReportController> {
     );
   }
 
-  Widget _buildFirstCard() {
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'SYCC Report',
+          style: AppTextStyles.titleXL.copyWith(
+            color: AppColors.primaryBlue,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Shortlist your counselling & colleges. Find the perfect institue with this activity to help understand your needs and narrow down your college options.',
+          style: AppTextStyles.bodyM.copyWith(
+            color: AppColors.textDark,
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCard1() {
+    return _StepCard(
+      iconAsset: _identifyIcon,
+      title: 'Identify Your Requirements',
+      description: 'Work with your Senior Mentor to outline your academic profile and goals :',
+      backgroundColor: const Color(0xFFE3F2FD), // Light blue
+      bullets: const [
+        'Preferred Courses & Specializations',
+        'Target Colleges & Locations',
+        'NEET Marks / Expected Rank',
+        'Quotas',
+        'Counselling Bodies of Interest (AIQ, State, Deemed, etc.)',
+      ],
+    );
+  }
+
+  Widget _buildCard2() {
+    return _StepCard(
+      iconAsset: _collegeIcon,
+      title: 'Shortlist Ideal Colleges',
+      description: 'Explore a curated list of medical colleges based on:',
+      backgroundColor: const Color(0xFFFFF9E6), // Light yellow
+      bullets: const [
+        'Your eligibility criteria',
+        'Counselling formats (AIQ, State, Deemed, etc.)',
+        'Institutional rankings & facilities',
+        'Cutoff trends and success rates',
+      ],
+      additionalText: 'Your mentor will help you filter options to match both your academic standing and personal preferences.',
+    );
+  }
+
+  Widget _buildCard3() {
+    return _StepCard(
+      iconAsset: _reportIcon,
+      title: 'Generate Your Custom SYCC Report',
+      description: 'Receive a personalized report directly in your inbox containing:',
+      backgroundColor: const Color(0xFFE8F5E9), // Light green
+      bullets: const [
+        'Best-fit colleges',
+        'Counselling types you are eligible for',
+        'Expert insights based on your profile',
+        'Statistics & guidance for each shortlisted option',
+      ],
+    );
+  }
+}
+
+class _StepCard extends StatelessWidget {
+  const _StepCard({
+    required this.iconAsset,
+    required this.title,
+    required this.description,
+    required this.backgroundColor,
+    required this.bullets,
+    this.additionalText,
+  });
+
+  final String iconAsset;
+  final String title;
+  final String description;
+  final Color backgroundColor;
+  final List<String> bullets;
+  final String? additionalText;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: AppColors.textDark.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'SYCC Report',
-            style: AppTextStyles.welcomeHeading,
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Shortlist your counseling & colleges. Find the perfect institue with this activity to help understand your needs and narrow down your college options.',
-            style: AppTextStyles.bodyS.copyWith(
-              color: AppColors.textDark,
-              height: 1.4,
+          Center(
+            child: AppAssetImage(
+              iconAsset,
+              width: 80.w,
+              height: 80.w,
+              fit: BoxFit.contain,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecondCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.checklist_rounded,
-            size: 56.sp,
-            color: AppColors.accentOrange,
+          SizedBox(height: 16.h),
+          Text(
+            title,
+            style: AppTextStyles.titleM.copyWith(
+              color: AppColors.primaryBlue,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 12.h),
           Text(
-            'Identify Your Requirements',
-            style: AppTextStyles.welcomeHeading.copyWith(
-              color: AppColors.primaryBlue,
-              fontSize: 15.sp,
+            description,
+            style: AppTextStyles.bodyM.copyWith(
+              color: AppColors.textDark,
+              height: 1.5,
             ),
           ),
-          SizedBox(height: 6.h),
-          Text(
-            'Work With Your Senior Mentor To Outline Your Academic Profile And Goals',
-            style: AppTextStyles.detailScreenSubtitle,
-            textAlign: TextAlign.center,
-          ),
           SizedBox(height: 16.h),
-          ..._bullets.map(
-            (e) => Padding(
+          ...bullets.map(
+            (bullet) => Padding(
               padding: EdgeInsets.only(bottom: 10.h),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: EdgeInsets.only(top: 6.h),
-                    width: 6.w,
-                    height: 6.w,
-                    decoration: const BoxDecoration(
+                    margin: EdgeInsets.only(top: 8.h, right: 12.w),
+                    width: 8.w,
+                    height: 8.w,
+                    decoration: BoxDecoration(
                       color: AppColors.primaryBlue,
                       shape: BoxShape.circle,
                     ),
                   ),
-                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      e,
-                      style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.textDark,
+                      bullet,
+                      style: AppTextStyles.bodyM.copyWith(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
                       ),
                     ),
                   ),
@@ -150,6 +211,16 @@ class SyccReportView extends GetView<SyccReportController> {
               ),
             ),
           ),
+          if (additionalText != null) ...[
+            SizedBox(height: 12.h),
+            Text(
+              additionalText!,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                height: 1.5,
+              ),
+            ),
+          ],
         ],
       ),
     );
