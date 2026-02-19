@@ -17,6 +17,26 @@ class CompetitionStatisticsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
+  // Chart data from API
+  final RxList<String> chartYears = <String>[].obs;
+  final RxList<int> registeredData = <int>[].obs;
+  final RxList<int> appearedData = <int>[].obs;
+  final RxList<int> qualifiedData = <int>[].obs;
+  
+  // API response data
+  final RxMap<String, dynamic> apiData = <String, dynamic>{}.obs;
+  final RxMap<String, Map<String, dynamic>> nationalityByYear = <String, Map<String, dynamic>>{}.obs;
+  final RxMap<String, Map<String, dynamic>> genderByYear = <String, Map<String, dynamic>>{}.obs;
+  final RxMap<String, Map<String, dynamic>> categoryByYear = <String, Map<String, dynamic>>{}.obs;
+  final RxMap<String, Map<String, dynamic>> dataByYear = <String, Map<String, dynamic>>{}.obs;
+  
+  // Type mappings
+  final RxMap<String, String> candidatesTypes = <String, String>{}.obs;
+  final RxMap<String, String> nationalityTypes = <String, String>{}.obs;
+  final RxMap<String, String> genderTypes = <String, String>{}.obs;
+  final RxMap<String, String> categoryTypes = <String, String>{}.obs;
+  final RxMap<String, String> examTypes = <String, String>{}.obs;
+
   static const List<String> breakdownTabs = [
     'Candidates',
     'Nationality',
@@ -69,8 +89,267 @@ class CompetitionStatisticsController extends GetxController {
       return;
     }
     
-    // Parse API response data here if needed
-    // For now, keeping static data as fallback
+    // Store full API data
+    apiData.value = Map<String, dynamic>.from(data);
+    
+    // Parse chart_data from API response
+    final chartData = data['chart_data'];
+    if (chartData is Map) {
+      final chartMap = Map<String, dynamic>.from(chartData);
+      
+      // Parse years
+      final yearsRaw = chartMap['years'];
+      if (yearsRaw is List) {
+        chartYears.assignAll(yearsRaw.map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList());
+      }
+      
+      // Parse registered data
+      final registeredRaw = chartMap['registered'];
+      if (registeredRaw is List) {
+        registeredData.assignAll(registeredRaw.map((e) => e is int ? e : int.tryParse(e?.toString() ?? '0') ?? 0).toList());
+      }
+      
+      // Parse appeared data
+      final appearedRaw = chartMap['appeared'];
+      if (appearedRaw is List) {
+        appearedData.assignAll(appearedRaw.map((e) => e is int ? e : int.tryParse(e?.toString() ?? '0') ?? 0).toList());
+      }
+      
+      // Parse qualified data
+      final qualifiedRaw = chartMap['qualified'];
+      if (qualifiedRaw is List) {
+        qualifiedData.assignAll(qualifiedRaw.map((e) => e is int ? e : int.tryParse(e?.toString() ?? '0') ?? 0).toList());
+      }
+    }
+    
+    // Parse type mappings
+    _parseTypeMappings(data);
+    
+    // Parse nationality_by_year
+    final nationalityRaw = data['nationality_by_year'];
+    if (nationalityRaw is Map) {
+      final map = Map<String, Map<String, dynamic>>.from(
+        nationalityRaw.map((k, v) => MapEntry(
+          k.toString(),
+          v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{},
+        )),
+      );
+      nationalityByYear.value = map;
+    }
+    
+    // Parse gender_by_year
+    final genderRaw = data['gender_by_year'];
+    if (genderRaw is Map) {
+      final map = Map<String, Map<String, dynamic>>.from(
+        genderRaw.map((k, v) => MapEntry(
+          k.toString(),
+          v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{},
+        )),
+      );
+      genderByYear.value = map;
+    }
+    
+    // Parse category_by_year
+    final categoryRaw = data['category_by_year'];
+    if (categoryRaw is Map) {
+      final map = Map<String, Map<String, dynamic>>.from(
+        categoryRaw.map((k, v) => MapEntry(
+          k.toString(),
+          v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{},
+        )),
+      );
+      categoryByYear.value = map;
+    }
+    
+    // Parse data_by_year
+    final dataByYearRaw = data['data_by_year'];
+    if (dataByYearRaw is Map) {
+      final map = Map<String, Map<String, dynamic>>.from(
+        dataByYearRaw.map((k, v) => MapEntry(
+          k.toString(),
+          v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{},
+        )),
+      );
+      dataByYear.value = map;
+    }
+  }
+  
+  void _parseTypeMappings(Map<String, dynamic> data) {
+    // Parse candidates_types
+    final candidatesTypesRaw = data['candidates_types'];
+    if (candidatesTypesRaw is Map) {
+      candidatesTypes.value = Map<String, String>.from(
+        candidatesTypesRaw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      );
+    }
+    
+    // Parse nationality_types
+    final nationalityTypesRaw = data['nationality_types'];
+    if (nationalityTypesRaw is Map) {
+      nationalityTypes.value = Map<String, String>.from(
+        nationalityTypesRaw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      );
+    }
+    
+    // Parse gender_types
+    final genderTypesRaw = data['gender_types'];
+    if (genderTypesRaw is Map) {
+      genderTypes.value = Map<String, String>.from(
+        genderTypesRaw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      );
+    }
+    
+    // Parse category_types
+    final categoryTypesRaw = data['category_types'];
+    if (categoryTypesRaw is Map) {
+      categoryTypes.value = Map<String, String>.from(
+        categoryTypesRaw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      );
+    }
+    
+    // Parse exam_types
+    final examTypesRaw = data['exam_types'];
+    if (examTypesRaw is Map) {
+      examTypes.value = Map<String, String>.from(
+        examTypesRaw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      );
+    }
+  }
+  
+  // Getters for breakdown table data
+  List<Map<String, dynamic>> get breakdownRows {
+    if (dataByYear.isEmpty) return _defaultBreakdownRows;
+    
+    final rows = <Map<String, dynamic>>[];
+    final registeredLabel = candidatesTypes['registered'] ?? 'No. Of Candidates Registered';
+    final presentLabel = candidatesTypes['present'] ?? 'No. Of Candidates Present';
+    final absentLabel = candidatesTypes['absent'] ?? 'No. Of Candidates Absent';
+    
+    // Registered row
+    final registeredRow = <String, dynamic>{'label': registeredLabel};
+    for (final year in breakdownYears) {
+      final yearData = dataByYear[year];
+      registeredRow[year] = yearData?['registered'] ?? 0;
+    }
+    rows.add(registeredRow);
+    
+    // Present row
+    final presentRow = <String, dynamic>{'label': presentLabel};
+    for (final year in breakdownYears) {
+      final yearData = dataByYear[year];
+      presentRow[year] = yearData?['present'] ?? 0;
+    }
+    rows.add(presentRow);
+    
+    // Absent row
+    final absentRow = <String, dynamic>{'label': absentLabel};
+    for (final year in breakdownYears) {
+      final yearData = dataByYear[year];
+      absentRow[year] = yearData?['absent'] ?? 0;
+    }
+    rows.add(absentRow);
+    
+    return rows;
+  }
+  
+  // Get nationality data for selected year
+  List<Map<String, dynamic>> getNationalityData(String year) {
+    final yearData = nationalityByYear[year];
+    if (yearData == null) return _defaultNationalityData;
+    
+    final data = <Map<String, dynamic>>[];
+    final reg = yearData['reg'] as List? ?? [];
+    final app = yearData['app'] as List? ?? [];
+    final qual = yearData['qual'] as List? ?? [];
+    
+    final types = ['indian', 'nri', 'foreigeners', 'oci'];
+    for (int i = 0; i < types.length; i++) {
+      if (i < reg.length) {
+        final typeKey = types[i];
+        final label = nationalityTypes[typeKey] ?? typeKey;
+        data.add({
+          'label': label,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+        });
+      }
+    }
+    
+    return data.isEmpty ? _defaultNationalityData : data;
+  }
+  
+  // Get gender data for selected year
+  List<Map<String, dynamic>> getGenderData(String year) {
+    final yearData = genderByYear[year];
+    if (yearData == null) return _defaultGenderData;
+    
+    final data = <Map<String, dynamic>>[];
+    final reg = yearData['reg'] as List? ?? [];
+    final app = yearData['app'] as List? ?? [];
+    final qual = yearData['qual'] as List? ?? [];
+    
+    final types = ['female', 'male', 'transgender'];
+    for (int i = 0; i < types.length; i++) {
+      if (i < reg.length) {
+        final typeKey = types[i];
+        final label = genderTypes[typeKey] ?? typeKey;
+        data.add({
+          'label': label,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+        });
+      }
+    }
+    
+    return data.isEmpty ? _defaultGenderData : data;
+  }
+  
+  // Get category data for selected year
+  List<Map<String, dynamic>> getCategoryData(String year) {
+    final yearData = categoryByYear[year];
+    if (yearData == null) return _defaultCategoryData;
+    
+    final data = <Map<String, dynamic>>[];
+    final reg = yearData['reg'] as List? ?? [];
+    final app = yearData['app'] as List? ?? [];
+    final qual = yearData['qual'] as List? ?? [];
+    
+    final types = ['obc', 'un_reserved', 'sc', 'st', 'ews'];
+    for (int i = 0; i < types.length; i++) {
+      if (i < reg.length && reg[i] > 0) {
+        final typeKey = types[i];
+        final label = categoryTypes[typeKey] ?? typeKey;
+        data.add({
+          'label': label,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+        });
+      }
+    }
+    
+    return data.isEmpty ? _defaultCategoryData : data;
+  }
+  
+  // Get yearly insights from chart_data
+  List<Map<String, dynamic>> get yearlyInsights {
+    if (chartYears.isEmpty || registeredData.isEmpty) {
+      return _defaultYearlyInsights;
+    }
+    
+    final insights = <Map<String, dynamic>>[];
+    for (int i = 0; i < chartYears.length; i++) {
+      insights.add({
+        'year': chartYears[i],
+        'registered': registeredData.length > i ? registeredData[i] / 100000.0 : 0.0,
+        'appeared': appearedData.length > i ? appearedData[i] / 100000.0 : 0.0,
+        'qualified': qualifiedData.length > i ? qualifiedData[i] / 100000.0 : 0.0,
+      });
+    }
+    
+    return insights.isEmpty ? _defaultYearlyInsights : insights;
   }
 
   @override
@@ -99,7 +378,7 @@ class CompetitionStatisticsController extends GetxController {
   }
 
   // Sample: row label, then per year (2019..2025): value, trend up/down, change
-  static const List<Map<String, dynamic>> breakdownRows = [
+  static const List<Map<String, dynamic>> _defaultBreakdownRows = [
     {
       'label': 'No. Of Candidates Registered',
       '2019': 1519375,
@@ -135,7 +414,7 @@ class CompetitionStatisticsController extends GetxController {
   static const List<String> breakdownYears = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 
   // Yearly insights: year -> registered, appeared, qualified (in lakhs)
-  static const List<Map<String, dynamic>> yearlyInsights = [
+  static const List<Map<String, dynamic>> _defaultYearlyInsights = [
     {'year': '2019', 'registered': 15.2, 'appeared': 14.2, 'qualified': 7.9},
     {'year': '2020', 'registered': 16.0, 'appeared': 14.8, 'qualified': 8.6},
     {'year': '2021', 'registered': 16.2, 'appeared': 15.5, 'qualified': 8.9},
@@ -146,14 +425,14 @@ class CompetitionStatisticsController extends GetxController {
   ];
 
   // Nationality: label, registered, appeared, qualified (in lakhs)
-  static const List<Map<String, dynamic>> nationalityData = [
+  static const List<Map<String, dynamic>> _defaultNationalityData = [
     {'label': 'Indian', 'registered': 22.1, 'appeared': 21.5, 'qualified': 12.0},
     {'label': 'NRI', 'registered': 0.45, 'appeared': 0.42, 'qualified': 0.28},
     {'label': 'OCI', 'registered': 0.25, 'appeared': 0.22, 'qualified': 0.12},
   ];
 
   // Category: label, registered (lakhs), qualified (lakhs)
-  static const List<Map<String, dynamic>> categoryData = [
+  static const List<Map<String, dynamic>> _defaultCategoryData = [
     {'label': 'General', 'registered': 10.2, 'qualified': 4.8},
     {'label': 'OBC', 'registered': 6.1, 'qualified': 3.2},
     {'label': 'EWS', 'registered': 2.4, 'qualified': 1.1},
@@ -162,7 +441,7 @@ class CompetitionStatisticsController extends GetxController {
   ];
 
   // Gender: label, count (lakhs)
-  static const List<Map<String, dynamic>> genderData = [
+  static const List<Map<String, dynamic>> _defaultGenderData = [
     {'label': 'Female', 'value': 12.8},
     {'label': 'Male', 'value': 9.3},
   ];
