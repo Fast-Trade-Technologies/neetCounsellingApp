@@ -1073,13 +1073,13 @@ class _StateWiseMapChart extends StatelessWidget {
       final bVal = stateValues[b]?['registered'] ?? 0;
       return bVal.compareTo(aVal);
     });
-    
-    // Show top states in a list format (since we don't have map visualization library)
+
+    // Show all states: state name + Registered, Appeared, Qualified
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Top States by Registered Candidates',
+          'All States – Registered, Appeared & Qualified',
           style: AppTextStyles.bodyS.copyWith(
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
@@ -1087,48 +1087,69 @@ class _StateWiseMapChart extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12.h),
-        ...stateCodes.take(10).map((code) {
+        ...stateCodes.map((code) {
           final values = stateValues[code]!;
           final reg = values['registered'] ?? 0;
           final app = values['appeared'] ?? 0;
           final qual = values['qualified'] ?? 0;
-          
-          // Convert state code to readable name
           final stateName = _getStateName(code);
-          
           return Padding(
-            padding: EdgeInsets.only(bottom: 10.h),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 100.w,
-                  child: Text(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: AppColors.chipBg.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: AppColors.chipBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                     stateName,
                     style: AppTextStyles.bodyS.copyWith(
-                      fontSize: 11.sp,
+                      fontSize: 12.sp,
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(height: 6.h),
+                  Row(
                     children: [
-                      Text(
-                        'Reg: ${_formatNumber(reg)} | App: ${_formatNumber(app)} | Qual: ${_formatNumber(qual)}',
-                        style: AppTextStyles.bodyS.copyWith(
-                          fontSize: 10.sp,
-                          color: AppColors.textMuted,
+                      Expanded(
+                        child: Text(
+                          'Registered: ${_formatNumber(reg)}',
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontSize: 10.sp,
+                            color: AppColors.progressGreen,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Appeared: ${_formatNumber(app)}',
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontSize: 10.sp,
+                            color: AppColors.primaryBlue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Qualified: ${_formatNumber(qual)}',
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontSize: 10.sp,
+                            color: AppColors.accentOrange,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }),
@@ -1136,7 +1157,7 @@ class _StateWiseMapChart extends StatelessWidget {
     );
     });
   }
-  
+
   String _getStateName(String code) {
     // Convert state code to readable name
     final stateMap = {
