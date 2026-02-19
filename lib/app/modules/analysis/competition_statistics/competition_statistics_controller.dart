@@ -216,40 +216,114 @@ class CompetitionStatisticsController extends GetxController {
     }
   }
   
-  // Getters for breakdown table data
+  /// First column header for the breakdown table based on selected tab.
+  String get breakdownTableLabel {
+    final index = breakdownTabIndex.value;
+    if (index == 0) return 'Candidates';
+    if (index == 1) return 'Nationality';
+    if (index == 2) return 'Gender';
+    if (index == 3) return 'Category';
+    if (index == 4) return 'Exam';
+    return 'Category';
+  }
+
+  // Getters for breakdown table data – content depends on selected tab
   List<Map<String, dynamic>> get breakdownRows {
+    final index = breakdownTabIndex.value;
+    if (index == 0) return _candidatesBreakdownRows;
+    if (index == 1) return _nationalityBreakdownRows;
+    if (index == 2) return _genderBreakdownRows;
+    if (index == 3) return _categoryBreakdownRows;
+    if (index == 4) return _examBreakdownRows;
+    return _candidatesBreakdownRows;
+  }
+
+  List<Map<String, dynamic>> get _candidatesBreakdownRows {
     if (dataByYear.isEmpty) return _defaultBreakdownRows;
-    
-    final rows = <Map<String, dynamic>>[];
     final registeredLabel = candidatesTypes['registered'] ?? 'No. Of Candidates Registered';
     final presentLabel = candidatesTypes['present'] ?? 'No. Of Candidates Present';
     final absentLabel = candidatesTypes['absent'] ?? 'No. Of Candidates Absent';
-    
-    // Registered row
     final registeredRow = <String, dynamic>{'label': registeredLabel};
-    for (final year in breakdownYears) {
-      final yearData = dataByYear[year];
-      registeredRow[year] = yearData?['registered'] ?? 0;
-    }
-    rows.add(registeredRow);
-    
-    // Present row
     final presentRow = <String, dynamic>{'label': presentLabel};
-    for (final year in breakdownYears) {
-      final yearData = dataByYear[year];
-      presentRow[year] = yearData?['present'] ?? 0;
-    }
-    rows.add(presentRow);
-    
-    // Absent row
     final absentRow = <String, dynamic>{'label': absentLabel};
     for (final year in breakdownYears) {
       final yearData = dataByYear[year];
+      registeredRow[year] = yearData?['registered'] ?? 0;
+      presentRow[year] = yearData?['present'] ?? 0;
       absentRow[year] = yearData?['absent'] ?? 0;
     }
-    rows.add(absentRow);
-    
-    return rows;
+    return [registeredRow, presentRow, absentRow];
+  }
+
+  List<Map<String, dynamic>> get _nationalityBreakdownRows {
+    if (nationalityByYear.isEmpty) return _defaultNationalityBreakdownRows;
+    final types = ['indian', 'nri', 'foreigeners', 'oci'];
+    final rows = <Map<String, dynamic>>[];
+    for (var i = 0; i < types.length; i++) {
+      final typeKey = types[i];
+      final label = nationalityTypes[typeKey] ?? typeKey;
+      final row = <String, dynamic>{'label': label};
+      for (final year in breakdownYears) {
+        final yearData = nationalityByYear[year];
+        final reg = yearData?['reg'] as List? ?? [];
+        row[year] = (i < reg.length) ? (reg[i] is int ? reg[i] as int : int.tryParse(reg[i].toString()) ?? 0) : 0;
+      }
+      rows.add(row);
+    }
+    return rows.isEmpty ? _defaultNationalityBreakdownRows : rows;
+  }
+
+  List<Map<String, dynamic>> get _genderBreakdownRows {
+    if (genderByYear.isEmpty) return _defaultGenderBreakdownRows;
+    final types = ['female', 'male', 'transgender'];
+    final rows = <Map<String, dynamic>>[];
+    for (var i = 0; i < types.length; i++) {
+      final typeKey = types[i];
+      final label = genderTypes[typeKey] ?? typeKey;
+      final row = <String, dynamic>{'label': label};
+      for (final year in breakdownYears) {
+        final yearData = genderByYear[year];
+        final reg = yearData?['reg'] as List? ?? [];
+        row[year] = (i < reg.length) ? (reg[i] is int ? reg[i] as int : int.tryParse(reg[i].toString()) ?? 0) : 0;
+      }
+      rows.add(row);
+    }
+    return rows.isEmpty ? _defaultGenderBreakdownRows : rows;
+  }
+
+  List<Map<String, dynamic>> get _categoryBreakdownRows {
+    if (categoryByYear.isEmpty) return _defaultCategoryBreakdownRows;
+    final types = ['obc', 'un_reserved', 'sc', 'st', 'ews'];
+    final rows = <Map<String, dynamic>>[];
+    for (var i = 0; i < types.length; i++) {
+      final typeKey = types[i];
+      final label = categoryTypes[typeKey] ?? typeKey;
+      final row = <String, dynamic>{'label': label};
+      for (final year in breakdownYears) {
+        final yearData = categoryByYear[year];
+        final reg = yearData?['reg'] as List? ?? [];
+        row[year] = (i < reg.length) ? (reg[i] is int ? reg[i] as int : int.tryParse(reg[i].toString()) ?? 0) : 0;
+      }
+      rows.add(row);
+    }
+    return rows.isEmpty ? _defaultCategoryBreakdownRows : rows;
+  }
+
+  List<Map<String, dynamic>> get _examBreakdownRows {
+    if (dataByYear.isEmpty) return _defaultExamBreakdownRows;
+    final examKeys = ['no_of_centers', 'no_of_cities', 'no_of_invigilators', 'no_f_center_deputy', 'not_of_observers', 'no_of_city_coordinators', 'no_of_languages', 'pio'];
+    final rows = <Map<String, dynamic>>[];
+    for (final key in examKeys) {
+      final label = examTypes[key] ?? key;
+      final row = <String, dynamic>{'label': label};
+      for (final year in breakdownYears) {
+        final yearData = dataByYear[year];
+        final v = yearData?[key];
+        row[year] = v is int ? v : (v != null ? int.tryParse(v.toString()) ?? 0 : 0);
+      }
+      rows.add(row);
+    }
+    return rows.isEmpty ? _defaultExamBreakdownRows : rows;
   }
   
   // Get nationality data for selected year
@@ -412,6 +486,29 @@ class CompetitionStatisticsController extends GetxController {
   ];
 
   static const List<String> breakdownYears = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+
+  static const List<Map<String, dynamic>> _defaultNationalityBreakdownRows = [
+    {'label': 'Indian Nationals', '2019': 1516066, '2020': 1593907, '2021': 1612276, '2022': 1870015, '2023': 2036316, '2024': 2402774, '2025': 2273528},
+    {'label': 'NRIs', '2019': 1884, '2020': 1869, '2021': 1054, '2022': 910, '2023': 852, '2024': 1304, '2025': 741},
+    {'label': 'Foreigners', '2019': 687, '2020': 878, '2021': 883, '2022': 771, '2023': 789, '2024': 1196, '2025': 939},
+    {'label': 'OCIs', '2019': 675, '2020': 732, '2021': 564, '2022': 647, '2023': 642, '2024': 805, '2025': 861},
+  ];
+  static const List<Map<String, dynamic>> _defaultGenderBreakdownRows = [
+    {'label': 'Female', '2019': 838955, '2020': 880843, '2021': 903782, '2022': 1064794, '2023': 1184513, '2024': 1376863, '2025': 1310062},
+    {'label': 'Male', '2019': 680414, '2020': 716586, '2021': 710979, '2022': 807538, '2023': 902936, '2024': 1029198, '2025': 965996},
+    {'label': 'Transgender', '2019': 6, '2020': 5, '2021': 16, '2022': 11, '2023': 13, '2024': 18, '2025': 11},
+  ];
+  static const List<Map<String, dynamic>> _defaultCategoryBreakdownRows = [
+    {'label': 'OBC', '2019': 677544, '2020': 706214, '2021': 693879, '2022': 791135, '2023': 890150, '2024': 1054277, '2025': 948507},
+    {'label': 'Un-Reserved', '2019': 534072, '2020': 475534, '2021': 460159, '2022': 565964, '2023': 607131, '2024': 647260, '2025': 689366},
+    {'label': 'SC', '2019': 211303, '2020': 221253, '2021': 235696, '2022': 268750, '2023': 303318, '2024': 356727, '2025': 333646},
+    {'label': 'ST', '2019': 96454, '2020': 100519, '2021': 100904, '2022': 113830, '2023': 132490, '2024': 157115, '2025': 150224},
+    {'label': 'EWS', '2019': 0, '2020': 93915, '2021': 124139, '2022': 132664, '2023': 154373, '2024': 190700, '2025': 154326},
+  ];
+  static const List<Map<String, dynamic>> _defaultExamBreakdownRows = [
+    {'label': 'No of Centers', '2019': 2546, '2020': 3862, '2021': 3858, '2022': 3570, '2023': 4097, '2024': 4750, '2025': 5468},
+    {'label': 'No of Cities', '2019': 154, '2020': 155, '2021': 202, '2022': 497, '2023': 499, '2024': 571, '2025': 566},
+  ];
 
   // Yearly insights: year -> registered, appeared, qualified (in lakhs)
   static const List<Map<String, dynamic>> _defaultYearlyInsights = [

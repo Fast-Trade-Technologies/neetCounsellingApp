@@ -108,7 +108,11 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ),
           )),
           SizedBox(height: 14.h),
-          Obx(() => SingleChildScrollView(
+          Obx(() {
+            controller.breakdownTabIndex.value;
+            final label = controller.breakdownTableLabel;
+            final rows = controller.breakdownRows;
+            return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowColor: WidgetStateProperty.all(AppColors.chipBg),
@@ -119,7 +123,7 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                   label: SizedBox(
                     width: 180.w,
                     child: Text(
-                      ' ',
+                      label,
                       style: AppTextStyles.bodyS.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textDark,
@@ -141,7 +145,7 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                           ),
                         )),
               ],
-              rows: controller.breakdownRows
+              rows: rows
                   .map((row) => DataRow(
                         cells: [
                           DataCell(SizedBox(
@@ -196,7 +200,8 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                       ))
                   .toList(),
             ),
-          )),
+          );
+          }),
         ],
       ),
     );
@@ -319,7 +324,8 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: insights.map((e) => SizedBox(
-                              width: 50.w, // Fixed width for each bar group
+                              width: 50.w,
+                              height: 240.h,
                               child: _VerticalBarGroup(
                                 year: e['year'] as String,
                                 registered: (e['registered'] as num).toDouble(),
@@ -1196,20 +1202,24 @@ class _TabChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: isSelected ? AppColors.primaryBlue : AppColors.chipBg,
+    return InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8.r),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8.r),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-          child: Text(
-            label,
-            style: AppTextStyles.bodyS.copyWith(
-              color: isSelected ? Colors.white : AppColors.textDark,
-              fontWeight: FontWeight.w600,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+              width: 2.5,
             ),
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.bodyS.copyWith(
+            color: isSelected ? AppColors.primaryBlue : AppColors.textMuted,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),
@@ -1277,20 +1287,18 @@ class _VerticalBarGroup extends StatelessWidget {
           ],
         ),
         SizedBox(height: 4.h),
-        SizedBox(
-          height: 180.h,
+        Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final h = constraints.maxHeight;
-              final scale = h / maxValue;
-              final barWidth = 18.w;
+              final scale = maxValue > 0 ? h / maxValue : 0.0;
+              final barWidth = 13.w;
               final spacing = 3.w;
-              
+
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Registered bar (green)
                   Container(
                     width: barWidth,
                     height: (registered * scale).clamp(4.0, h),
@@ -1300,7 +1308,6 @@ class _VerticalBarGroup extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: spacing),
-                  // Appeared bar (blue)
                   Container(
                     width: barWidth,
                     height: (appeared * scale).clamp(4.0, h),
@@ -1310,7 +1317,6 @@ class _VerticalBarGroup extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: spacing),
-                  // Qualified bar (orange)
                   Container(
                     width: barWidth,
                     height: (qualified * scale).clamp(4.0, h),
