@@ -564,6 +564,30 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ],
           ),
           SizedBox(height: 16.h),
+          TextField(
+            onChanged: controller.setStateWiseSearchQuery,
+            decoration: InputDecoration(
+              hintText: 'Search states...',
+              hintStyle: AppTextStyles.bodyS.copyWith(
+                fontSize: 13.sp,
+                color: AppColors.textMuted,
+              ),
+              prefixIcon: Icon(Icons.search, size: 22.sp, color: AppColors.textMuted),
+              filled: true,
+              fillColor: AppColors.chipBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: BorderSide(color: AppColors.chipBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: BorderSide(color: AppColors.chipBorder),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            ),
+            style: AppTextStyles.bodyS.copyWith(fontSize: 13.sp, color: AppColors.textDark),
+          ),
+          SizedBox(height: 12.h),
           Obx(() {
             return _StateWiseMapChart(
               year: controller.selectedYearState.value,
@@ -1074,12 +1098,20 @@ class _StateWiseMapChart extends StatelessWidget {
       return bVal.compareTo(aVal);
     });
 
-    // Show all states: state name + Registered, Appeared, Qualified
+    // Filter by search query (state name)
+    final query = controller.stateWiseSearchQuery.value.trim().toLowerCase();
+    final filteredCodes = query.isEmpty
+        ? stateCodes
+        : stateCodes.where((code) => _getStateName(code).toLowerCase().contains(query)).toList();
+
+    // Show states: state name + Registered, Appeared, Qualified
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'All States – Registered, Appeared & Qualified',
+          filteredCodes.isEmpty
+              ? (query.isEmpty ? 'All States – Registered, Appeared & Qualified' : 'No state found for "$query"')
+              : 'All States – Registered, Appeared & Qualified',
           style: AppTextStyles.bodyS.copyWith(
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
@@ -1087,7 +1119,7 @@ class _StateWiseMapChart extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12.h),
-        ...stateCodes.map((code) {
+        ...filteredCodes.map((code) {
           final values = stateValues[code]!;
           final reg = values['registered'] ?? 0;
           final app = values['appeared'] ?? 0;

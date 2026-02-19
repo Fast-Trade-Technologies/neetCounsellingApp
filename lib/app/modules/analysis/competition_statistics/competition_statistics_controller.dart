@@ -13,7 +13,9 @@ class CompetitionStatisticsController extends GetxController {
   final RxString selectedState = 'All'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString selectedYearState = '2025'.obs;
-  
+  /// Search query for filtering state-wise competition list
+  final RxString stateWiseSearchQuery = ''.obs;
+
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
@@ -450,6 +452,7 @@ class CompetitionStatisticsController extends GetxController {
     selectedYearState.value = v;
     loadCompetitionData();
   }
+  void setStateWiseSearchQuery(String v) => stateWiseSearchQuery.value = v;
 
   // Sample: row label, then per year (2019..2025): value, trend up/down, change
   static const List<Map<String, dynamic>> _defaultBreakdownRows = [
