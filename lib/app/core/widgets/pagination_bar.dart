@@ -95,57 +95,42 @@ class PaginationBar extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.chipBg,
-                    borderRadius: BorderRadius.circular(10.r),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 60.w,
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            value: entriesOptions.contains(entriesPerPage)
-                                ? entriesPerPage
-                                : entriesOptions.first,
-                            isExpanded: true,
-                            isDense: true,
-                            icon: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 18.sp,
-                              color: AppColors.primaryBlue,
-                            ),
-                            style: AppTextStyles.bodyS.copyWith(
-                              color: AppColors.textDark,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            items: entriesOptions
-                                .map((e) => DropdownMenuItem<int>(
-                                      value: e,
-                                      child: Text('$e'),
-                                    ))
-                                .toList(),
-                            onChanged: (v) {
-                              if (v != null) onEntriesPerPageChanged(v);
-                            },
-                          ),
-                        ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: AppColors.chipBg,
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: SizedBox(
+                  width: 50.w,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: entriesOptions.contains(entriesPerPage)
+                          ? entriesPerPage
+                          : entriesOptions.first,
+                      isExpanded: true,
+                      isDense: true,
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 18.sp,
+                        color: AppColors.primaryBlue,
                       ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'per page',
-                        style: AppTextStyles.bodyS.copyWith(
-                          color: AppColors.textMuted,
-                          fontSize: 11.sp,
-                        ),
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.textDark,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
+                      items: entriesOptions
+                          .map((e) => DropdownMenuItem<int>(
+                                value: e,
+                                child: Text('$e'),
+                              ))
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) onEntriesPerPageChanged(v);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -157,7 +142,9 @@ class PaginationBar extends StatelessWidget {
               ),
               if (showPageNumbers && onPageTap != null) ...[
                 SizedBox(width: 8.w),
-                Flexible(child: _buildPageNumbers(context)),
+                Expanded(
+                  child: _buildPageNumbers(context),
+                ),
                 SizedBox(width: 8.w),
               ],
               _PageButton(
@@ -187,20 +174,24 @@ class PaginationBar extends StatelessWidget {
       for (int i = start; i <= end; i++) pages.add(i);
     }
     
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final page in pages) ...[
-            if (page != pages.first) SizedBox(width: 4.w),
-            _PageNumberButton(
-              page: page,
-              isActive: page == current,
-              onTap: () => onPageTap?.call(page),
-            ),
+    return SizedBox(
+      height: 32.w,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final page in pages) ...[
+              if (page != pages.first) SizedBox(width: 4.w),
+              _PageNumberButton(
+                page: page,
+                isActive: page == current,
+                onTap: () => onPageTap?.call(page),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
