@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -72,6 +74,29 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
+  Widget _buildProfileAvatar() {
+    final picked = controller.pickedImagePath.value.trim();
+    if (picked.isNotEmpty) {
+      final file = File(picked);
+      if (file.existsSync()) {
+        return ClipOval(
+          child: Image.file(
+            file,
+            width: 80.w,
+            height: 80.w,
+            fit: BoxFit.cover,
+          ),
+        );
+      }
+    }
+    return ProfileImage(
+      size: 80.w,
+      placeholderAsset: _profileAsset,
+      fit: BoxFit.cover,
+      imageUrl: controller.imageUrl.value.isEmpty ? null : controller.imageUrl.value,
+    );
+  }
+
   Widget _buildProfileSummary() {
     return Container(
         width: double.infinity,
@@ -90,41 +115,39 @@ class ProfileView extends GetView<ProfileController> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(() => Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: ProfileImage(
-                    size: 80.w,
-                    placeholderAsset: _profileAsset,
-                    fit: BoxFit.cover,
-                    imageUrl: controller.imageUrl.value.isEmpty ? null : controller.imageUrl.value,
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(6.w),
+            Obx(() => GestureDetector(
+              onTap: controller.pickImage,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                        ),
+                      ],
                     ),
-                    child: Icon(Icons.camera_alt_rounded, size: 14.sp, color: Colors.white),
+                    child: _buildProfileAvatar(),
                   ),
-                ),
-              ],
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(6.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(Icons.camera_alt_rounded, size: 14.sp, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             )),
             SizedBox(width: 20.w),
             Expanded(

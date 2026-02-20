@@ -108,7 +108,11 @@ class CutoffAllotmentsController extends GetxController {
   List<String> get quotasForDropdown => quotaFilters.isEmpty
       ? ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS']
       : ['Select Quota', ...quotaFilters.map((e) => e.name)];
-  static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
+
+  List<String> get categoriesForDropdown => categoryFilters.isEmpty
+      ? ['Select Category']
+      : ['Select Category', ...categoryFilters.map((e) => e.name)];
+
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022', '2021'];
   static const List<int> entriesOptions = [10, 25, 50, 100];
@@ -124,14 +128,6 @@ class CutoffAllotmentsController extends GetxController {
     'SC': '3',
     'ST': '4',
     'EWS': '5',
-  };
-  static const Map<String, String> categoryIds = {
-    'General': '1',
-    'OBC': '2',
-    'SC': '3',
-    'ST': '4',
-    'EWS': '5',
-    'N/A': '0',
   };
   static const Map<String, String> courseIds = {
     'MBBS': '1',
@@ -149,6 +145,7 @@ class CutoffAllotmentsController extends GetxController {
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<String> yearFilters = <String>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> categoryFilters = <FilterItem>[].obs;
 
   List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
       ? ['State', 'MCC']
@@ -181,8 +178,34 @@ class CutoffAllotmentsController extends GetxController {
     }
     await _loadInstituteTypes();
     await _loadQuotas();
+    await _loadCategories();
     await _loadFiltersFromCutOffApi();
     filtersLoading.value = false;
+  }
+
+  /// Load category options from /common/dependent-filters for the selected quota.
+  Future<void> _loadCategories() async {
+    String? quotaId;
+    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+      final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
+      quotaId = match.isNotEmpty ? match.first.id : null;
+    }
+    if (quotaId == null && quotaFilters.isNotEmpty) {
+      quotaId = quotaFilters.first.id;
+    }
+    if (quotaId == null || quotaId.isEmpty) {
+      categoryFilters.clear();
+      return;
+    }
+    final (success, list, _) = await FiltersApi.getDependentFilters(
+      quotaId: quotaId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      categoryFilters.assignAll(list);
+    } else {
+      categoryFilters.clear();
+    }
   }
 
   Future<void> _loadInstituteTypes() async {
@@ -350,12 +373,22 @@ class CutoffAllotmentsController extends GetxController {
       final match = clinicalTypeFilters.where((e) => e.name == selectedClinicalType.value).toList();
       clinicalTypeId = match.isNotEmpty ? match.first.id : null;
     }
-    final quotaId = selectedQuota.value.isNotEmpty && quotaIds.containsKey(selectedQuota.value)
-        ? quotaIds[selectedQuota.value]
-        : null;
-    final smCategoryId = selectedCategory.value.isNotEmpty && categoryIds.containsKey(selectedCategory.value)
-        ? categoryIds[selectedCategory.value]
-        : null;
+    String? quotaId;
+    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+      if (quotaFilters.isNotEmpty) {
+        final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
+        quotaId = match.isNotEmpty ? match.first.id : quotaIds[selectedQuota.value];
+      } else {
+        quotaId = quotaIds[selectedQuota.value];
+      }
+    }
+    String? smCategoryId;
+    if (selectedCategory.value.isNotEmpty && selectedCategory.value != 'Select Category') {
+      if (categoryFilters.isNotEmpty) {
+        final match = categoryFilters.where((e) => e.name == selectedCategory.value).toList();
+        smCategoryId = match.isNotEmpty ? match.first.id : null;
+      }
+    }
 
     final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
     final (success, data, errorMessage) = await CutOffAllotmentsApi.getCutOffAllotments(
@@ -458,14 +491,20 @@ class CutoffAllotmentsController extends GetxController {
 
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
+    // Reset dependent filters when institute type changes
+    selectedQuota.value = 'Select Quota';
+    selectedCategory.value = 'Select Category';
+    categoryFilters.clear();
     _loadQuotas();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
   void setQuota(String v) {
     selectedQuota.value = v;
-    // Reload quotas when filters change
+    // Reset category when quota changes
+    selectedCategory.value = 'Select Category';
     _loadQuotas();
+    _loadCategories();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 

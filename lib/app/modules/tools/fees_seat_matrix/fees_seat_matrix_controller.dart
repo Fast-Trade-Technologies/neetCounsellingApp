@@ -73,6 +73,7 @@ class FeesSeatMatrixController extends GetxController {
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> quotaFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> categoryFilters = <FilterItem>[].obs;
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<String> yearFilters = <String>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
@@ -88,7 +89,11 @@ class FeesSeatMatrixController extends GetxController {
   List<String> get quotasForDropdown => quotaFilters.isEmpty
       ? ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS']
       : ['Select Quota', ...quotaFilters.map((e) => e.name)];
-  static const List<String> categories = ['Select Category', 'General', 'OBC', 'SC', 'ST', 'EWS', 'N/A'];
+
+  List<String> get categoriesForDropdown => categoryFilters.isEmpty
+      ? ['Select Category']
+      : ['Select Category', ...categoryFilters.map((e) => e.name)];
+
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022', '2021'];
   static const List<int> entriesOptions = [10, 25, 50, 100];
@@ -133,8 +138,34 @@ class FeesSeatMatrixController extends GetxController {
     }
     await _loadInstituteTypes();
     await _loadQuotas();
+    await _loadCategories();
     await _loadFiltersFromFeesSeatApi();
     filtersLoading.value = false;
+  }
+
+  /// Load category options from /common/dependent-filters for the selected quota.
+  Future<void> _loadCategories() async {
+    String? quotaId;
+    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+      final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
+      quotaId = match.isNotEmpty ? match.first.id : null;
+    }
+    if (quotaId == null && quotaFilters.isNotEmpty) {
+      quotaId = quotaFilters.first.id;
+    }
+    if (quotaId == null || quotaId.isEmpty) {
+      categoryFilters.clear();
+      return;
+    }
+    final (success, list, _) = await FiltersApi.getDependentFilters(
+      quotaId: quotaId,
+      showLoader: false,
+    );
+    if (success && list.isNotEmpty) {
+      categoryFilters.assignAll(list);
+    } else {
+      categoryFilters.clear();
+    }
   }
 
   Future<void> _loadInstituteTypes() async {
@@ -382,6 +413,7 @@ class FeesSeatMatrixController extends GetxController {
 
   void setQuota(String v) {
     selectedQuota.value = v;
+    _loadCategories();
     loadFeesSeatMatrix(showLoader: false, page: 1);
   }
 

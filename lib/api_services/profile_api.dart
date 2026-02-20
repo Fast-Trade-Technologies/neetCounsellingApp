@@ -7,10 +7,9 @@ import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 import 'base_api.dart';
 
 /// Profile APIs from NEET Counseling API Postman collection.
-/// GET /user/profile, PUT /user/profile.
-/// All params including nLoginUserIdNo should be in query params (not header).
+/// GET /user/profile, PUT /user/profile (Update user Profile) with nLoginUserIdNo in query.
 class ProfileApi {
-  static const String profilePath = '/user/profile';
+  static const String profilePath = '/user/profile-update';
 
   static final BaseAPI _api = BaseAPI();
 
@@ -56,13 +55,15 @@ class ProfileApi {
     }
   }
 
-  /// PUT {{base_url}}/user/profile with nLoginUserIdNo in query params and update fields in body.
-  /// Body: { nLoginUserIdNo, first_name, last_name, mobile, email }
+  /// PUT {{base_url}}/user/profile?nLoginUserIdNo=<userId> (Update user Profile).
+  /// Body: { user_id, first_name, last_name, mobile, email?, image_base64? } — Content-Type: application/json.
+  /// [imageBase64] optional; when provided (e.g. from picked image), sent as "image_base64" in body (data URL or raw base64).
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> updateProfile({
     required String firstName,
     required String lastName,
     required String mobile,
     String? email,
+    String? imageBase64,
     bool showLoader = true,
   }) async {
     final userId = AppStorage.userId;
@@ -79,8 +80,10 @@ class ProfileApi {
       if (email != null && email.trim().isNotEmpty) {
         body['email'] = email.trim();
       }
+      if (imageBase64 != null && imageBase64.trim().isNotEmpty) {
+        body['image_base64'] = imageBase64.trim();
+      }
 
-      // Append nLoginUserIdNo to URL as query param (not in header)
       final urlWithQuery = '$profilePath?nLoginUserIdNo=$userId';
       final response = await _api.put(
         url: urlWithQuery,

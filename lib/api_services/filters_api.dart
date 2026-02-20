@@ -28,6 +28,7 @@ class FiltersApi {
   static const String instituteTypesPath = '/common/institute-types';
   static const String quotaPath = '/common/quota';
   static const String branchesPath = '/common/branches';
+  static const String dependentFiltersPath = '/common/dependent-filters';
 
   static final BaseAPI _api = BaseAPI();
 
@@ -108,6 +109,53 @@ class FiltersApi {
       queryParameters: {'role_id': roleId, 'course_id': courseId},
       showLoader: showLoader,
     );
+  }
+
+  /// GET /common/dependent-filters?quota_id=&nLoginUserIdNo=
+  /// Returns category options for the given quota (used in Cut-off Allotments and Fees & Matrix).
+  /// Response structure: { isSuccess: true, data: { categories: [{ id, name }], quotas: [], institute_types: [] } }
+  static Future<(bool success, List<FilterItem> list, String? errorMessage)> getDependentFilters({
+    required String quotaId,
+    bool showLoader = false,
+  }) async {
+    final userId = AppStorage.userId;
+    if (userId == null || userId.isEmpty) return (false, <FilterItem>[], 'Please sign in');
+    try {
+      final query = <String, dynamic>{
+        'nLoginUserIdNo': userId,
+        'quota_id': quotaId,
+      };
+      final response = await _api.get(
+        url: dependentFiltersPath,
+        queryParameters: query,
+        showLoader: showLoader,
+      );
+      if (response == null || response.statusCode != 200) {
+        return (false, <FilterItem>[], _messageFromResponse(response) ?? 'Request failed');
+      }
+      final body = _parseBody(response.data);
+      if (body == null) return (false, <FilterItem>[], 'Invalid response');
+      
+      // Check isSuccess
+      final isSuccess = body['isSuccess'] == true || body['success'] == true;
+      if (!isSuccess) {
+        final message = body['message']?.toString();
+        return (false, <FilterItem>[], message ?? 'Failed to load dependent filters');
+      }
+      
+      // Parse categories from data.categories
+      final data = body['data'];
+      if (data is Map) {
+        final categories = data['categories'];
+        if (categories is List) {
+          final list = _parseFilterList(categories);
+          return (true, list, null);
+        }
+      }
+      return (true, <FilterItem>[], null);
+    } on DioException catch (e) {
+      return (false, <FilterItem>[], e.message ?? 'Something went wrong');
+    }
   }
 
   /// Cities API is not in the Postman collection. Returns empty list so UI does not break.

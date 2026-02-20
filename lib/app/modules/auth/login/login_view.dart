@@ -96,16 +96,16 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
                   ),
-                  InkWell(
-                    onTap: controller.onSkip,
-                    child: Text(
-                      'Skip',
-                      style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  // InkWell(
+                  //   onTap: controller.onSkip,
+                  //   child: Text(
+                  //     'Skip',
+                  //     style: AppTextStyles.bodyS.copyWith(
+                  //       color: AppColors.textDark,
+                  //       fontWeight: FontWeight.w700,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
               SizedBox(height: 16.h),

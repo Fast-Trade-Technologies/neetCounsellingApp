@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../api_services/profile_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
@@ -15,10 +19,14 @@ class ProfileController extends GetxController {
   final RxString displayPhone = '—'.obs;
   final RxString displayEmail = '—'.obs;
   final RxString imageUrl = ''.obs;
+  /// Local path of picked image (from gallery/camera). Cleared after successful upload.
+  final RxString pickedImagePath = ''.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isUpdating = false.obs;
   final RxString error = ''.obs;
+
+  static final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void onInit() {
@@ -116,7 +124,41 @@ class ProfileController extends GetxController {
     displayEmail.value = email.isEmpty ? '—' : email;
   }
 
-  /// Update profile via API (PUT /user/profile).
+  /// Show source choice and pick image from gallery or camera.
+  Future<void> pickImage() async {
+    final source = await Get.dialog<ImageSource>(
+      AlertDialog(
+        title: const Text('Change profile photo'),
+        content: const Text('Choose source'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: ImageSource.gallery),
+            child: const Text('Gallery'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: ImageSource.camera),
+            child: const Text('Camera'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: null),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+    if (source == null) return;
+    final XFile? file = await _imagePicker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+    if (file != null && file.path.isNotEmpty) {
+      pickedImagePath.value = file.path;
+    }
+  }
+
+  /// Update profile via API (PUT /user/profile). Sends first_name, last_name, mobile, email, image_base64 (when new image picked).
   Future<void> onSubmit() async {
     final first = firstNameController.text.trim();
     final last = lastNameController.text.trim();
@@ -132,6 +174,23 @@ class ProfileController extends GetxController {
       return;
     }
 
+    String? imageBase64;
+    final pickedPath = pickedImagePath.value.trim();
+    if (pickedPath.isNotEmpty) {
+      final file = File(pickedPath);
+      if (file.existsSync()) {
+        final bytes = file.readAsBytesSync();
+        final base64Str = base64Encode(bytes);
+        final ext = pickedPath.toLowerCase();
+        final mime = ext.endsWith('.png')
+            ? 'image/png'
+            : ext.endsWith('.gif')
+                ? 'image/gif'
+                : 'image/jpeg';
+        imageBase64 = 'data:$mime;base64,$base64Str';
+      }
+    }
+
     isUpdating.value = true;
     error.value = '';
     final (success, data, errorMessage) = await ProfileApi.updateProfile(
@@ -139,6 +198,7 @@ class ProfileController extends GetxController {
       lastName: last,
       mobile: phone,
       email: email.isEmpty ? null : email,
+      imageBase64: imageBase64,
       showLoader: true,
     );
     isUpdating.value = false;
@@ -149,7 +209,7 @@ class ProfileController extends GetxController {
       return;
     }
 
-    // After successful update, fetch profile again to get all fields (including image_url, stream, etc.)
+    pickedImagePath.value = '';
     await loadProfile(showLoader: false);
     AppSnackbar.success('Profile Updated', 'Your details have been saved.');
   }

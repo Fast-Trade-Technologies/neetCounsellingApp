@@ -101,7 +101,7 @@ class FeesSeatMatrixView extends GetView<FeesSeatMatrixController> {
                 SizedBox(height: 10.h),
                 Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: controller.quotasForDropdown, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: FeesSeatMatrixController.categories, onChanged: controller.setCategory))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: controller.quotasForDropdown, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: controller.categoriesForDropdown, onChanged: controller.setCategory))]),
                 SizedBox(height: 10.h),
                 Row(children: [_buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
               ],

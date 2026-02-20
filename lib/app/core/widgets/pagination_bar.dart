@@ -157,7 +157,7 @@ class PaginationBar extends StatelessWidget {
               ),
               if (showPageNumbers && onPageTap != null) ...[
                 SizedBox(width: 8.w),
-                _buildPageNumbers(context),
+                Flexible(child: _buildPageNumbers(context)),
                 SizedBox(width: 8.w),
               ],
               _PageButton(
@@ -187,18 +187,21 @@ class PaginationBar extends StatelessWidget {
       for (int i = start; i <= end; i++) pages.add(i);
     }
     
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final page in pages) ...[
-          if (page != pages.first) SizedBox(width: 4.w),
-          _PageNumberButton(
-            page: page,
-            isActive: page == current,
-            onTap: () => onPageTap?.call(page),
-          ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final page in pages) ...[
+            if (page != pages.first) SizedBox(width: 4.w),
+            _PageNumberButton(
+              page: page,
+              isActive: page == current,
+              onTap: () => onPageTap?.call(page),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
