@@ -60,6 +60,8 @@ class UniversitiesInstitutesRow {
 class UniversitiesInstitutesController extends GetxController {
   final RxString selectedState = 'Select State'.obs;
   final RxString selectedStateId = ''.obs;
+  final RxString selectedCounsellingType = 'Select Counselling Type'.obs;
+  final RxString selectedCounsellingTypeId = ''.obs;
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedUniversity = 'Select University'.obs;
   final RxString selectedUniversityId = ''.obs;
@@ -76,12 +78,17 @@ class UniversitiesInstitutesController extends GetxController {
   final RxString error = ''.obs;
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> universityFilters = <FilterItem>[].obs;
 
   List<String> get states => stateFilters.isEmpty
       ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
       : ['Select State', ...stateFilters.map((e) => e.name)];
+
+  List<String> get counsellingTypesForDropdown => counsellingTypeFilters.isEmpty
+      ? ['Select Counselling Type']
+      : ['Select Counselling Type', ...counsellingTypeFilters.map((e) => e.name)];
 
   static const List<String> instituteTypes = ['Select Institute Type', 'Government', 'Private', 'Deemed'];
   static const List<int> entriesOptions = [10, 25, 50, 100];
@@ -115,14 +122,35 @@ class UniversitiesInstitutesController extends GetxController {
     final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
+      // Set default state to Uttar Pradesh
+      if (selectedState.value == 'Select State' || selectedStateId.value.isEmpty) {
+        final upState = stateList.where((e) => 
+          e.name.toLowerCase().contains('uttar pradesh') || 
+          e.name.toLowerCase().contains('up') ||
+          e.name.toLowerCase() == 'up'
+        ).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else if (stateList.isNotEmpty) {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
+      }
     }
-    await _loadInstituteTypes();
     await _loadFiltersFromUniversitiesInstitutesApi();
+    await _loadInstituteTypes();
     filtersLoading.value = false;
+    // Auto-load data if state is available
+    if (canLoad) {
+      loadUniversitiesInstitutes(showLoader: false, page: 1);
+    }
   }
 
   Future<void> _loadInstituteTypes() async {
-    final counsellingId = '1'; // Default counselling type
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
     final (success, list, _) = await FiltersApi.getInstituteTypes(
       counsellingId: counsellingId,
       showLoader: false,
@@ -133,9 +161,10 @@ class UniversitiesInstitutesController extends GetxController {
   }
 
   Future<void> _loadFiltersFromUniversitiesInstitutesApi() async {
-    final stateId = stateFilters.isNotEmpty ? stateFilters.first.id : '2';
+    final stateId = selectedStateId.value.isNotEmpty ? selectedStateId.value : (stateFilters.isNotEmpty ? stateFilters.first.id : '2');
+    final counsellingTypeId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '1';
     final (success, data, _) = await UniversitiesInstitutesApi.getUniversitiesInstitutes(
-      stateIdCounselling: '1',
+      stateIdCounselling: counsellingTypeId,
       stateId: stateId,
       page: 1,
       perPage: 10,
@@ -148,6 +177,26 @@ class UniversitiesInstitutesController extends GetxController {
     final filters = data['filters'];
     if (filters is! Map) return;
     final map = Map<String, dynamic>.from(filters);
+
+    final counsellingList = map['counselling_types'];
+    if (counsellingList is List) {
+      counsellingTypeFilters.assignAll(_parseFilterItemList(counsellingList));
+      // Auto-select first counselling type if none selected
+      if (selectedCounsellingTypeId.value.isEmpty || 
+          !counsellingTypeFilters.any((e) => e.id == selectedCounsellingTypeId.value) ||
+          !counsellingTypeFilters.any((e) => e.name == selectedCounsellingType.value)) {
+        if (counsellingTypeFilters.isNotEmpty) {
+          selectedCounsellingType.value = counsellingTypeFilters.first.name;
+          selectedCounsellingTypeId.value = counsellingTypeFilters.first.id;
+        }
+      } else {
+        // Ensure selected value matches the filter item
+        final match = counsellingTypeFilters.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+        if (match.isNotEmpty) {
+          selectedCounsellingType.value = match.first.name;
+        }
+      }
+    }
 
     final instituteList = map['institute_types'] ?? map['institute_types_list'];
     if (instituteList is List && instituteList.isNotEmpty) {
@@ -284,16 +333,41 @@ class UniversitiesInstitutesController extends GetxController {
     selectedState.value = v;
     if (v == 'Select State') {
       selectedStateId.value = '';
+      _allRows = [];
+      filteredRows.clear();
+      totalCount.value = 0;
     } else {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
+      if (canLoad) {
+        loadUniversitiesInstitutes(showLoader: false, page: 1);
+      }
     }
-    loadUniversitiesInstitutes(showLoader: false, page: 1);
+  }
+
+  void setCounsellingType(String v) {
+    selectedCounsellingType.value = v;
+    if (v == 'Select Counselling Type') {
+      selectedCounsellingTypeId.value = '';
+      _allRows = [];
+      filteredRows.clear();
+      totalCount.value = 0;
+    } else {
+      final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+      selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
+      // Reload institute types when counselling type changes
+      _loadInstituteTypes();
+      if (canLoad) {
+        loadUniversitiesInstitutes(showLoader: false, page: 1);
+      }
+    }
   }
 
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
-    loadUniversitiesInstitutes(showLoader: false, page: 1);
+    if (canLoad) {
+      loadUniversitiesInstitutes(showLoader: false, page: 1);
+    }
   }
 
   void setUniversity(String v) {

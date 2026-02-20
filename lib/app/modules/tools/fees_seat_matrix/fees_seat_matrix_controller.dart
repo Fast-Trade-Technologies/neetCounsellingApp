@@ -135,6 +135,21 @@ class FeesSeatMatrixController extends GetxController {
     final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
+      // Set default state to Uttar Pradesh
+      if (selectedState.value == 'Select State' || selectedStateId.value.isEmpty) {
+        final upState = stateList.where((e) => 
+          e.name.toLowerCase().contains('uttar pradesh') || 
+          e.name.toLowerCase().contains('up') ||
+          e.name.toLowerCase() == 'up'
+        ).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else if (stateList.isNotEmpty) {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
+      }
     }
     await _loadInstituteTypes();
     await _loadQuotas();

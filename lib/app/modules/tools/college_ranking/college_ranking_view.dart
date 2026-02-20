@@ -97,9 +97,11 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
             SizedBox(height: 14.h),
             Column(
               children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse))]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypesForDropdown, onChanged: controller.setCounsellingType))]),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), _buildClinicalTypeDropdown(context)]),
+                Row(children: [Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType))]),
+                SizedBox(height: 10.h),
+                Row(children: [_buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
               ],
             ),
           ],

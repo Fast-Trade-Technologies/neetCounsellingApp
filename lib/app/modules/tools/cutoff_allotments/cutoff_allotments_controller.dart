@@ -147,7 +147,7 @@ class CutoffAllotmentsController extends GetxController {
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> categoryFilters = <FilterItem>[].obs;
 
-  List<String> get counsellingTypes => counsellingTypeFilters.isEmpty
+  List<String> get counsellingTypesForDropdown => counsellingTypeFilters.isEmpty
       ? ['State', 'MCC']
       : counsellingTypeFilters.map((e) => e.name).toList();
 
@@ -175,6 +175,21 @@ class CutoffAllotmentsController extends GetxController {
     final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
+      // Set default state to Uttar Pradesh
+      if (selectedState.value == 'Select State' || selectedStateId.value.isEmpty) {
+        final upState = stateList.where((e) => 
+          e.name.toLowerCase().contains('uttar pradesh') || 
+          e.name.toLowerCase().contains('up') ||
+          e.name.toLowerCase() == 'up'
+        ).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else if (stateList.isNotEmpty) {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
+      }
     }
     await _loadInstituteTypes();
     await _loadQuotas();
@@ -291,9 +306,18 @@ class CutoffAllotmentsController extends GetxController {
       final list = _parseFilterItemList(ctList);
       if (list.isNotEmpty) {
         counsellingTypeFilters.assignAll(list);
-        if (selectedCounsellingTypeId.value.isEmpty || !list.any((e) => e.id == selectedCounsellingTypeId.value)) {
+        // Set default counselling type if not set or if current selection is not in the list
+        if (selectedCounsellingTypeId.value.isEmpty || 
+            !list.any((e) => e.id == selectedCounsellingTypeId.value) ||
+            !list.any((e) => e.name == selectedCounsellingType.value)) {
           selectedCounsellingType.value = list.first.name;
           selectedCounsellingTypeId.value = list.first.id;
+        } else {
+          // Ensure selected value matches the filter item
+          final match = list.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+          if (match.isNotEmpty) {
+            selectedCounsellingType.value = match.first.name;
+          }
         }
       }
     }

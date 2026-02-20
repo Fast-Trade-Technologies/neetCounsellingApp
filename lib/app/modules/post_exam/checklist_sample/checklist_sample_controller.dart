@@ -76,8 +76,19 @@ class ChecklistSampleController extends GetxController {
     if (success && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
       if (selectedStateId.value.isEmpty) {
-        selectedState.value = stateList.first.name;
-        selectedStateId.value = stateList.first.id;
+        // Set default state to Uttar Pradesh
+        final upState = stateList.where((e) => 
+          e.name.toLowerCase().contains('uttar pradesh') || 
+          e.name.toLowerCase().contains('up') ||
+          e.name.toLowerCase() == 'up'
+        ).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else if (stateList.isNotEmpty) {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
         loadChecklist(showLoader: false);
       }
     } else {

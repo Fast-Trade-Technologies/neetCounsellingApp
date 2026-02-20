@@ -119,10 +119,29 @@ class CollegeRankingController extends GetxController {
     final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
+      // Set default state to Uttar Pradesh
+      if (selectedState.value == 'Select State' || selectedStateId.value.isEmpty) {
+        final upState = stateList.where((e) => 
+          e.name.toLowerCase().contains('uttar pradesh') || 
+          e.name.toLowerCase().contains('up') ||
+          e.name.toLowerCase() == 'up'
+        ).toList();
+        if (upState.isNotEmpty) {
+          selectedState.value = upState.first.name;
+          selectedStateId.value = upState.first.id;
+        } else if (stateList.isNotEmpty) {
+          selectedState.value = stateList.first.name;
+          selectedStateId.value = stateList.first.id;
+        }
+      }
     }
     await _loadFiltersFromCollegeRankingApi();
     await _loadInstituteTypes();
     filtersLoading.value = false;
+    // Auto-load data if both state and counselling type are available
+    if (canLoad) {
+      loadCollegeRanking(showLoader: false, page: 1);
+    }
   }
 
   Future<void> _loadInstituteTypes() async {
@@ -159,10 +178,20 @@ class CollegeRankingController extends GetxController {
     final counsellingList = map['counselling_types'];
     if (counsellingList is List) {
       counsellingTypeFilters.assignAll(_parseFilterItemList(counsellingList));
-      // Auto-select first counselling type if none selected
-      if (selectedCounsellingTypeId.value.isEmpty && counsellingTypeFilters.isNotEmpty) {
-        selectedCounsellingType.value = counsellingTypeFilters.first.name;
-        selectedCounsellingTypeId.value = counsellingTypeFilters.first.id;
+      // Auto-select first counselling type if none selected or if current selection is not in the list
+      if (selectedCounsellingTypeId.value.isEmpty || 
+          !counsellingTypeFilters.any((e) => e.id == selectedCounsellingTypeId.value) ||
+          !counsellingTypeFilters.any((e) => e.name == selectedCounsellingType.value)) {
+        if (counsellingTypeFilters.isNotEmpty) {
+          selectedCounsellingType.value = counsellingTypeFilters.first.name;
+          selectedCounsellingTypeId.value = counsellingTypeFilters.first.id;
+        }
+      } else {
+        // Ensure selected value matches the filter item
+        final match = counsellingTypeFilters.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+        if (match.isNotEmpty) {
+          selectedCounsellingType.value = match.first.name;
+        }
       }
     }
 
@@ -303,34 +332,48 @@ class CollegeRankingController extends GetxController {
     selectedState.value = v;
     if (v == 'Select State') {
       selectedStateId.value = '';
+      _allRows = [];
+      filteredRows.clear();
+      totalCount.value = 0;
     } else {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
+      if (canLoad) {
+        loadCollegeRanking(showLoader: false, page: 1);
+      }
     }
-    loadCollegeRanking(showLoader: false, page: 1);
   }
 
   void setCounsellingType(String v) {
     selectedCounsellingType.value = v;
     if (v == 'Select Counselling Type') {
       selectedCounsellingTypeId.value = '';
+      _allRows = [];
+      filteredRows.clear();
+      totalCount.value = 0;
     } else {
       final match = counsellingTypeFilters.where((e) => e.name == v).toList();
       selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
+      // Reload institute types when counselling type changes
+      _loadInstituteTypes();
+      if (canLoad) {
+        loadCollegeRanking(showLoader: false, page: 1);
+      }
     }
-    // Reload institute types when counselling type changes
-    _loadInstituteTypes();
-    loadCollegeRanking(showLoader: false, page: 1);
   }
 
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
-    loadCollegeRanking(showLoader: false, page: 1);
+    if (canLoad) {
+      loadCollegeRanking(showLoader: false, page: 1);
+    }
   }
 
   void setCourse(String v) {
     selectedCourse.value = v;
-    loadCollegeRanking(showLoader: false, page: 1);
+    if (canLoad) {
+      loadCollegeRanking(showLoader: false, page: 1);
+    }
   }
 
   void setClinicalType(String v) {
@@ -341,7 +384,9 @@ class CollegeRankingController extends GetxController {
       final match = clinicalTypeFilters.where((e) => e.name == v).toList();
       selectedClinicalTypeId.value = match.isEmpty ? '' : match.first.id;
     }
-    loadCollegeRanking(showLoader: false, page: 1);
+    if (canLoad) {
+      loadCollegeRanking(showLoader: false, page: 1);
+    }
   }
 
   void setEntriesPerPage(int v) {
