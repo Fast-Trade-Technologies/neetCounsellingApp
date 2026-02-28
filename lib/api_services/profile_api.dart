@@ -9,7 +9,7 @@ import 'base_api.dart';
 /// Profile APIs from NEET Counseling API Postman collection.
 /// GET /user/profile, PUT /user/profile (Update user Profile) with nLoginUserIdNo in query.
 class ProfileApi {
-  static const String profilePath = '/user/profile-update';
+  static const String profilePath = '/user/profile';
 
   static final BaseAPI _api = BaseAPI();
 
@@ -83,8 +83,9 @@ class ProfileApi {
       if (imageBase64 != null && imageBase64.trim().isNotEmpty) {
         body['image_base64'] = imageBase64.trim();
       }
+      
 
-      final urlWithQuery = '$profilePath?nLoginUserIdNo=$userId';
+      final urlWithQuery = '/user/profile-update?nLoginUserIdNo=$userId';
       final response = await _api.put(
         url: urlWithQuery,
         data: body,

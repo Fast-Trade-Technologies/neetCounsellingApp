@@ -5,19 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53fce68b-e4fe-4daf-a4ff-0ff0d0c5b2e3" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/api_services/auth_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/api_services/auth_api.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/analysis/merit_list/merit_list_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/analysis/merit_list/merit_list_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/dashboard/important_links_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/dashboard/important_links_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/dashboard/news_list_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/dashboard/news_list_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/post_exam/checklist_sample/checklist_sample_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/post_exam/checklist_sample/checklist_sample_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/tools/college_ranking/college_ranking_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/tools/college_ranking/college_ranking_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/tools/cutoff_allotments/cutoff_allotments_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/tools/cutoff_allotments/cutoff_allotments_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/tools/fees_seat_matrix/fees_seat_matrix_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/tools/fees_seat_matrix/fees_seat_matrix_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/routes/app_pages.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/routes/app_pages.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/routes/app_routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/routes/app_routes.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/neetcounsellingapp.iml" beforeDir="false" afterPath="$PROJECT_DIR$/neetcounsellingapp.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/api_services/profile_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/api_services/profile_api.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
