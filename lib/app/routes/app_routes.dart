@@ -30,6 +30,7 @@ class AppRoutes {
   static const String dashboardCounsellingLinks = '/dashboard/counselling-links';
   static const String dashboardWebinars = '/dashboard/webinars';
   static const String dashboardImportantLinks = '/dashboard/important-links';
+  static const String subscriptionPlans = '/subscription/plans';
   static const String contentDetail = '/content-detail';
   static const String webinarDetail = '/webinar-detail';
 }

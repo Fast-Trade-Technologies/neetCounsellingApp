@@ -50,6 +50,7 @@ import '../modules/tools/counselling/counselling_view.dart';
 import '../modules/tools/cutoff_allotments/cutoff_allotments_view.dart';
 import '../modules/tools/fees_seat_matrix/fees_seat_matrix_view.dart';
 import '../modules/tools/universities_institutes/universities_institutes_view.dart';
+import '../modules/subscription/subscription_plan_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -180,6 +181,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.dashboardImportantLinks,
       page: () => const ImportantLinksView(),
+    ),
+    GetPage(
+      name: AppRoutes.subscriptionPlans,
+      page: () => const SubscriptionPlanView(),
     ),
     GetPage(
       name: AppRoutes.contentDetail,

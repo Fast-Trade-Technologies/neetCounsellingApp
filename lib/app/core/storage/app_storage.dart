@@ -44,6 +44,14 @@ class AppStorage {
   static String? get userPaidStatus => _box.read(AppStorageKeys.userPaidStatus) as String?;
   static set userPaidStatus(String? v) => _box.write(AppStorageKeys.userPaidStatus, v);
 
+  /// True when user has an active/paid plan and can see full data (not limited to first N items).
+  /// Uses [userPaidStatus] from API: '1', 'true', 'paid', 'active' (case-insensitive) = paid.
+  static bool get hasActivePlan {
+    final status = userPaidStatus?.trim().toLowerCase();
+    if (status == null || status.isEmpty) return false;
+    return status == '1' || status == 'true' || status == 'paid' || status == 'active' || status == 'yes';
+  }
+
   static String? get userImage => _box.read(AppStorageKeys.userImage) as String?;
   static set userImage(String? v) => _box.write(AppStorageKeys.userImage, v);
 

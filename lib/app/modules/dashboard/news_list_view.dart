@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../core/models/dashboard_models.dart';
+import '../../core/widgets/plan_locked_section.dart';
+import '../../core/storage/app_storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/url_launcher_util.dart';
@@ -24,6 +26,7 @@ class NewsListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final list = _listFromArguments<NewsUpdateItem>(Get.arguments);
     final itemCount = list.length;
+    final isActivePlan = AppStorage.hasActivePlan;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -74,16 +77,13 @@ class NewsListView extends StatelessWidget {
             else
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = list[index];
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: _NewsTile(item: item),
-                      );
-                    },
-                    childCount: itemCount,
+                sliver: SliverToBoxAdapter(
+                  child: PlanLockedSection(
+                    isActivePlan: isActivePlan,
+                    itemCount: list.length,
+                    unlockedCount: 4,
+                    itemSpacing: 12.h,
+                    itemBuilder: (context, i) => _NewsTile(item: list[i]),
                   ),
                 ),
               ),
@@ -166,3 +166,5 @@ class _NewsTile extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
+import 'package:neetcounsellingapp/app/core/widgets/plan_locked_section.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -9,6 +11,9 @@ import 'checklist_sample_controller.dart';
 
 class ChecklistSampleView extends GetView<ChecklistSampleController> {
   const ChecklistSampleView({super.key});
+
+  // Plan value: show full data only when user has active/paid plan
+  bool get isActivePlan => AppStorage.hasActivePlan;
 
   @override
   Widget build(BuildContext context) {
@@ -228,13 +233,12 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
                           style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
                         ),
                       )
-                    : Column(
-                        children: [
-                          for (int i = 0; i < filtered.length; i++) ...[
-                            _DocumentCard(doc: filtered[i]),
-                            if (i < filtered.length - 1) SizedBox(height: 10.h),
-                          ],
-                        ],
+                    : PlanLockedSection(
+                        isActivePlan: isActivePlan,
+                        itemCount: filtered.length,
+                        unlockedCount: 4,
+                        itemSpacing: 10.h,
+                        itemBuilder: (context, i) => _DocumentCard(doc: filtered[i]),
                       ),
               ),
             ],
@@ -346,3 +350,5 @@ class _DocumentCard extends StatelessWidget {
     );
   }
 }
+
+

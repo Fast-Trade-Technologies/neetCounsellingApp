@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import '../../../core/widgets/pagination_bar.dart';
+import '../../../core/widgets/plan_locked_section.dart';
 import 'college_ranking_controller.dart';
 
 class CollegeRankingView extends GetView<CollegeRankingController> {
   const CollegeRankingView({super.key});
+
+  // Plan value: show full data only when user has active/paid plan
+  bool get isActivePlan => AppStorage.hasActivePlan;
 
   @override
   Widget build(BuildContext context) {
@@ -202,13 +207,15 @@ class CollegeRankingView extends GetView<CollegeRankingController> {
               }
               final perPage = controller.entriesPerPage.value;
               final startIndex = (controller.currentPage.value - 1) * perPage;
-              return Column(
-                children: [
-                  for (int i = 0; i < list.length; i++) ...[
-                    _CollegeRankingCard(row: list[i], serialNumber: startIndex + i + 1),
-                    if (i < list.length - 1) SizedBox(height: 16.h),
-                  ],
-                ],
+              return PlanLockedSection(
+                isActivePlan: isActivePlan,
+                itemCount: list.length,
+                unlockedCount: 4,
+                itemSpacing: 16.h,
+                itemBuilder: (context, i) => _CollegeRankingCard(
+                  row: list[i],
+                  serialNumber: startIndex + i + 1,
+                ),
               );
             }),
           ],
@@ -403,3 +410,4 @@ class _FilterDropdown extends StatelessWidget {
     );
   }
 }
+

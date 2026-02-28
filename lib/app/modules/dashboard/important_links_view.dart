@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
+import 'package:neetcounsellingapp/app/core/widgets/plan_locked_section.dart';
 
 import '../../core/models/dashboard_models.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,6 +15,9 @@ import '../main/main_controller.dart';
 class ImportantLinksView extends StatelessWidget {
   const ImportantLinksView({super.key});
 
+  // Plan value: show full data only when user has active/paid plan
+  bool get isActivePlan => AppStorage.hasActivePlan;
+
   static List<T> _listFromArguments<T>(dynamic arguments) {
     if (arguments == null) return [];
     if (arguments is List<T>) return arguments;
@@ -24,6 +29,7 @@ class ImportantLinksView extends StatelessWidget {
   Widget build(BuildContext context) {
     final list = _listFromArguments<ImportantLinkItem>(Get.arguments);
     final itemCount = list.length;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -74,16 +80,13 @@ class ImportantLinksView extends StatelessWidget {
             else
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = list[index];
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: _ImportantLinkTile(item: item),
-                      );
-                    },
-                    childCount: itemCount,
+                sliver: SliverToBoxAdapter(
+                  child: PlanLockedSection(
+                    isActivePlan: isActivePlan,
+                    itemCount: list.length,
+                    unlockedCount: 2,
+                    itemSpacing: 12.h,
+                    itemBuilder: (context, i) => _ImportantLinkTile(item: list[i]),
                   ),
                 ),
               ),
@@ -166,3 +169,5 @@ class _ImportantLinkTile extends StatelessWidget {
     );
   }
 }
+
+

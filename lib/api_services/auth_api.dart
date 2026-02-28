@@ -150,7 +150,7 @@ class AuthApi {
     required String lastName,
     required String email,
     required String mobile,
-    String stream = '1',
+    String stream = '0',
     bool showLoader = true,
   }) async {
     try {
