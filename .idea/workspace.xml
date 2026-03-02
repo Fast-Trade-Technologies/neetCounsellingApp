@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53fce68b-e4fe-4daf-a4ff-0ff0d0c5b2e3" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/lib/api_services/profile_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/api_services/profile_api.dart" afterDir="false" />
-    </list>
+    <list default="true" id="53fce68b-e4fe-4daf-a4ff-0ff0d0c5b2e3" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

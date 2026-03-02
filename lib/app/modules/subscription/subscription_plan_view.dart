@@ -1,10 +1,13 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/url_launcher_util.dart' show launchPaymentPage, iosPurchaseDisclaimer;
 import '../../core/widgets/detail_app_bar.dart';
 
 class SubscriptionPlanView extends StatefulWidget {
@@ -16,29 +19,10 @@ class SubscriptionPlanView extends StatefulWidget {
 
 class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   String selectedPlan = 'UG';
-  late Razorpay _razorpay;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeRazorPay();
-  }
-
-  @override
-  void dispose() {
-    _razorpay.clear();
-    super.dispose();
-  }
-
-  void _initializeRazorPay() {
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-  }
 
   @override
   Widget build(BuildContext context) {
+    final bool isIOS = !kIsWeb && Platform.isIOS;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -61,6 +45,18 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20.h),
+            if (isIOS) ...[
+              Text(
+                iosPurchaseDisclaimer,
+                style: AppTextStyles.bodyS.copyWith(
+                  fontSize: 11.sp,
+                  color: AppColors.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20.h),
+            ],
             
             // Plan Type Toggle
             Container(
@@ -146,6 +142,7 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   }
 
   Widget _buildUGAlertPackage() {
+    final bool isIOS = !kIsWeb && Platform.isIOS;
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 8.h),
@@ -292,24 +289,34 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
                 ),
                 SizedBox(height: 20.h),
                 
-                // Choose Plan Button
+                // Choose Plan Button / iOS disclaimer
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _initiatePayment('UG_ALERT', 2000),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Choose Plan',
-                      style: AppTextStyles.buttonText.copyWith(fontSize: 14.sp),
-                    ),
-                  ),
+                  child: isIOS
+                      ? Text(
+                          iosPurchaseDisclaimer,
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontSize: 11.sp,
+                            color: AppColors.textMuted,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      : ElevatedButton(
+                          onPressed: () => launchPaymentPage(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Choose Plan',
+                            style: AppTextStyles.buttonText.copyWith(fontSize: 14.sp),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -320,6 +327,7 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   }
 
   Widget _buildPopularPackage() {
+    final bool isIOS = !kIsWeb && Platform.isIOS;
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 8.h),
@@ -489,24 +497,34 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
                 ),
                 SizedBox(height: 20.h),
                 
-                // Choose Plan Button
+                // Choose Plan Button / iOS disclaimer
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _initiatePayment('POPULAR', 25000),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Choose Plan',
-                      style: AppTextStyles.buttonText.copyWith(fontSize: 14.sp),
-                    ),
-                  ),
+                  child: isIOS
+                      ? Text(
+                          iosPurchaseDisclaimer,
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontSize: 11.sp,
+                            color: AppColors.textMuted,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      : ElevatedButton(
+                          onPressed: () => launchPaymentPage(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Choose Plan',
+                            style: AppTextStyles.buttonText.copyWith(fontSize: 14.sp),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -555,76 +573,4 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
     );
   }
 
-  void _initiatePayment(String planId, int amount) {
-    // Calculate amount in paise (Razor Pay uses smallest currency unit)
-    int amountInPaise = amount * 100;
-    
-    // Create options for Razor Pay
-    var options = {
-      'key': 'rzp_test_1DP5mmOlF5GtT', // Test key - replace with your live key
-      'amount': amountInPaise,
-      'name': 'NEET Counselling',
-      'description': '$planId Subscription Plan',
-      'prefill': {
-        'contact': '',
-        'email': '',
-      },
-      'theme': {
-        'color': '#1976D2' // AppColors.primaryBlue
-      }
-    };
-    
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      Get.snackbar(
-        'Payment Error',
-        'Failed to initiate payment: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-    }
-  }
-
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    Get.snackbar(
-      'Payment Successful',
-      'Payment ID: ${response.paymentId}',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-    
-    // TODO: Update subscription status in your app
-    // You might want to:
-    // 1. Save subscription details to local storage
-    // 2. Update user's subscription status in your backend
-    // 3. Navigate to a success page or back to main app
-    
-    // For now, let's just show success and go back
-    Future.delayed(const Duration(seconds: 2), () {
-      Get.back();
-    });
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    Get.snackbar(
-      'Payment Failed',
-      'Error: ${response.message}\nCode: ${response.code}',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    Get.snackbar(
-      'External Wallet',
-      'Wallet: ${response.walletName}',
-      backgroundColor: AppColors.primaryBlue,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
-  }
 }

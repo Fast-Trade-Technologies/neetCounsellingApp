@@ -1,9 +1,13 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/url_launcher_util.dart' show launchPaymentPage, iosPurchaseDisclaimer;
 import '../../core/widgets/detail_app_bar.dart';
 import '../main/main_controller.dart';
 
@@ -12,6 +16,7 @@ class BookNowView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isIOS = !kIsWeb && Platform.isIOS;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -51,20 +56,32 @@ class BookNowView extends StatelessWidget {
               ),
             ),
             SizedBox(height: 24.h),
-            Material(
-              color: AppColors.bookNowBlue,
-              borderRadius: BorderRadius.circular(12.r),
-              child: InkWell(
-                onTap: () {},
+            if (isIOS) ...[
+              Text(
+                iosPurchaseDisclaimer,
+                style: AppTextStyles.bodyS.copyWith(
+                  fontSize: 11.sp,
+                  color: AppColors.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ] else ...[
+              Material(
+                color: AppColors.bookNowBlue,
                 borderRadius: BorderRadius.circular(12.r),
-                child: Container(
-                  width: double.infinity,
-                  height: 48.h,
-                  alignment: Alignment.center,
-                  child: Text('Book Now', style: AppTextStyles.buttonText),
+                child: InkWell(
+                  onTap: () => launchPaymentPage(),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Container(
+                    width: double.infinity,
+                    height: 48.h,
+                    alignment: Alignment.center,
+                    child: Text('Book Now', style: AppTextStyles.buttonText),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
         ),
