@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/menu_grid_button.dart';
 import '../../core/widgets/profile_image.dart';
 import '../../core/widgets/welcome_card.dart';
@@ -177,7 +178,7 @@ class MainView extends GetView<MainController> {
     );
   }
 
-  static void _onBookNow() => Get.toNamed(AppRoutes.dashboardBookNow);
+  static void _onBookNow() => launchPaymentPage();
 
   Widget _buildPageDetails(int index) {
     switch (index) {

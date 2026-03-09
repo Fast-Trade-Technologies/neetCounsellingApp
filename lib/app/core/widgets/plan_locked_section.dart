@@ -1,13 +1,14 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../../routes/app_routes.dart';
+import '../utils/url_launcher_util.dart' show launchPaymentPage, iosPurchaseDisclaimer;
 
 /// Renders a list where items after [unlockedCount] are blurred/locked and a single
 /// centered upgrade CTA is shown (same pattern used across the app).
@@ -38,6 +39,7 @@ class PlanLockedSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spacing = itemSpacing ?? 12.h;
+    final bool isIOS = !kIsWeb && Platform.isIOS;
 
     if (itemCount <= 0) return const SizedBox.shrink();
     if (isActivePlan || itemCount <= unlockedCount) {
@@ -108,21 +110,35 @@ class PlanLockedSection extends StatelessWidget {
                     SizedBox(height: 8.h),
                     Text(title, style: AppTextStyles.welcomeHeading, textAlign: TextAlign.center),
                     SizedBox(height: 10.h),
-                    InkWell(
-                      onTap: () => Get.toNamed(AppRoutes.subscriptionPlans),
-                      borderRadius: BorderRadius.circular(10.r),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.navBarActive,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Text(
-                          buttonText,
-                          style: AppTextStyles.buttonText.copyWith(fontSize: 12.sp),
+                    if (!isIOS) ...[
+                      InkWell(
+                        onTap: () => launchPaymentPage(),
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.navBarActive,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Text(
+                            buttonText,
+                            style: AppTextStyles.buttonText.copyWith(fontSize: 12.sp),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
+                    if (isIOS) ...[
+                      SizedBox(height: 12.h),
+                      Text(
+                        iosPurchaseDisclaimer,
+                        style: AppTextStyles.bodyS.copyWith(
+                          fontSize: 10.sp,
+                          color: AppColors.textMuted,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
               ),
