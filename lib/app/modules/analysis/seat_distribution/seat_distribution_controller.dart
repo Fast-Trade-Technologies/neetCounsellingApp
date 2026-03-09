@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../api_services/filters_api.dart';
@@ -94,24 +95,18 @@ class SeatDistributionController extends GetxController {
 
   /// State filter: GET /seat-distribution params state_id, year, course_id (optional).
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
-  final RxString selectedStateId = ''.obs;
-  final RxString selectedStateName = 'All States'.obs;
+  final RxString selectedStateId = '26'.obs;
+  final RxString selectedStateName = 'uttar pradesh'.obs;
   final RxString selectedCourseId = ''.obs;
   final RxString selectedCourseName = 'Select Course'.obs;
   final RxString selectedYear = '2025'.obs;
-  static const List<String> yearOptions = ['2025', '2024', '2023', '2022', '2021'];
+  static const List<String> yearOptions = ['2025', '2024'];
 
   /// Course options for seat distribution filter. id -> display name. Empty id = "Select Course".
   static const List<Map<String, String>> courseOptions = [
     {'id': '', 'name': 'Select Course'},
     {'id': '1', 'name': 'MBBS'},
     {'id': '2', 'name': 'BDS'},
-    {'id': '3', 'name': 'BAMS'},
-    {'id': '4', 'name': 'BHMS'},
-    {'id': '5', 'name': 'BUMS'},
-    {'id': '6', 'name': 'B.Sc. Nursing'},
-    {'id': '7', 'name': 'BPT'},
-    {'id': '8', 'name': 'BVSC'},
   ];
 
   @override
@@ -128,7 +123,7 @@ class SeatDistributionController extends GetxController {
   void setStateFilter(FilterItem? item) {
     if (item == null) {
       selectedStateId.value = '';
-      selectedStateName.value = 'All States';
+      selectedStateName.value = 'uttar pradesh';
     } else {
       selectedStateId.value = item.id;
       selectedStateName.value = item.name;
@@ -188,19 +183,50 @@ class SeatDistributionController extends GetxController {
     tableRows.assignAll(rows);
 
     final rawTree = data['tree_data'];
+
     final treeList = <SeatTreeNode>[];
+    final labels = <String>[];
+    final series = <int>[];
+
     if (rawTree is List) {
       for (final e in rawTree) {
         final node = SeatTreeNode.fromJson(e);
-        if (node != null) treeList.add(node);
+
+        if (node != null) {
+          treeList.add(node);
+
+          /// add all children for graph
+          for (final child in node.children) {
+            labels.add(child.name.trim());
+            series.add(child.value);
+          }
+        }
       }
     }
-    treeData.assignAll(treeList);
 
-    final labelsRaw = data['seat_labels'];
-    final seriesRaw = data['seat_series'];
-    seatLabels.assignAll(labelsRaw is List ? (labelsRaw).map((e) => e?.toString() ?? '').toList() : []);
-    seatSeries.assignAll(seriesRaw is List ? (seriesRaw).map((e) => e is int ? e : int.tryParse(e?.toString() ?? '') ?? 0).toList() : []);
+    treeData.assignAll(treeList);
+    seatLabels.assignAll(labels);
+    seatSeries.assignAll(series);
+
+    debugPrint("tree --- $treeList");
+    debugPrint("labels --- $labels");
+    debugPrint("series --- $series");
+
+    showResults.value = true;
+
+    debugPrint("tree --- $treeList");
+    debugPrint("labels --- $labels");
+    debugPrint("series --- $series");
+
+    // for (final node in treeList) {
+    //   for (final child in node.children) {
+    //     labels.add(child.name.trim());
+    //     series.add(child.value);
+    //   }
+    // }
+    //
+    // seatLabels.assignAll(labels);
+    // seatSeries.assignAll(series);
 
     showResults.value = true;
   }

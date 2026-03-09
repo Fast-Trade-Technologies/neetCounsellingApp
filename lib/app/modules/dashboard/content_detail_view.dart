@@ -51,7 +51,7 @@ class ContentDetailView extends StatelessWidget {
                     imageUrl,
                     width: double.infinity,
                     height: 250.h,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(

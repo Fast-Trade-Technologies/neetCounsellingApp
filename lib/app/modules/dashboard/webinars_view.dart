@@ -159,7 +159,7 @@ class _WebinarCard extends StatelessWidget {
                   imageUrl,
                   width: double.infinity,
                   height: 180.h,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fill,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     final expectedBytes = loadingProgress.expectedTotalBytes;

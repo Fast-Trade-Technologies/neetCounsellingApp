@@ -124,7 +124,7 @@ class _OnboardingPage1 extends StatelessWidget {
             ),
             SizedBox(height: 6.h),
             Text(
-              'MBBS and BDS & AYUSH',
+              'MBBS and MD/MS',
               style: AppTextStyles.bodyS,
               textAlign: TextAlign.center,
             ),
@@ -184,7 +184,7 @@ class _OnboardingPage2 extends StatelessWidget {
             ),
             SizedBox(height: 6.h),
             Text(
-              'MBBS - AYUSH - BDS Admissions',
+              'MBBS and MD/MS Admissions',
               style: AppTextStyles.bodyS,
               textAlign: TextAlign.center,
             ),

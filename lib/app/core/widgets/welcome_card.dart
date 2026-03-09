@@ -64,7 +64,7 @@ class WelcomeCard extends StatelessWidget {
                     bookNowImageAsset ?? _defaultCardImage,
                     width: double.infinity,
                     height: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                   ),
                 ),
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -28,13 +29,402 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: _buildLayout(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLayout(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= 980;
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFD),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: const Color(0xFFE6EDF5)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textDark.withValues(alpha: 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCard(context),
-              SizedBox(height: 24.h),
+              _buildHeader(),
+              SizedBox(height: 14.h),
+              Container(
+                height: 1,
+                color: const Color(0xFFE8EEF6),
+              ),
+              SizedBox(height: 14.h),
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 7, child: _buildMapPanel()),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        children: [
+                          _buildSummaryCard(),
+                          SizedBox(height: 14.h),
+                          _buildCollegeCard(),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else ...[
+                _buildMapPanel(),
+                SizedBox(height: 14.h),
+                _buildSummaryCard(),
+                SizedBox(height: 14.h),
+                _buildCollegeCard(),
+              ],
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('College & Seats', style: AppTextStyles.welcomeHeading.copyWith(fontSize: 24.sp)),
+              SizedBox(height: 4.h),
+              Text(
+                'Navigate across different medical college seat distributions',
+                style: AppTextStyles.bodyM.copyWith(color: const Color(0xFF47576B)),
+              ),
+            ],
+          ),
+        ),
+        _buildStateDropdown(),
+      ],
+    );
+  }
+
+  Widget _buildStateDropdown() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: const Color(0xFFD8E2EE)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'State',
+            style: AppTextStyles.bodyM.copyWith(
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF142A52),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapPanel() {
+    return Container(
+      height: 520.h,
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 26.w, vertical: 18.h),
+                child: SvgPicture.asset(
+                  'assets/maps/india_states.svg',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 10.w,
+            top: 14.h,
+            child: Column(
+              children: [
+                _buildMapAction(Icons.home_outlined),
+                SizedBox(height: 10.h),
+                _buildMapAction(Icons.add),
+                SizedBox(height: 10.h),
+                _buildMapAction(Icons.remove),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapAction(IconData icon) {
+    return Container(
+      width: 36.w,
+      height: 36.w,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFDCE5EF)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F4F8),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        children: [
+          Obx(
+            () => Container(
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6EBF2),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _SegmentTab(
+                      label: 'Seat Wise',
+                      isActive: controller.selectedTab.value == 0,
+                      onTap: () => controller.setTab(0),
+                    ),
+                  ),
+                  Expanded(
+                    child: _SegmentTab(
+                      label: 'College Wise',
+                      isActive: controller.selectedTab.value == 1,
+                      onTap: () => controller.setTab(1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricTile(value: '86854', label: 'Seats'),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _buildMetricTile(value: '739', label: 'Colleges'),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          _buildStatLine(title: 'Private (319)', value: '40,027'),
+          SizedBox(height: 6.h),
+          _buildProgress(0.47, const Color(0xFF0284C7)),
+          SizedBox(height: 14.h),
+          _buildStatLine(title: 'Government (420)', value: '46,352'),
+          SizedBox(height: 6.h),
+          _buildProgress(0.55, const Color(0xFF5DAD33)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricTile({required String value, required String label}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8EDF4),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: AppTextStyles.titleM.copyWith(
+              fontSize: 28.sp,
+              color: const Color(0xFF0D2345),
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            style: AppTextStyles.bodyM.copyWith(
+              color: const Color(0xFF4A5D73),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatLine({required String title, required String value}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: AppTextStyles.bodyM.copyWith(
+              color: const Color(0xFF50627A),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: AppTextStyles.bodyM.copyWith(
+            color: const Color(0xFF2C4567),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgress(double value, Color color) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6.r),
+      child: LinearProgressIndicator(
+        value: value,
+        minHeight: 8.h,
+        backgroundColor: const Color(0xFFDCE5EE),
+        valueColor: AlwaysStoppedAnimation<Color>(color),
+      ),
+    );
+  }
+
+  Widget _buildCollegeCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F4F8),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8EDF4),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 34.w,
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(9.r),
+              ),
+              child: const Icon(Icons.account_balance_outlined, size: 20),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'ACSR GOVERNMENT MEDICAL\nCOLLEGE NELLORE',
+                          style: AppTextStyles.detailScreenTitle.copyWith(
+                            color: const Color(0xFF0B2350),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 20.sp,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF3FA),
+                          borderRadius: BorderRadius.circular(18.r),
+                          border: Border.all(color: const Color(0xFFD1DEEE)),
+                        ),
+                        child: Text(
+                          'Government',
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: const Color(0xFF193A64),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Seats : 149',
+                    style: AppTextStyles.bodyM.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3C526D),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF6F8FC),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(color: const Color(0xFFD5DFEC)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.language_rounded, size: 14, color: Color(0xFF5C6D81)),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Website',
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: const Color(0xFF465A74),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -55,210 +445,39 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
       ),
     );
   }
-
-  Widget _buildCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('College & Seats', style: AppTextStyles.welcomeHeading),
-          SizedBox(height: 4.h),
-          Text(
-            'Here you can see different medical college and seat distributions',
-            style: AppTextStyles.detailScreenSubtitle,
-          ),
-          SizedBox(height: 16.h),
-          Container(
-            height: 160.h,
-            decoration: BoxDecoration(
-              color: AppColors.chipBg,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.textDark.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'Map of India',
-                style: AppTextStyles.bodyS.copyWith(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Obx(
-            () => Row(
-              children: [
-                _TabChip(
-                  label: 'Seat Wise',
-                  isSelected: controller.selectedTab.value == 0,
-                  onTap: () => controller.setTab(0),
-                ),
-                SizedBox(width: 16.w),
-                _TabChip(
-                  label: 'College Wise',
-                  isSelected: controller.selectedTab.value == 1,
-                  onTap: () => controller.setTab(1),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '86656',
-                      style: AppTextStyles.titleM.copyWith(
-                        fontSize: 18.sp,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    Text('Seats', style: AppTextStyles.detailScreenSubtitle),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '758',
-                      style: AppTextStyles.titleM.copyWith(
-                        fontSize: 18.sp,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    Text('Colleges', style: AppTextStyles.detailScreenSubtitle),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 14.h),
-          _ProgressRow(
-            label: 'Private (310)',
-            value: 0.4,
-            color: AppColors.navBarActive,
-            trailing: '45,000',
-          ),
-          SizedBox(height: 10.h),
-          _ProgressRow(
-            label: 'Government (448)',
-            value: 0.6,
-            color: AppColors.progressGreen,
-            trailing: '46,000',
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-class _TabChip extends StatelessWidget {
-  const _TabChip({
+class _SegmentTab extends StatelessWidget {
+  const _SegmentTab({
     required this.label,
-    required this.isSelected,
+    required this.isActive,
     required this.onTap,
   });
 
   final String label;
-  final bool isSelected;
+  final bool isActive;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.bodyS.copyWith(
-              color: isSelected ? AppColors.textDark : AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
+      borderRadius: BorderRadius.circular(8.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 10.h),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFCFE1F3) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.bodyM.copyWith(
+            color: const Color(0xFF183760),
+            fontWeight: FontWeight.w700,
           ),
-          SizedBox(height: 6.h),
-          Container(
-            height: 3.h,
-            width: 60.w,
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.navBarActive : Colors.transparent,
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-        ],
+        ),
       ),
-    );
-  }
-}
-
-class _ProgressRow extends StatelessWidget {
-  const _ProgressRow({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.trailing,
-  });
-
-  final String label;
-  final double value;
-  final Color color;
-  final String trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: AppTextStyles.bodyS.copyWith(
-              color: AppColors.textDark,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4.r),
-            child: LinearProgressIndicator(
-              value: value,
-              backgroundColor: AppColors.chipBg,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 8.h,
-            ),
-          ),
-        ),
-        SizedBox(width: 8.w),
-        Text(
-          trailing,
-          style: AppTextStyles.bodyS.copyWith(
-            color: AppColors.textDark,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -100,7 +100,7 @@ class AboutView extends GetView<AboutController> {
         borderRadius: BorderRadius.circular(16.r),
         child: Image.network(
           imageUrl,
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Container(

@@ -124,7 +124,7 @@ class WebinarDetailView extends GetView<WebinarDetailController> {
                           child: Image.network(
                             controller.imageUrl.value,
                             width: double.infinity,
-                            height: 280.h,
+                            height: 260.h,
                             fit: BoxFit.fill,
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;

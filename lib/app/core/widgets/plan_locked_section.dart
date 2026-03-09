@@ -5,10 +5,12 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/url_launcher_util.dart' show launchPaymentPage, iosPurchaseDisclaimer;
+import '../utils/url_launcher_util.dart' show iosPurchaseDisclaimer;
+import '../../routes/app_routes.dart';
 
 /// Renders a list where items after [unlockedCount] are blurred/locked and a single
 /// centered upgrade CTA is shown (same pattern used across the app).
@@ -112,7 +114,7 @@ class PlanLockedSection extends StatelessWidget {
                     SizedBox(height: 10.h),
                     if (!isIOS) ...[
                       InkWell(
-                        onTap: () => launchPaymentPage(),
+                        onTap: () => Get.toNamed(AppRoutes.subscriptionPlans),
                         borderRadius: BorderRadius.circular(10.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),

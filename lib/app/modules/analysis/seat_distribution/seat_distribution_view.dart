@@ -338,41 +338,50 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
       child: Column(
         children: [
           Obx(() {
-            final rows = controller.tableRows;
-            if (rows.isEmpty) {
-              return SizedBox(height: 180.h, child: Center(child: Text('No data for chart', style: AppTextStyles.detailScreenSubtitle)));
+            final labels = controller.seatLabels;
+            final values = controller.seatSeries;
+
+            if (labels.isEmpty || values.isEmpty) {
+              return SizedBox(
+                height: 180.h,
+                child: Center(
+                  child: Text(
+                    'No data for chart',
+                    style: AppTextStyles.detailScreenSubtitle,
+                  ),
+                ),
+              );
             }
+
             return SizedBox(
               height: 220.h,
               child: CustomPaint(
                 size: Size(200.w, 200.w),
-                painter: _SeatDistributionPiePainter(rows: rows.toList(), colors: _chartColors),
+                painter: _SeatDistributionPiePainter(
+                  labels: labels.toList(),
+                  values: values.toList(),
+                  colors: _chartColors,
+                ),
               ),
             );
           }),
+
           SizedBox(height: 16.h),
-          _buildTableHeader(),
-          SizedBox(height: 8.h),
+
+          /// Legend
           Obx(() {
-            final rows = controller.tableRows;
-            if (rows.isEmpty) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                child: Text(
-                  'No seat distribution data found.',
-                  style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textMuted),
-                ),
-              );
-            }
+            final labels = controller.seatLabels;
+            final values = controller.seatSeries;
+
             return Column(
               children: [
-                for (int i = 0; i < rows.length; i++)
+                for (int i = 0; i < labels.length; i++)
                   _buildTableRow(
                     _chartColors[i % _chartColors.length],
-                    rows[i].seatTypeName,
-                    '${rows[i].totalSeats}',
-                    '${rows[i].totalColleges}',
-                    '${rows[i].totalCategories}',
+                    labels[i],
+                    values[i].toString(),
+                    '',
+                    '',
                   ),
               ],
             );
@@ -462,38 +471,46 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
 
 /// Pie chart painter driven by [SeatDistributionRow] data (totalSeats per seat type).
 class _SeatDistributionPiePainter extends CustomPainter {
-  _SeatDistributionPiePainter({required this.rows, required this.colors});
-
-  final List<SeatDistributionRow> rows;
+  final List<String> labels;
+  final List<int> values;
   final List<Color> colors;
+
+  _SeatDistributionPiePainter({
+    required this.labels,
+    required this.values,
+    required this.colors,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final total = rows.fold<int>(0, (sum, r) => sum + r.totalSeats);
-    if (total <= 0) return;
+    final total = values.fold(0, (a, b) => a + b);
 
-    const startAngle = -3.14159 / 2;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42;
+    double startAngle = -90;
 
-    var sweepStart = startAngle;
-    for (var i = 0; i < rows.length; i++) {
-      final sweep = (rows[i].totalSeats / total) * 2 * 3.14159;
+    final rect = Rect.fromCircle(
+      center: Offset(size.width / 2, size.height / 2),
+      radius: size.width / 2,
+    );
+
+    for (int i = 0; i < values.length; i++) {
+      final sweepAngle = (values[i] / total) * 360;
+
       final paint = Paint()
-        ..color = colors[i % colors.length]
-        ..style = PaintingStyle.fill;
+        ..style = PaintingStyle.fill
+        ..color = colors[i % colors.length];
+
       canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        sweepStart,
-        sweep,
+        rect,
+        startAngle * (3.1416 / 180),
+        sweepAngle * (3.1416 / 180),
         true,
         paint,
       );
-      sweepStart += sweep;
+
+      startAngle += sweepAngle;
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SeatDistributionPiePainter oldDelegate) =>
-      oldDelegate.rows != rows;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

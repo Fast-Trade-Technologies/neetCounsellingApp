@@ -78,7 +78,7 @@ class MenuView extends GetView<MoreMenuController> {
             child: ProfileImage(
               size: 88.w,
               placeholderAsset: _profileAsset,
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
               imageUrl: controller.userImageUrl.value.isEmpty ? null : controller.userImageUrl.value,
             ),
           ),
@@ -138,12 +138,12 @@ class MenuView extends GetView<MoreMenuController> {
             label: 'About Us',
             onTap: () => Get.toNamed(AppRoutes.about),
           ),
-          _buildDivider(),
-          _MenuListTile(
-            iconAsset: '$_icons/Insights.png',
-            label: 'Insights',
-            onTap: () {},
-          ),
+          // _buildDivider(),
+          // _MenuListTile(
+          //   iconAsset: '$_icons/Insights.png',
+          //   label: 'Insights',
+          //   onTap: () {},
+          // ),
         ],
       ),
     );
