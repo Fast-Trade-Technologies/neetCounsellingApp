@@ -10,7 +10,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 
-
 class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
   const CutoffAllotmentsView({super.key});
 
@@ -31,14 +30,18 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
         onRefresh: () => controller.refresh(),
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'An overview of college cut-offs & allotments, with round-wise closing ranks and fee structure by course, category, quota and rank type.',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                style: AppTextStyles.detailScreenSubtitle.copyWith(
+                  color: AppColors.textDark,
+                ),
               ),
               SizedBox(height: 16.h),
               _buildFilterCard(context),
@@ -68,7 +71,9 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
   }
 
   Widget _buildClinicalTypeDropdown(BuildContext context) {
-    if (controller.clinicalTypeFilters.isEmpty) return const Expanded(child: SizedBox());
+    if (controller.clinicalTypeFilters.isEmpty) {
+      return const Expanded(child: SizedBox());
+    }
     return Expanded(
       child: _FilterDropdown(
         label: 'Clinical Type',
@@ -94,22 +99,102 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading),
+            Text(
+              controller.selectedState.value,
+              style: AppTextStyles.welcomeHeading,
+            ),
             SizedBox(height: 4.h),
             Text(
               'Round-wise updates with the latest closing ranks and allotments details of medical colleges',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+              style: AppTextStyles.detailScreenSubtitle.copyWith(
+                color: AppColors.textDark,
+              ),
             ),
             SizedBox(height: 14.h),
             Column(
               children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: controller.yearsForDropdown, onChanged: controller.setYear))]),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'State',
+                        value: controller.selectedState.value,
+                        items: controller.states,
+                        onChanged: controller.setState,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Year',
+                        value: controller.selectedYear.value,
+                        items: controller.yearsForDropdown,
+                        onChanged: controller.setYear,
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypesForDropdown, onChanged: controller.setCounsellingType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType))]),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Counselling Type',
+                        value: controller.selectedCounsellingType.value,
+                        items: controller.counsellingTypesForDropdown,
+                        onChanged: controller.setCounsellingType,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Institute Type',
+                        value: controller.selectedInstituteType.value,
+                        items: controller.instituteTypesForDropdown,
+                        onChanged: controller.setInstituteType,
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: controller.quotasForDropdown, onChanged: controller.setQuota))]),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Course',
+                        value: controller.selectedCourse.value,
+                        items: controller.coursesForDropdown,
+                        onChanged: controller.setCourse,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Quota',
+                        value: controller.selectedQuota.value,
+                        items: controller.quotasForDropdown,
+                        onChanged: controller.setQuota,
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: controller.categoriesForDropdown, onChanged: controller.setCategory)), SizedBox(width: 10.w), _buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FilterDropdown(
+                        label: 'Category',
+                        value: controller.selectedCategory.value,
+                        items: controller.categoriesForDropdown,
+                        onChanged: controller.setCategory,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    _buildClinicalTypeDropdown(context),
+                    SizedBox(width: 10.w),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
               ],
             ),
           ],
@@ -128,7 +213,9 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           child: const Center(child: CircularProgressIndicator()),
         );
       }
-      if (controller.error.value.isNotEmpty && controller.filteredRows.isEmpty && controller.canLoad) {
+      if (controller.error.value.isNotEmpty &&
+          controller.filteredRows.isEmpty &&
+          controller.canLoad) {
         return Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -141,7 +228,9 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
               Center(
                 child: Text(
                   controller.error.value,
-                  style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                  style: AppTextStyles.bodyS.copyWith(
+                    color: AppColors.textMuted,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -165,9 +254,18 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
                 hintStyle: AppTextStyles.fieldHint,
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: AppColors.border)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: AppColors.border)),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 10.h,
+                ),
                 isDense: true,
               ),
               style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
@@ -180,7 +278,9 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
               final end = controller.paginationEnd;
               final showingText = controller.filteredRows.isEmpty
                   ? 'Showing 0–0 of 0'
-                  : (fromApi && total > 0 ? 'Showing $start–$end of $total' : 'Showing $start–$end');
+                  : (fromApi && total > 0
+                        ? 'Showing $start–$end of $total'
+                        : 'Showing $start–$end');
               return PaginationBar(
                 showingText: showingText,
                 entriesPerPage: controller.entriesPerPage.value,
@@ -202,8 +302,12 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 24.h),
                   child: Text(
-                    controller.canLoad ? 'No results found.' : 'Select State and Year to load data.',
-                    style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                    controller.canLoad
+                        ? 'No results found.'
+                        : 'Select State and Year to load data.',
+                    style: AppTextStyles.bodyS.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 );
@@ -215,10 +319,8 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
                 itemCount: list.length,
                 unlockedCount: 4,
                 itemSpacing: 16.h,
-                itemBuilder: (context, i) => _CutoffCard(
-                  row: list[i],
-                  serialNumber: startIndex + i + 1,
-                ),
+                itemBuilder: (context, i) =>
+                    _CutoffCard(row: list[i], serialNumber: startIndex + i + 1),
               );
             }),
           ],
@@ -266,7 +368,9 @@ class _CutoffCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Text(
                   '$serialNumber',
@@ -344,9 +448,15 @@ class _Chip extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+          style: AppTextStyles.bodyS.copyWith(
+            fontSize: 11.sp,
+            color: AppColors.textMuted,
+          ),
           children: [
-            TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
             TextSpan(
               text: value,
               style: TextStyle(
@@ -382,12 +492,20 @@ class _RoundChip extends StatelessWidget {
           children: [
             Text(
               label,
-              style: AppTextStyles.bodyS.copyWith(fontSize: 10.sp, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+              style: AppTextStyles.bodyS.copyWith(
+                fontSize: 10.sp,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             SizedBox(height: 4.h),
             Text(
               value,
-              style: AppTextStyles.bodyS.copyWith(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.primaryBlue),
+              style: AppTextStyles.bodyS.copyWith(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryBlue,
+              ),
             ),
           ],
         ),
@@ -397,7 +515,12 @@ class _RoundChip extends StatelessWidget {
 }
 
 class _FilterDropdown extends StatelessWidget {
-  const _FilterDropdown({required this.label, required this.value, required this.items, required this.onChanged});
+  const _FilterDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
 
   final String label;
   final String value;
@@ -406,14 +529,19 @@ class _FilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayValue = items.contains(value) ? value : (items.isNotEmpty ? items.first : '');
+    final displayValue = items.contains(value)
+        ? value
+        : (items.isNotEmpty ? items.first : '');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: AppTextStyles.detailScreenSubtitle.copyWith(fontSize: 10.sp, color: AppColors.textMuted),
+          style: AppTextStyles.detailScreenSubtitle.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textMuted,
+          ),
         ),
         SizedBox(height: 4.h),
         Container(
@@ -428,9 +556,27 @@ class _FilterDropdown extends StatelessWidget {
               value: displayValue,
               isExpanded: true,
               isDense: true,
-              icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18.sp, color: AppColors.textMuted),
-              style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 11.sp),
-              items: items.map((e) => DropdownMenuItem<String>(value: e, child: Text(e, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18.sp,
+                color: AppColors.textMuted,
+              ),
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontSize: 11.sp,
+              ),
+              items: items
+                  .map(
+                    (e) => DropdownMenuItem<String>(
+                      value: e,
+                      child: Text(
+                        e,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
               onChanged: (v) => v != null ? onChanged(v) : null,
             ),
           ),
@@ -439,4 +585,3 @@ class _FilterDropdown extends StatelessWidget {
     );
   }
 }
-

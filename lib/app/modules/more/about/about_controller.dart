@@ -33,6 +33,7 @@ class AboutController extends GetxController {
     }
   }
 
+  @override
   Future<void> refresh() async {
     await loadAbout(showLoader: false);
   }

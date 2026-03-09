@@ -117,7 +117,15 @@ class SeatDistributionController extends GetxController {
 
   Future<void> _loadStateFilters() async {
     final (success, list, _) = await FiltersApi.getStates(showLoader: false);
-    if (success && list.isNotEmpty) stateFilters.assignAll(list);
+    if (success && list.isNotEmpty) {
+      stateFilters.assignAll(list);
+      final matches = list.where((e) => e.name.trim().toLowerCase() == 'uttar pradesh').toList();
+      final fallback = matches.isNotEmpty ? matches.first : list.first;
+      selectedStateId.value = fallback.id;
+      selectedStateName.value = fallback.name;
+    }
+    selectedYear.value = '2025';
+    await loadSeatDistribution(showLoader: false);
   }
 
   void setStateFilter(FilterItem? item) {

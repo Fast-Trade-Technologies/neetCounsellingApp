@@ -55,7 +55,7 @@ class ProfileApi {
     }
   }
 
-  /// PUT {{base_url}}/user/profile?nLoginUserIdNo=<userId> (Update user Profile).
+  /// PUT `{{base_url}}/user/profile?nLoginUserIdNo={userId}` (Update user Profile).
   /// Body: { user_id, first_name, last_name, mobile, email?, image_base64? } — Content-Type: application/json.
   /// [imageBase64] optional; when provided (e.g. from picked image), sent as "image_base64" in body (data URL or raw base64).
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> updateProfile({

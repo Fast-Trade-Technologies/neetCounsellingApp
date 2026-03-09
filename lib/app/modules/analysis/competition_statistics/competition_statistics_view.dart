@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -7,7 +8,8 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import 'competition_statistics_controller.dart';
 
-class CompetitionStatisticsView extends GetView<CompetitionStatisticsController> {
+class CompetitionStatisticsView
+    extends GetView<CompetitionStatisticsController> {
   const CompetitionStatisticsView({super.key});
 
   @override
@@ -16,7 +18,8 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
         title: 'NEET UG Competition Statistics',
-        subtitle: 'NEET Counselling / Analysis / NEET UG Competition Statistics',
+        subtitle:
+            'NEET Counselling / Analysis / NEET UG Competition Statistics',
         hideFilter: true,
         onBack: () => Get.back(),
       ),
@@ -24,7 +27,9 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
         onRefresh: () => controller.refresh(),
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,117 +95,134 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             style: AppTextStyles.welcomeHeading,
           ),
           SizedBox(height: 12.h),
-          Obx(() => SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: CompetitionStatisticsController.breakdownTabs
-                  .asMap()
-                  .entries
-                  .map((e) => Padding(
+          Obx(
+            () => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: CompetitionStatisticsController.breakdownTabs
+                    .asMap()
+                    .entries
+                    .map(
+                      (e) => Padding(
                         padding: EdgeInsets.only(right: 8.w),
                         child: _TabChip(
                           label: e.value,
-                          isSelected: controller.breakdownTabIndex.value == e.key,
+                          isSelected:
+                              controller.breakdownTabIndex.value == e.key,
                           onTap: () => controller.setBreakdownTab(e.key),
                         ),
-                      ))
-                  .toList(),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
-          )),
+          ),
           SizedBox(height: 14.h),
           Obx(() {
             controller.breakdownTabIndex.value;
             final label = controller.breakdownTableLabel;
             final rows = controller.breakdownRows;
             return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingRowColor: WidgetStateProperty.all(AppColors.chipBg),
-              columnSpacing: 16.w,
-              horizontalMargin: 4.w,
-              columns: [
-                DataColumn(
-                  label: SizedBox(
-                    width: 180.w,
-                    child: Text(
-                      label,
-                      style: AppTextStyles.bodyS.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingRowColor: WidgetStateProperty.all(AppColors.chipBg),
+                columnSpacing: 16.w,
+                horizontalMargin: 4.w,
+                columns: [
+                  DataColumn(
+                    label: SizedBox(
+                      width: 180.w,
+                      child: Text(
+                        label,
+                        style: AppTextStyles.bodyS.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDark,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                ...CompetitionStatisticsController.breakdownYears
-                    .map((y) => DataColumn(
-                          label: SizedBox(
-                            width: 72.w,
-                            child: Text(
-                              y,
-                              style: AppTextStyles.bodyS.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textDark,
+                  ...CompetitionStatisticsController.breakdownYears.map(
+                    (y) => DataColumn(
+                      label: SizedBox(
+                        width: 72.w,
+                        child: Text(
+                          y,
+                          style: AppTextStyles.bodyS.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                rows: rows
+                    .map(
+                      (row) => DataRow(
+                        cells: [
+                          DataCell(
+                            SizedBox(
+                              width: 180.w,
+                              child: Text(
+                                row['label'] as String,
+                                style: AppTextStyles.bodyS.copyWith(
+                                  color: AppColors.textDark,
+                                  fontSize: 11.sp,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
-                        )),
-              ],
-              rows: rows
-                  .map((row) => DataRow(
-                        cells: [
-                          DataCell(SizedBox(
-                            width: 180.w,
-                            child: Text(
-                              row['label'] as String,
-                              style: AppTextStyles.bodyS.copyWith(
-                                color: AppColors.textDark,
-                                fontSize: 11.sp,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )),
-                          ...CompetitionStatisticsController.breakdownYears
-                              .map((y) {
-                            final v = row[y] as int? ?? 0;
-                            final prevYear = _prevYear(y);
-                            final prev = prevYear != null ? (row[prevYear] as int? ?? 0) : null;
-                            final isUp = prev != null && v > prev;
-                            return DataCell(
-                              SizedBox(
-                                width: 72.w,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        _formatNum(v),
-                                        style: AppTextStyles.bodyS.copyWith(
-                                          color: AppColors.textDark,
-                                          fontSize: 10.sp,
+                          ...CompetitionStatisticsController.breakdownYears.map(
+                            (y) {
+                              final v = row[y] as int? ?? 0;
+                              final prevYear = _prevYear(y);
+                              final prev = prevYear != null
+                                  ? (row[prevYear] as int? ?? 0)
+                                  : null;
+                              final isUp = prev != null && v > prev;
+                              return DataCell(
+                                SizedBox(
+                                  width: 72.w,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          _formatNum(v),
+                                          style: AppTextStyles.bodyS.copyWith(
+                                            color: AppColors.textDark,
+                                            fontSize: 10.sp,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    if (prev != null) ...[
-                                      SizedBox(width: 2.w),
-                                      Icon(
-                                        isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                                        size: 18.sp,
-                                        color: isUp ? AppColors.progressGreen : Colors.red,
-                                      ),
+                                      if (prev != null) ...[
+                                        SizedBox(width: 2.w),
+                                        Icon(
+                                          isUp
+                                              ? Icons.arrow_drop_up
+                                              : Icons.arrow_drop_down,
+                                          size: 18.sp,
+                                          color: isUp
+                                              ? AppColors.progressGreen
+                                              : Colors.red,
+                                        ),
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          }),
+                              );
+                            },
+                          ),
                         ],
-                      ))
-                  .toList(),
-            ),
-          );
+                      ),
+                    )
+                    .toList(),
+              ),
+            );
           }),
         ],
       ),
@@ -241,7 +263,9 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
           SizedBox(height: 6.h),
           Text(
             'Analyze yearly NEET Exam trends to understand shifts in exam participation and success rates.',
-            style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+            style: AppTextStyles.detailScreenSubtitle.copyWith(
+              color: AppColors.textDark,
+            ),
           ),
           SizedBox(height: 16.h),
           Obx(() {
@@ -257,13 +281,15 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: ['25', '20', '15', '10', '5', '0']
-                            .map((t) => Text(
-                                  t == '0' ? '0' : '$t L',
-                                  style: AppTextStyles.bodyS.copyWith(
-                                    fontSize: 9.sp,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ))
+                            .map(
+                              (t) => Text(
+                                t == '0' ? '0' : '$t L',
+                                style: AppTextStyles.bodyS.copyWith(
+                                  fontSize: 9.sp,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            )
                             .toList(),
                       ),
                     ),
@@ -273,12 +299,14 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: controller.yearlyInsights
-                            .map((e) => _StackedBar(
-                                  year: e['year'] as String,
-                                  registered: (e['registered'] as num).toDouble(),
-                                  appeared: (e['appeared'] as num).toDouble(),
-                                  qualified: (e['qualified'] as num).toDouble(),
-                                ))
+                            .map(
+                              (e) => _StackedBar(
+                                year: e['year'] as String,
+                                registered: (e['registered'] as num).toDouble(),
+                                appeared: (e['appeared'] as num).toDouble(),
+                                qualified: (e['qualified'] as num).toDouble(),
+                              ),
+                            )
                             .toList(),
                       ),
                     ),
@@ -286,7 +314,7 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 ),
               );
             }
-            
+
             // Find max value for scaling
             double maxValue = 0;
             for (final e in insights) {
@@ -294,7 +322,7 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
               if (reg > maxValue) maxValue = reg;
             }
             maxValue = (maxValue * 1.1).ceilToDouble(); // Add 10% padding
-            
+
             return SizedBox(
               height: 240.h,
               child: Row(
@@ -305,7 +333,10 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(6, (i) {
-                        final value = (maxValue - (i * (maxValue / 5))).clamp(0, maxValue);
+                        final value = (maxValue - (i * (maxValue / 5))).clamp(
+                          0,
+                          maxValue,
+                        );
                         return Text(
                           value == 0 ? '0' : '${value.toStringAsFixed(0)}L',
                           style: AppTextStyles.bodyS.copyWith(
@@ -323,17 +354,22 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.start,
-                        children: insights.map((e) => SizedBox(
-                              width: 50.w,
-                              height: 240.h,
-                              child: _VerticalBarGroup(
-                                year: e['year'] as String,
-                                registered: (e['registered'] as num).toDouble(),
-                                appeared: (e['appeared'] as num).toDouble(),
-                                qualified: (e['qualified'] as num).toDouble(),
-                                maxValue: maxValue,
+                        children: insights
+                            .map(
+                              (e) => SizedBox(
+                                width: 50.w,
+                                height: 240.h,
+                                child: _VerticalBarGroup(
+                                  year: e['year'] as String,
+                                  registered: (e['registered'] as num)
+                                      .toDouble(),
+                                  appeared: (e['appeared'] as num).toDouble(),
+                                  qualified: (e['qualified'] as num).toDouble(),
+                                  maxValue: maxValue,
+                                ),
                               ),
-                            )).toList(),
+                            )
+                            .toList(),
                       ),
                     ),
                   ),
@@ -371,14 +407,20 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(() => Text(
-                      'Nationality-Wise Participation Trends – ${controller.selectedYearNationality.value}',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
-                    )),
+                    Obx(
+                      () => Text(
+                        'Nationality-Wise Participation Trends – ${controller.selectedYearNationality.value}',
+                        style: AppTextStyles.welcomeHeading.copyWith(
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 4.h),
                     Text(
                       'Registered, Appeared & Qualified by nationality. Select year to compare.',
-                      style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                      style: AppTextStyles.detailScreenSubtitle.copyWith(
+                        color: AppColors.textDark,
+                      ),
                     ),
                   ],
                 ),
@@ -392,9 +434,13 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ],
           ),
           SizedBox(height: 16.h),
-          Obx(() => _NationalityChart(
-                data: controller.getNationalityData(controller.selectedYearNationality.value),
-              )),
+          Obx(
+            () => _NationalityChart(
+              data: controller.getNationalityData(
+                controller.selectedYearNationality.value,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -416,12 +462,16 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                   children: [
                     Text(
                       'Category-Wise Exam Performance Breakdown – 2025',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      style: AppTextStyles.welcomeHeading.copyWith(
+                        fontSize: 14.sp,
+                      ),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       'Know the performance across General, OBC, EWS, SC, and ST categories.',
-                      style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                      style: AppTextStyles.detailScreenSubtitle.copyWith(
+                        color: AppColors.textDark,
+                      ),
                     ),
                   ],
                 ),
@@ -435,9 +485,13 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ],
           ),
           SizedBox(height: 16.h),
-          Obx(() => _CategoryChart(
-                data: controller.getCategoryData(controller.selectedYearCategory.value),
-              )),
+          Obx(
+            () => _CategoryChart(
+              data: controller.getCategoryData(
+                controller.selectedYearCategory.value,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -459,12 +513,16 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                   children: [
                     Text(
                       'Gender-Wise Candidate Distribution – 2025',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      style: AppTextStyles.welcomeHeading.copyWith(
+                        fontSize: 14.sp,
+                      ),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       'Explore gender participation and success rates.',
-                      style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                      style: AppTextStyles.detailScreenSubtitle.copyWith(
+                        color: AppColors.textDark,
+                      ),
                     ),
                   ],
                 ),
@@ -478,9 +536,13 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ],
           ),
           SizedBox(height: 16.h),
-          Obx(() => _GenderChart(
-                data: controller.getGenderData(controller.selectedYearGender.value),
-              )),
+          Obx(
+            () => _GenderChart(
+              data: controller.getGenderData(
+                controller.selectedYearGender.value,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -500,14 +562,20 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(() => Text(
-                      'Exam Details – ${controller.selectedYearState.value}',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
-                    )),
+                    Obx(
+                      () => Text(
+                        'Exam Details – ${controller.selectedYearState.value}',
+                        style: AppTextStyles.welcomeHeading.copyWith(
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 4.h),
                     Text(
                       'Examination infrastructure and logistics details.',
-                      style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                      style: AppTextStyles.detailScreenSubtitle.copyWith(
+                        color: AppColors.textDark,
+                      ),
                     ),
                   ],
                 ),
@@ -521,9 +589,7 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
             ],
           ),
           SizedBox(height: 16.h),
-          Obx(() => _ExamChart(
-                year: controller.selectedYearState.value,
-              )),
+          Obx(() => _ExamChart(year: controller.selectedYearState.value)),
         ],
       ),
     );
@@ -543,24 +609,32 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(() => Text(
-                      'State-Wise Competition - ${controller.selectedYearState.value}',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
-                    )),
+                    Obx(
+                      () => Text(
+                        'State-Wise Competition - ${controller.selectedYearState.value}',
+                        style: AppTextStyles.welcomeHeading.copyWith(
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 4.h),
                     Text(
                       'Explore state wise performance in NEET UG.',
-                      style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                      style: AppTextStyles.detailScreenSubtitle.copyWith(
+                        color: AppColors.textDark,
+                      ),
                     ),
                   ],
                 ),
               ),
-             Obx(()=>_YearDropdown(
-                label: 'Year',
-                value: controller.selectedYearState.value,
-                items: controller.yearsList,
-                onChanged: controller.setYearState,
-              )),
+              Obx(
+                () => _YearDropdown(
+                  label: 'Year',
+                  value: controller.selectedYearState.value,
+                  items: controller.yearsList,
+                  onChanged: controller.setYearState,
+                ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
@@ -572,7 +646,11 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 fontSize: 13.sp,
                 color: AppColors.textMuted,
               ),
-              prefixIcon: Icon(Icons.search, size: 22.sp, color: AppColors.textMuted),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 22.sp,
+                color: AppColors.textMuted,
+              ),
               filled: true,
               fillColor: AppColors.chipBg,
               border: OutlineInputBorder(
@@ -583,31 +661,317 @@ class CompetitionStatisticsView extends GetView<CompetitionStatisticsController>
                 borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: AppColors.chipBorder),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 14.w,
+                vertical: 12.h,
+              ),
             ),
-            style: AppTextStyles.bodyS.copyWith(fontSize: 13.sp, color: AppColors.textDark),
+            style: AppTextStyles.bodyS.copyWith(
+              fontSize: 13.sp,
+              color: AppColors.textDark,
+            ),
           ),
           SizedBox(height: 12.h),
           Obx(() {
-            return _StateWiseMapChart(
-              year: controller.selectedYearState.value,
-            );
+            return _StateWiseMapChart(year: controller.selectedYearState.value);
           }),
           SizedBox(height: 8.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _LegendDot(color: AppColors.progressGreen, label: 'Registered'),
-              SizedBox(width: 12.w),
-              _LegendDot(color: AppColors.primaryBlue, label: 'Appeared'),
-              SizedBox(width: 12.w),
-              _LegendDot(color: AppColors.accentOrange, label: 'Qualified'),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     _LegendDot(color: AppColors.progressGreen, label: 'Registered'),
+          //     SizedBox(width: 12.w),
+          //     _LegendDot(color: AppColors.primaryBlue, label: 'Appeared'),
+          //     SizedBox(width: 12.w),
+          //     _LegendDot(color: AppColors.accentOrange, label: 'Qualified'),
+          //   ],
+          // ),
+          _buildStateOverviewMapSection(context),
         ],
       ),
     );
   }
+
+  Widget _buildStateOverviewMapSection(BuildContext context) {
+    return Obx(() {
+      final data = controller.apiData;
+      final selectedYear = controller.selectedYearState.value;
+      final selectedStateName = controller.selectedState.value;
+      final stateMapData = data['state_map_data'];
+
+      final valuesByState = <String, Map<String, int>>{};
+      if (stateMapData is Map && stateMapData[selectedYear] is Map) {
+        final yearData = Map<String, dynamic>.from(
+          stateMapData[selectedYear] as Map,
+        );
+        final reg = Map<String, dynamic>.from(
+          yearData['registered'] as Map? ?? {},
+        );
+        final app = Map<String, dynamic>.from(
+          yearData['appeared'] as Map? ?? {},
+        );
+        final qual = Map<String, dynamic>.from(
+          yearData['qualified'] as Map? ?? {},
+        );
+
+        for (final code in reg.keys) {
+          final name = _stateNameFromCode(code);
+          valuesByState[name] = <String, int>{
+            'registered': reg[code] is int
+                ? reg[code] as int
+                : int.tryParse(reg[code].toString()) ?? 0,
+            'appeared': app[code] is int
+                ? app[code] as int
+                : int.tryParse((app[code] ?? '0').toString()) ?? 0,
+            'qualified': qual[code] is int
+                ? qual[code] as int
+                : int.tryParse((qual[code] ?? '0').toString()) ?? 0,
+          };
+        }
+      }
+
+      if (valuesByState.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final stateNames = valuesByState.keys.toList()..sort();
+      final activeState = valuesByState.containsKey(selectedStateName)
+          ? selectedStateName
+          : stateNames.first;
+      final active =
+          valuesByState[activeState] ??
+          const <String, int>{'registered': 0, 'appeared': 0, 'qualified': 0};
+
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: AppColors.chipBg,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.chipBorder),
+              ),
+              child: Wrap(
+                spacing: 10.w,
+                runSpacing: 10.h,
+                children: [
+                  _InfoPill(label: 'State', value: activeState),
+                  _InfoPill(
+                    label: 'Registered',
+                    value: _formatNum(active['registered'] ?? 0),
+                  ),
+                  _InfoPill(
+                    label: 'Appeared',
+                    value: _formatNum(active['appeared'] ?? 0),
+                  ),
+                  _InfoPill(
+                    label: 'Qualified',
+                    value: _formatNum(active['qualified'] ?? 0),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 14.h),
+            Container(
+              width: double.infinity,
+              height: 280.h,
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFD),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.chipBorder),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: SvgPicture.asset(
+                      'assets/maps/india_states.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  Align(
+                    alignment: _stateAnchor(activeState),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 5.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        activeState,
+                        style: AppTextStyles.bodyS.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'Select State',
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: stateNames
+                  .map(
+                    (state) => InkWell(
+                      onTap: () => controller.setState(state),
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: state == activeState
+                              ? AppColors.primaryBlue
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: state == activeState
+                                ? AppColors.primaryBlue
+                                : AppColors.border,
+                          ),
+                        ),
+                        child: Text(
+                          state,
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: state == activeState
+                                ? Colors.white
+                                : AppColors.textDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+          children: [
+            TextSpan(text: '$label: '),
+            TextSpan(
+              text: value,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _stateNameFromCode(String code) {
+  const stateMap = {
+    'in-up': 'Uttar Pradesh',
+    'in-mh': 'Maharashtra',
+    'in-rj': 'Rajasthan',
+    'in-ka': 'Karnataka',
+    'in-tn': 'Tamil Nadu',
+    'in-gj': 'Gujarat',
+    'in-wb': 'West Bengal',
+    'in-mp': 'Madhya Pradesh',
+    'in-br': 'Bihar',
+    'in-ap': 'Andhra Pradesh',
+    'in-tg': 'Telangana',
+    'in-kl': 'Kerala',
+    'in-or': 'Odisha',
+    'in-pb': 'Punjab',
+    'in-hr': 'Haryana',
+    'in-jh': 'Jharkhand',
+    'in-ch': 'Chandigarh',
+    'in-dl': 'Delhi',
+    'in-hp': 'Himachal Pradesh',
+    'in-ut': 'Uttarakhand',
+    'in-jk': 'Jammu & Kashmir',
+    'in-as': 'Assam',
+    'in-an': 'Andaman & Nicobar',
+    'in-ar': 'Arunachal Pradesh',
+    'in-mn': 'Manipur',
+    'in-ml': 'Meghalaya',
+    'in-mz': 'Mizoram',
+    'in-nl': 'Nagaland',
+    'in-sk': 'Sikkim',
+    'in-tr': 'Tripura',
+    'in-ga': 'Goa',
+    'in-py': 'Puducherry',
+    'in-ladakh': 'Ladakh',
+    'in-dnhdd': 'Dadra & Nagar Haveli',
+    'in-ld': 'Lakshadweep',
+    'in-cg': 'Chhattisgarh',
+  };
+  return stateMap[code.toLowerCase()] ?? code.toUpperCase();
+}
+
+Alignment _stateAnchor(String state) {
+  final key = state.trim().toLowerCase();
+  const anchors = <String, Alignment>{
+    'uttar pradesh': Alignment(0.10, -0.22),
+    'maharashtra': Alignment(-0.02, 0.25),
+    'rajasthan': Alignment(-0.18, -0.10),
+    'karnataka': Alignment(0.00, 0.52),
+    'tamil nadu': Alignment(0.14, 0.80),
+    'kerala': Alignment(0.05, 0.86),
+    'gujarat': Alignment(-0.30, 0.10),
+    'madhya pradesh': Alignment(-0.06, 0.00),
+    'bihar': Alignment(0.30, -0.14),
+    'west bengal': Alignment(0.42, -0.05),
+    'telangana': Alignment(0.12, 0.40),
+    'andhra pradesh': Alignment(0.22, 0.55),
+    'odisha': Alignment(0.28, 0.15),
+    'jharkhand': Alignment(0.32, -0.02),
+    'haryana': Alignment(0.02, -0.34),
+    'punjab': Alignment(-0.03, -0.44),
+    'delhi': Alignment(0.06, -0.36),
+    'assam': Alignment(0.58, -0.20),
+  };
+  return anchors[key] ?? Alignment(0.10, -0.22);
 }
 
 // --- Chart widgets ---
@@ -772,7 +1136,7 @@ class _CategoryChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) return SizedBox(height: 180.h);
-    
+
     // Find max value for scaling - use registered, appeared, or qualified whichever is highest
     double maxValue = 0;
     for (final row in data) {
@@ -783,14 +1147,14 @@ class _CategoryChart extends StatelessWidget {
       if (maxRow > maxValue) maxValue = maxRow;
     }
     if (maxValue <= 0) return SizedBox(height: 180.h);
-    
+
     return Column(
       children: data.map((row) {
         final label = row['label'] as String;
         final reg = (row['registered'] as num).toDouble();
         final app = (row['appeared'] as num).toDouble();
         final qual = (row['qualified'] as num).toDouble();
-        
+
         return Padding(
           padding: EdgeInsets.only(bottom: 16.h),
           child: Column(
@@ -847,7 +1211,7 @@ class _GenderChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) return SizedBox(height: 180.h);
-    
+
     // Find max value for scaling - use registered, appeared, or qualified whichever is highest
     double maxValue = 0;
     for (final row in data) {
@@ -858,14 +1222,14 @@ class _GenderChart extends StatelessWidget {
       if (maxRow > maxValue) maxValue = maxRow;
     }
     if (maxValue <= 0) return SizedBox(height: 180.h);
-    
+
     return Column(
       children: data.map((row) {
         final label = row['label'] as String;
         final reg = (row['registered'] as num).toDouble();
         final app = (row['appeared'] as num).toDouble();
         final qual = (row['qualified'] as num).toDouble();
-        
+
         return Padding(
           padding: EdgeInsets.only(bottom: 16.h),
           child: Column(
@@ -914,6 +1278,7 @@ class _GenderChart extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PieChartPainter extends CustomPainter {
   _PieChartPainter({required this.segments});
 
@@ -946,7 +1311,7 @@ class _ExamChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<CompetitionStatisticsController>();
     final yearData = controller.dataByYear[year];
-    
+
     if (yearData == null) {
       return Center(
         child: Padding(
@@ -958,10 +1323,10 @@ class _ExamChart extends StatelessWidget {
         ),
       );
     }
-    
+
     final examTypes = controller.examTypes;
     final examData = <Map<String, dynamic>>[];
-    
+
     examTypes.forEach((key, label) {
       final value = yearData[key];
       if (value != null && value != 0) {
@@ -971,7 +1336,7 @@ class _ExamChart extends StatelessWidget {
         });
       }
     });
-    
+
     if (examData.isEmpty) {
       return Center(
         child: Padding(
@@ -983,12 +1348,12 @@ class _ExamChart extends StatelessWidget {
         ),
       );
     }
-    
+
     return Column(
       children: examData.map((row) {
         final label = row['label'] as String;
         final value = row['value'] as int;
-        
+
         return Padding(
           padding: EdgeInsets.only(bottom: 12.h),
           child: Row(
@@ -1018,7 +1383,7 @@ class _ExamChart extends StatelessWidget {
       }).toList(),
     );
   }
-  
+
   String _formatNumber(int n) {
     final str = n.toString();
     final buffer = StringBuffer();
@@ -1040,12 +1405,12 @@ class _StateWiseMapChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CompetitionStatisticsController>();
-    
+
     // Use Obx to reactively get the state map data and year
     return Obx(() {
       final currentYear = controller.selectedYearState.value;
       final stateMapData = controller.apiData['state_map_data'];
-      
+
       if (stateMapData == null || stateMapData[currentYear] == null) {
         return Center(
           child: Padding(
@@ -1057,136 +1422,150 @@ class _StateWiseMapChart extends StatelessWidget {
           ),
         );
       }
-      
+
       final yearData = stateMapData[currentYear] as Map<String, dynamic>?;
-    final registeredData = yearData?['registered'] as Map<String, dynamic>? ?? {};
-    final appearedData = yearData?['appeared'] as Map<String, dynamic>? ?? {};
-    final qualifiedData = yearData?['qualified'] as Map<String, dynamic>? ?? {};
-    
-    // Get state codes and values
-    final stateCodes = <String>[];
-    final stateValues = <String, Map<String, int>>{};
-    
-    registeredData.forEach((code, value) {
-      if (!stateCodes.contains(code)) stateCodes.add(code);
-      if (!stateValues.containsKey(code)) {
-        stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-      }
-      stateValues[code]!['registered'] = value is int ? value : int.tryParse(value.toString()) ?? 0;
-    });
-    
-    appearedData.forEach((code, value) {
-      if (!stateCodes.contains(code)) stateCodes.add(code);
-      if (!stateValues.containsKey(code)) {
-        stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-      }
-      stateValues[code]!['appeared'] = value is int ? value : int.tryParse(value.toString()) ?? 0;
-    });
-    
-    qualifiedData.forEach((code, value) {
-      if (!stateCodes.contains(code)) stateCodes.add(code);
-      if (!stateValues.containsKey(code)) {
-        stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-      }
-      stateValues[code]!['qualified'] = value is int ? value : int.tryParse(value.toString()) ?? 0;
-    });
-    
-    // Sort by registered count (descending)
-    stateCodes.sort((a, b) {
-      final aVal = stateValues[a]?['registered'] ?? 0;
-      final bVal = stateValues[b]?['registered'] ?? 0;
-      return bVal.compareTo(aVal);
-    });
+      final registeredData =
+          yearData?['registered'] as Map<String, dynamic>? ?? {};
+      final appearedData = yearData?['appeared'] as Map<String, dynamic>? ?? {};
+      final qualifiedData =
+          yearData?['qualified'] as Map<String, dynamic>? ?? {};
 
-    // Filter by search query (state name)
-    final query = controller.stateWiseSearchQuery.value.trim().toLowerCase();
-    final filteredCodes = query.isEmpty
-        ? stateCodes
-        : stateCodes.where((code) => _getStateName(code).toLowerCase().contains(query)).toList();
+      // Get state codes and values
+      final stateCodes = <String>[];
+      final stateValues = <String, Map<String, int>>{};
 
-    // Show states: state name + Registered, Appeared, Qualified
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          filteredCodes.isEmpty
-              ? (query.isEmpty ? 'All States – Registered, Appeared & Qualified' : 'No state found for "$query"')
-              : 'All States – Registered, Appeared & Qualified',
-          style: AppTextStyles.bodyS.copyWith(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        ...filteredCodes.map((code) {
-          final values = stateValues[code]!;
-          final reg = values['registered'] ?? 0;
-          final app = values['appeared'] ?? 0;
-          final qual = values['qualified'] ?? 0;
-          final stateName = _getStateName(code);
-          return Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: AppColors.chipBg.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: AppColors.chipBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    stateName,
-                    style: AppTextStyles.bodyS.copyWith(
-                      fontSize: 12.sp,
-                      color: AppColors.textDark,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Registered: ${_formatNumber(reg)}',
-                          style: AppTextStyles.bodyS.copyWith(
-                            fontSize: 10.sp,
-                            color: AppColors.progressGreen,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Appeared: ${_formatNumber(app)}',
-                          style: AppTextStyles.bodyS.copyWith(
-                            fontSize: 10.sp,
-                            color: AppColors.primaryBlue,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Qualified: ${_formatNumber(qual)}',
-                          style: AppTextStyles.bodyS.copyWith(
-                            fontSize: 10.sp,
-                            color: AppColors.accentOrange,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+      registeredData.forEach((code, value) {
+        if (!stateCodes.contains(code)) stateCodes.add(code);
+        if (!stateValues.containsKey(code)) {
+          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
+        }
+        stateValues[code]!['registered'] = value is int
+            ? value
+            : int.tryParse(value.toString()) ?? 0;
+      });
+
+      appearedData.forEach((code, value) {
+        if (!stateCodes.contains(code)) stateCodes.add(code);
+        if (!stateValues.containsKey(code)) {
+          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
+        }
+        stateValues[code]!['appeared'] = value is int
+            ? value
+            : int.tryParse(value.toString()) ?? 0;
+      });
+
+      qualifiedData.forEach((code, value) {
+        if (!stateCodes.contains(code)) stateCodes.add(code);
+        if (!stateValues.containsKey(code)) {
+          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
+        }
+        stateValues[code]!['qualified'] = value is int
+            ? value
+            : int.tryParse(value.toString()) ?? 0;
+      });
+
+      // Sort by registered count (descending)
+      stateCodes.sort((a, b) {
+        final aVal = stateValues[a]?['registered'] ?? 0;
+        final bVal = stateValues[b]?['registered'] ?? 0;
+        return bVal.compareTo(aVal);
+      });
+
+      // Filter by search query (state name)
+      final query = controller.stateWiseSearchQuery.value.trim().toLowerCase();
+      final filteredCodes = query.isEmpty
+          ? stateCodes
+          : stateCodes
+                .where(
+                  (code) => _getStateName(code).toLowerCase().contains(query),
+                )
+                .toList();
+
+      // Show states: state name + Registered, Appeared, Qualified
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            filteredCodes.isEmpty
+                ? (query.isEmpty
+                      ? 'All States – Registered, Appeared & Qualified'
+                      : 'No state found for "$query"')
+                : 'All States – Registered, Appeared & Qualified',
+            style: AppTextStyles.bodyS.copyWith(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
             ),
-          );
-        }),
-      ],
-    );
+          ),
+          SizedBox(height: 12.h),
+          // ...filteredCodes.map((code) {
+          //   final values = stateValues[code]!;
+          //   final reg = values['registered'] ?? 0;
+          //   final app = values['appeared'] ?? 0;
+          //   final qual = values['qualified'] ?? 0;
+          //   final stateName = _getStateName(code);
+          //   return Padding(
+          //     padding: EdgeInsets.only(bottom: 12.h),
+          //     child: Container(
+          //       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          //       decoration: BoxDecoration(
+          //         color: AppColors.chipBg.withValues(alpha: 0.5),
+          //         borderRadius: BorderRadius.circular(8.r),
+          //         border: Border.all(color: AppColors.chipBorder),
+          //       ),
+          //       child: Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           Text(
+          //             stateName,
+          //             style: AppTextStyles.bodyS.copyWith(
+          //               fontSize: 12.sp,
+          //               color: AppColors.textDark,
+          //               fontWeight: FontWeight.w600,
+          //             ),
+          //           ),
+          //           SizedBox(height: 6.h),
+          //           Row(
+          //             children: [
+          //               Expanded(
+          //                 child: Text(
+          //                   'Registered: ${_formatNumber(reg)}',
+          //                   style: AppTextStyles.bodyS.copyWith(
+          //                     fontSize: 10.sp,
+          //                     color: AppColors.progressGreen,
+          //                     fontWeight: FontWeight.w500,
+          //                   ),
+          //                 ),
+          //               ),
+          //               Expanded(
+          //                 child: Text(
+          //                   'Appeared: ${_formatNumber(app)}',
+          //                   style: AppTextStyles.bodyS.copyWith(
+          //                     fontSize: 10.sp,
+          //                     color: AppColors.primaryBlue,
+          //                     fontWeight: FontWeight.w500,
+          //                   ),
+          //                 ),
+          //               ),
+          //               Expanded(
+          //                 child: Text(
+          //                   'Qualified: ${_formatNumber(qual)}',
+          //                   style: AppTextStyles.bodyS.copyWith(
+          //                     fontSize: 10.sp,
+          //                     color: AppColors.accentOrange,
+          //                     fontWeight: FontWeight.w500,
+          //                   ),
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   );
+          // }),
+        ],
+      );
     });
   }
 
@@ -1232,7 +1611,7 @@ class _StateWiseMapChart extends StatelessWidget {
     };
     return stateMap[code.toLowerCase()] ?? code.toUpperCase();
   }
-  
+
   String _formatNumber(int n) {
     final str = n.toString();
     final buffer = StringBuffer();
@@ -1247,7 +1626,11 @@ class _StateWiseMapChart extends StatelessWidget {
 }
 
 class _TabChip extends StatelessWidget {
-  const _TabChip({required this.label, required this.isSelected, required this.onTap});
+  const _TabChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final String label;
   final bool isSelected;
@@ -1357,7 +1740,9 @@ class _VerticalBarGroup extends StatelessWidget {
                     height: (registered * scale).clamp(4.0, h),
                     decoration: BoxDecoration(
                       color: AppColors.progressGreen,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(4.r),
+                      ),
                     ),
                   ),
                   SizedBox(width: spacing),
@@ -1366,7 +1751,9 @@ class _VerticalBarGroup extends StatelessWidget {
                     height: (appeared * scale).clamp(4.0, h),
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(4.r),
+                      ),
                     ),
                   ),
                   SizedBox(width: spacing),
@@ -1375,7 +1762,9 @@ class _VerticalBarGroup extends StatelessWidget {
                     height: (qualified * scale).clamp(4.0, h),
                     decoration: BoxDecoration(
                       color: AppColors.accentOrange,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(4.r),
+                      ),
                     ),
                   ),
                 ],
@@ -1442,18 +1831,24 @@ class _StackedBar extends StatelessWidget {
                       height: (qualified * scale).clamp(4.0, h),
                       decoration: BoxDecoration(
                         color: AppColors.accentOrange,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(4.r),
+                        ),
                       ),
                     ),
                     Container(
                       height: ((appeared - qualified) * scale).clamp(2.0, h),
-                      decoration: const BoxDecoration(color: AppColors.primaryBlue),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
                     Container(
                       height: ((registered - appeared) * scale).clamp(2.0, h),
                       decoration: BoxDecoration(
                         color: AppColors.progressGreen,
-                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(4.r)),
+                        borderRadius: BorderRadius.vertical(
+                          bottom: Radius.circular(4.r),
+                        ),
                       ),
                     ),
                   ],
@@ -1484,12 +1879,19 @@ class _LegendDot extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         SizedBox(width: 4.w),
-        Text(label, style: AppTextStyles.bodyS.copyWith(fontSize: 10.sp, color: AppColors.textDark)),
+        Text(
+          label,
+          style: AppTextStyles.bodyS.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textDark,
+          ),
+        ),
       ],
     );
   }
 }
 
+// ignore: unused_element
 class _LineChartWidget extends StatelessWidget {
   const _LineChartWidget({
     required this.years,
@@ -1505,7 +1907,10 @@ class _LineChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (years.isEmpty || registered.isEmpty || appeared.isEmpty || qualified.isEmpty) {
+    if (years.isEmpty ||
+        registered.isEmpty ||
+        appeared.isEmpty ||
+        qualified.isEmpty) {
       return SizedBox(height: 220.h);
     }
 
@@ -1535,7 +1940,10 @@ class _LineChartWidget extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(6, (i) {
-                      final value = (maxLakhs - (i * stepLakhs)).clamp(0, maxLakhs);
+                      final value = (maxLakhs - (i * stepLakhs)).clamp(
+                        0,
+                        maxLakhs,
+                      );
                       return Text(
                         value == 0 ? '0' : '${value.toInt()}L',
                         style: AppTextStyles.bodyS.copyWith(
@@ -1574,7 +1982,9 @@ class _LineChartWidget extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final chartWidth = constraints.maxWidth;
-                final pointSpacing = years.length > 1 ? chartWidth / (years.length - 1) : 0;
+                final pointSpacing = years.length > 1
+                    ? chartWidth / (years.length - 1)
+                    : 0;
                 return Stack(
                   children: years.asMap().entries.map((entry) {
                     final index = entry.key;
@@ -1632,36 +2042,32 @@ class _LineChartPainter extends CustomPainter {
     final gridPaint = Paint()
       ..color = AppColors.border
       ..strokeWidth = 0.5;
-    
+
     for (int i = 0; i <= 5; i++) {
       final y = startY + (chartHeight / 5) * i;
-      canvas.drawLine(
-        Offset(startX, y),
-        Offset(endX, y),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(startX, y), Offset(endX, y), gridPaint);
     }
 
     // Convert data points to coordinates
     final pointSpacing = years.length > 1 ? chartWidth / (years.length - 1) : 0;
-    
+
     List<Offset> registeredPoints = [];
     List<Offset> appearedPoints = [];
     List<Offset> qualifiedPoints = [];
 
     for (int i = 0; i < years.length; i++) {
       final x = startX + (pointSpacing * i);
-      
+
       if (i < registered.length && registered[i] > 0) {
         final y = endY - ((registered[i] / maxValue) * chartHeight);
         registeredPoints.add(Offset(x, y));
       }
-      
+
       if (i < appeared.length && appeared[i] > 0) {
         final y = endY - ((appeared[i] / maxValue) * chartHeight);
         appearedPoints.add(Offset(x, y));
       }
-      
+
       if (i < qualified.length && qualified[i] > 0) {
         final y = endY - ((qualified[i] / maxValue) * chartHeight);
         qualifiedPoints.add(Offset(x, y));
@@ -1709,7 +2115,7 @@ class _LineChartPainter extends CustomPainter {
     final pointPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    
+
     for (final point in points) {
       canvas.drawCircle(point, 4.0, pointPaint);
       // Draw white border
@@ -1766,9 +2172,20 @@ class _YearDropdown extends StatelessWidget {
                 value: value,
                 isExpanded: true,
                 isDense: true,
-                icon: Icon(Icons.keyboard_arrow_down_rounded, size: 20.sp, color: AppColors.textMuted),
-                style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 12.sp),
-                items: items.map((e) => DropdownMenuItem<String>(value: e, child: Text(e))).toList(),
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20.sp,
+                  color: AppColors.textMuted,
+                ),
+                style: AppTextStyles.bodyS.copyWith(
+                  color: AppColors.textDark,
+                  fontSize: 12.sp,
+                ),
+                items: items
+                    .map(
+                      (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
+                    )
+                    .toList(),
                 onChanged: (v) => v != null ? onChanged(v) : null,
               ),
             ),

@@ -196,6 +196,9 @@ class CutoffAllotmentsController extends GetxController {
     await _loadCategories();
     await _loadFiltersFromCutOffApi();
     filtersLoading.value = false;
+    if (canLoad) {
+      await loadCutOffAllotments(showLoader: false, page: 1);
+    }
   }
 
   /// Load category options from /common/dependent-filters for the selected quota.

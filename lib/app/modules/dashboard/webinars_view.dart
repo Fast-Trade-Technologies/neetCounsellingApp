@@ -7,7 +7,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
-import '../main/main_controller.dart';
 
 class WebinarsView extends StatelessWidget {
   const WebinarsView({super.key});
@@ -34,17 +33,19 @@ class WebinarsView extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           // Navigate back and refresh dashboard to reload webinars
-          Get.back();
-          try {
-            final mainController = Get.find<MainController>();
-            await mainController.loadDashboard();
-          } catch (e) {
-            // MainController not found, skip refresh
-          }
+          // Get.back();
+          // try {
+          //   final mainController = Get.find<MainController>();
+          //   await mainController.loadDashboard();
+          // } catch (e) {
+          //   // MainController not found, skip refresh
+          // }
         },
         color: AppColors.primaryBlue,
         child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
           slivers: [
             if (itemCount == 0)
               SliverPadding(
@@ -53,7 +54,9 @@ class WebinarsView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No webinars at the moment.',
-                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ),
                 ),
@@ -62,16 +65,13 @@ class WebinarsView extends StatelessWidget {
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = list[index];
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 14.h),
-                        child: _WebinarCard(item: item),
-                      );
-                    },
-                    childCount: itemCount,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = list[index];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 14.h),
+                      child: _WebinarCard(item: item),
+                    );
+                  }, childCount: itemCount),
                 ),
               ),
             SliverToBoxAdapter(child: SizedBox(height: 24.h)),
@@ -94,11 +94,13 @@ class _WebinarCard extends StatelessWidget {
     final time = item.time ?? '';
     final imageUrl = item.image;
     final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
-    
+
     final body = desc.isEmpty
-        ? (date.isNotEmpty || time.isNotEmpty ? 'Date: $date\nTime: $time' : 'Details will be updated soon.')
+        ? (date.isNotEmpty || time.isNotEmpty
+              ? 'Date: $date\nTime: $time'
+              : 'Details will be updated soon.')
         : '${desc.replaceAll(RegExp(r'<[^>]*>'), '').trim()}\n\nDate: $date\nTime: $time';
-    
+
     return GestureDetector(
       onTap: () {
         final webinarId = item.id;
@@ -127,11 +129,7 @@ class _WebinarCard extends StatelessWidget {
           // Fallback to content detail if no ID
           Get.toNamed(
             AppRoutes.contentDetail,
-            arguments: {
-              'title': title,
-              'body': body,
-              'image': imageUrl,
-            },
+            arguments: {'title': title, 'body': body, 'image': imageUrl},
           );
         }
       },
@@ -170,7 +168,8 @@ class _WebinarCard extends StatelessWidget {
                       child: Center(
                         child: CircularProgressIndicator(
                           value: expectedBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / expectedBytes
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    expectedBytes
                               : null,
                           strokeWidth: 2,
                           color: AppColors.primaryBlue,
@@ -183,7 +182,11 @@ class _WebinarCard extends StatelessWidget {
                       width: double.infinity,
                       height: 180.h,
                       color: AppColors.chipBg,
-                      child: Icon(Icons.image_not_supported, size: 48.sp, color: AppColors.textMuted),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 48.sp,
+                        color: AppColors.textMuted,
+                      ),
                     );
                   },
                 ),
@@ -200,7 +203,9 @@ class _WebinarCard extends StatelessWidget {
               SizedBox(height: 6.h),
               Text(
                 desc.replaceAll(RegExp(r'<[^>]*>'), '').trim(),
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                style: AppTextStyles.detailScreenSubtitle.copyWith(
+                  color: AppColors.textDark,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -209,22 +214,36 @@ class _WebinarCard extends StatelessWidget {
               SizedBox(height: 8.h),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 14.sp, color: AppColors.textMuted),
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14.sp,
+                    color: AppColors.textMuted,
+                  ),
                   SizedBox(width: 4.w),
                   Flexible(
                     child: Text(
                       date,
-                      style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+                      style: AppTextStyles.bodyS.copyWith(
+                        fontSize: 11.sp,
+                        color: AppColors.textMuted,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  Icon(Icons.access_time_rounded, size: 14.sp, color: AppColors.textMuted),
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 14.sp,
+                    color: AppColors.textMuted,
+                  ),
                   SizedBox(width: 4.w),
                   Text(
                     time,
-                    style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+                    style: AppTextStyles.bodyS.copyWith(
+                      fontSize: 11.sp,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),

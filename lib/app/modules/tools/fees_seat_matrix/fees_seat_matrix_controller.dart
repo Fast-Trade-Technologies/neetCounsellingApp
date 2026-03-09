@@ -156,6 +156,9 @@ class FeesSeatMatrixController extends GetxController {
     await _loadCategories();
     await _loadFiltersFromFeesSeatApi();
     filtersLoading.value = false;
+    if (canLoad) {
+      await loadFeesSeatMatrix(showLoader: false, page: 1);
+    }
   }
 
   /// Load category options from /common/dependent-filters for the selected quota.

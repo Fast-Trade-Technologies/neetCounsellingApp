@@ -391,6 +391,7 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildTableHeader() {
     return Row(
       children: [

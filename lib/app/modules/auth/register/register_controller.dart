@@ -11,6 +11,8 @@ class RegisterController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final RxBool isLoading = false.obs;
+  /// API stream mapping: UG -> 0, PG -> 1.
+  final RxString selectedStream = '0'.obs;
 
   Future<void> onSignUp() async {
     final firstName = firstNameController.text.trim();
@@ -45,7 +47,7 @@ class RegisterController extends GetxController {
       lastName: lastName,
       email: email,
       mobile: mobile,
-      stream: '1',
+      stream: selectedStream.value,
       showLoader: true,
     );
 
@@ -59,6 +61,10 @@ class RegisterController extends GetxController {
   }
 
   void onSignIn() => Get.offAllNamed(AppRoutes.login);
+
+  void setStream(String streamValue) {
+    selectedStream.value = streamValue;
+  }
 
   @override
   void onClose() {

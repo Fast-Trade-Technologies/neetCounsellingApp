@@ -167,11 +167,15 @@ class PaginationBar extends StatelessWidget {
     // Show max 5 page numbers: current ± 2, or adjust if near start/end
     final pages = <int>[];
     if (total <= 5) {
-      for (int i = 1; i <= total; i++) pages.add(i);
+      for (int i = 1; i <= total; i++) {
+        pages.add(i);
+      }
     } else {
       int start = (current - 2).clamp(1, total - 4);
       int end = (start + 4).clamp(5, total);
-      for (int i = start; i <= end; i++) pages.add(i);
+      for (int i = start; i <= end; i++) {
+        pages.add(i);
+      }
     }
     
     return SizedBox(

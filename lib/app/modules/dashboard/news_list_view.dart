@@ -10,7 +10,6 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/detail_app_bar.dart';
 import '../../routes/app_routes.dart';
-import '../main/main_controller.dart';
 
 class NewsListView extends StatelessWidget {
   const NewsListView({super.key});
@@ -38,17 +37,19 @@ class NewsListView extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           // Navigate back and refresh dashboard to reload news
-          Get.back();
-          try {
-            final mainController = Get.find<MainController>();
-            await mainController.loadDashboard();
-          } catch (e) {
-            // MainController not found, skip refresh
-          }
+          // Get.back();
+          // try {
+          //   final mainController = Get.find<MainController>();
+          //   await mainController.loadDashboard();
+          // } catch (e) {
+          //   // MainController not found, skip refresh
+          // } /// TODO -- Comment this code for this time because data pick from dashboard page not in
         },
         color: AppColors.primaryBlue,
         child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
           slivers: [
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -56,7 +57,9 @@ class NewsListView extends StatelessWidget {
                 delegate: SliverChildListDelegate([
                   Text(
                     'Get timely alerts on all the NEET UG-related news and updates.',
-                    style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
+                    style: AppTextStyles.detailScreenSubtitle.copyWith(
+                      color: AppColors.textDark,
+                    ),
                   ),
                   SizedBox(height: 16.h),
                 ]),
@@ -69,7 +72,9 @@ class NewsListView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No news updates at the moment.',
-                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ),
                 ),
@@ -122,7 +127,11 @@ class _NewsTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.article_outlined, size: 22.sp, color: AppColors.primaryBlue),
+          Icon(
+            Icons.article_outlined,
+            size: 22.sp,
+            color: AppColors.primaryBlue,
+          ),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -166,5 +175,3 @@ class _NewsTile extends StatelessWidget {
     );
   }
 }
-
-

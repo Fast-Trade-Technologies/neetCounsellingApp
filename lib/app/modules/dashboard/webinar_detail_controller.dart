@@ -83,6 +83,7 @@ class WebinarDetailController extends GetxController {
     }
   }
 
+  @override
   Future<void> refresh() async {
     final args = Get.arguments as Map<String, dynamic>? ?? {};
     final webinarId = args['webinarId'] as String?;
