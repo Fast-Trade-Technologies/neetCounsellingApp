@@ -83,11 +83,13 @@ class MainView extends GetView<MainController> {
                       padding: EdgeInsets.symmetric(vertical: 4.h),
                       child: Row(
                         children: [
-                          ProfileImage(
-                            size: 40.w,
-                            placeholderAsset: null,
-                            imageUrl: AppStorage.userImageUrl,
-                          ),
+                          Obx(() => ProfileImage(
+                                size: 40.w,
+                                placeholderAsset: null,
+                                imageUrl: controller.userImageUrl.value.isEmpty
+                                    ? AppStorage.userImageUrl
+                                    : controller.userImageUrl.value,
+                              )),
                           SizedBox(width: 10.w),
                           Expanded(
                             child: Column(

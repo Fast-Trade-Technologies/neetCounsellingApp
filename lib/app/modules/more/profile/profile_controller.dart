@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../api_services/profile_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../main/main_controller.dart';
+import '../menu/menu_controller.dart';
 
 class ProfileController extends GetxController {
   final TextEditingController firstNameController = TextEditingController();
@@ -89,10 +91,23 @@ class ProfileController extends GetxController {
       AppStorage.userImageUrl = imageUrl;
       this.imageUrl.value = imageUrl;
     } else {
+      AppStorage.userImageUrl = null;
       this.imageUrl.value = '';
     }
 
     _updateDisplayValues();
+
+    // Propagate profile changes to other parts of the app (Dashboard header, Menu).
+    if (Get.isRegistered<MainController>()) {
+      final main = Get.find<MainController>();
+      main.userImageUrl.value = this.imageUrl.value;
+    }
+    if (Get.isRegistered<MoreMenuController>()) {
+      final menu = Get.find<MoreMenuController>();
+      menu.userName.value = AppStorage.userName?.trim() ?? 'User';
+      menu.userEmail.value = AppStorage.userEmail ?? '';
+      menu.userImageUrl.value = AppStorage.userImageUrl ?? '';
+    }
   }
 
   void _loadFromStorage() {
