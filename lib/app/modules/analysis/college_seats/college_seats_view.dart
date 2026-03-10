@@ -156,9 +156,15 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 26.w, vertical: 18.h),
-                child: SvgPicture.asset(
-                  'assets/maps/india_states.svg',
-                  fit: BoxFit.contain,
+                child: InteractiveViewer(
+                  transformationController: controller.mapTransformController,
+                  minScale: 0.8,
+                  maxScale: 4.0,
+                  panEnabled: true,
+                  child: SvgPicture.asset(
+                    'assets/maps/india_states.svg',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
@@ -168,11 +174,11 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             top: 14.h,
             child: Column(
               children: [
-                _buildMapAction(Icons.home_outlined),
+                _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
                 SizedBox(height: 10.h),
-                _buildMapAction(Icons.add),
+                _buildMapAction(Icons.add, onTap: controller.zoomIn),
                 SizedBox(height: 10.h),
-                _buildMapAction(Icons.remove),
+                _buildMapAction(Icons.remove, onTap: controller.zoomOut),
               ],
             ),
           ),
@@ -181,23 +187,27 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
     );
   }
 
-  Widget _buildMapAction(IconData icon) {
-    return Container(
-      width: 36.w,
-      height: 36.w,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFDCE5EF)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+  Widget _buildMapAction(IconData icon, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10.r),
+      child: Container(
+        width: 36.w,
+        height: 36.w,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: const Color(0xFFDCE5EF)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
       ),
-      child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
     );
   }
 

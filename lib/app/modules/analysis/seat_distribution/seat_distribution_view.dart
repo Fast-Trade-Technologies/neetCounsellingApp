@@ -51,6 +51,19 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Counselling Type
+          InkWell(
+            onTap: () => _showCounsellingTypePicker(context),
+            borderRadius: BorderRadius.circular(12.r),
+            child: Obx(() => DetailDropdown(
+                  label: 'Counselling Type',
+                  value: controller.selectedCounsellingTypeId.value.isEmpty
+                      ? null
+                      : controller.selectedCounsellingTypeName.value,
+                  items: null,
+                )),
+          ),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
@@ -58,12 +71,12 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                   onTap: () => _showStatePicker(context),
                   borderRadius: BorderRadius.circular(12.r),
                   child: Obx(() => DetailDropdown(
-                    label: 'All States',
-                    value: controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
-                        ? null
-                        : controller.selectedStateName.value,
-                    items: null,
-                  )),
+                        label: 'All States',
+                        value: controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
+                            ? null
+                            : controller.selectedStateName.value,
+                        items: null,
+                      )),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -72,12 +85,12 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                   onTap: () => _showCoursePicker(context),
                   borderRadius: BorderRadius.circular(12.r),
                   child: Obx(() => DetailDropdown(
-                    label: 'Select Course',
-                    value: controller.selectedCourseName.value == 'Select Course'
-                        ? null
-                        : controller.selectedCourseName.value,
-                    items: null,
-                  )),
+                        label: 'Select Course',
+                        value: controller.selectedCourseName.value == 'Select Course'
+                            ? null
+                            : controller.selectedCourseName.value,
+                        items: null,
+                      )),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -86,10 +99,10 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                   onTap: () => _showYearPicker(context),
                   borderRadius: BorderRadius.circular(12.r),
                   child: Obx(() => DetailDropdown(
-                    label: 'Year',
-                    value: controller.selectedYear.value,
-                    items: SeatDistributionController.yearOptions,
-                  )),
+                        label: 'Year',
+                        value: controller.selectedYear.value,
+                        items: controller.yearOptions,
+                      )),
                 ),
               ),
             ],
@@ -222,18 +235,69 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                 child: Scrollbar(
                   controller: scrollController,
                   thumbVisibility: true,
+                  child: Obx(() => ListView(
+                        controller: scrollController,
+                        shrinkWrap: true,
+                        children: controller.yearOptions
+                            .map((y) => ListTile(
+                                  title: Text(y, style: AppTextStyles.bodyS),
+                                  onTap: () {
+                                    controller.setYear(y);
+                                    Navigator.pop(ctx);
+                                  },
+                                ))
+                            .toList(),
+                      )),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCounsellingTypePicker(BuildContext context) {
+    final types = controller.counsellingTypeFilters;
+    final scrollController = ScrollController();
+    final maxHeight = MediaQuery.of(context).size.height * 0.4;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text('Select Counselling Type', style: AppTextStyles.welcomeHeading),
+              ),
+              SizedBox(
+                height: maxHeight,
+                child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
                   child: ListView(
                     controller: scrollController,
                     shrinkWrap: true,
-                    children: SeatDistributionController.yearOptions
-                        .map((y) => ListTile(
-                              title: Text(y, style: AppTextStyles.bodyS),
-                              onTap: () {
-                                controller.setYear(y);
-                                Navigator.pop(ctx);
-                              },
-                            ))
-                        .toList(),
+                    children: [
+                      ListTile(
+                        title: Text('All Counselling Types', style: AppTextStyles.bodyS),
+                        onTap: () {
+                          controller.setCounsellingType(null);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      ...types.map((e) => ListTile(
+                            title: Text(e.name, style: AppTextStyles.bodyS),
+                            onTap: () {
+                              controller.setCounsellingType(e);
+                              Navigator.pop(ctx);
+                            },
+                          )),
+                    ],
                   ),
                 ),
               ),
@@ -262,49 +326,57 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
   }
 
   Widget _buildTopCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return InkWell(
+      onTap: () => _openFilterSheet(Get.context!),
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: AppColors.chipBorder),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
+                      ? 'All States'
+                      : controller.selectedStateName.value,
+                  style: AppTextStyles.welcomeHeading,
+                ),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 6.h,
+                  children: [
+                    _filterChip('State', controller.selectedStateName.value.isEmpty ? 'All States' : controller.selectedStateName.value),
+                    _filterChip(
+                      'Counselling',
+                      controller.selectedCounsellingTypeId.value.isEmpty
+                          ? 'All'
+                          : controller.selectedCounsellingTypeName.value,
+                    ),
+                    _filterChip('Course', controller.selectedCourseName.value),
+                    _filterChip('Year', controller.selectedYear.value),
+                  ],
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
+                  style: AppTextStyles.detailScreenSubtitle,
+                ),
+              ],
+            )),
       ),
-      child: Obx(() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
-                ? 'All States'
-                : controller.selectedStateName.value,
-            style: AppTextStyles.welcomeHeading,
-          ),
-          SizedBox(height: 8.h),
-          Wrap(
-            children: [
-              _filterChip('State', controller.selectedStateName.value.isEmpty ? 'All States' : controller.selectedStateName.value),
-              SizedBox(width: 8.w,height: 5.h),
-              _filterChip('Course', controller.selectedCourseName.value),
-              SizedBox(width: 8.w,height: 5.h),
-              Padding(
-                padding: EdgeInsets.only(bottom: 5.h,right: 5.w,top: 5.h),
-                child: _filterChip('Year', controller.selectedYear.value)),
-            ],
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
-            style: AppTextStyles.detailScreenSubtitle,
-          ),
-        ],
-      )),
     );
   }
 
@@ -338,12 +410,10 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
       child: Column(
         children: [
           Obx(() {
-            final labels = controller.seatLabels;
-            final values = controller.seatSeries;
-
-            if (labels.isEmpty || values.isEmpty) {
+            final nodes = controller.treeData;
+            if (nodes.isEmpty) {
               return SizedBox(
-                height: 180.h,
+                height: 220.h,
                 child: Center(
                   child: Text(
                     'No data for chart',
@@ -353,13 +423,17 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
               );
             }
 
+            final stateName = controller.selectedStateName.value.isEmpty
+                ? 'State Seat Distribution'
+                : '${controller.selectedStateName.value}\nState Seat\nDistribution';
+
             return SizedBox(
-              height: 220.h,
+              height: 260.h,
               child: CustomPaint(
-                size: Size(200.w, 200.w),
-                painter: _SeatDistributionPiePainter(
-                  labels: labels.toList(),
-                  values: values.toList(),
+                size: Size(220.w, 220.w),
+                painter: _SeatDistributionSunburstPainter(
+                  nodes: nodes.toList(),
+                  centerTitle: stateName,
                   colors: _chartColors,
                 ),
               ),
@@ -384,6 +458,45 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                     '',
                   ),
               ],
+            );
+          }),
+
+          SizedBox(height: 16.h),
+
+          /// Table data from API
+          Obx(() {
+            final rows = controller.tableRows;
+            if (rows.isEmpty) return const SizedBox.shrink();
+            return Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFD),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.chipBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Seat Type Summary',
+                    style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                  ),
+                  SizedBox(height: 10.h),
+                  _buildTableHeader(),
+                  SizedBox(height: 6.h),
+                  const Divider(height: 1),
+                  SizedBox(height: 8.h),
+                  for (int i = 0; i < rows.length; i++)
+                    _buildTableRow(
+                      _chartColors[i % _chartColors.length],
+                      rows[i].seatTypeName,
+                      rows[i].totalSeats.toString(),
+                      rows[i].totalColleges.toString(),
+                      rows[i].totalCategories.toString(),
+                    ),
+                ],
+              ),
             );
           }),
         ],
@@ -471,46 +584,123 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
 }
 
 /// Pie chart painter driven by [SeatDistributionRow] data (totalSeats per seat type).
-class _SeatDistributionPiePainter extends CustomPainter {
-  final List<String> labels;
-  final List<int> values;
-  final List<Color> colors;
-
-  _SeatDistributionPiePainter({
-    required this.labels,
-    required this.values,
+class _SeatDistributionSunburstPainter extends CustomPainter {
+  _SeatDistributionSunburstPainter({
+    required this.nodes,
+    required this.centerTitle,
     required this.colors,
   });
 
+  final List<SeatTreeNode> nodes;
+  final String centerTitle;
+  final List<Color> colors;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final total = values.fold(0, (a, b) => a + b);
+    if (nodes.isEmpty) return;
 
-    double startAngle = -90;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2;
 
-    final rect = Rect.fromCircle(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: size.width / 2,
-    );
+    final innerRingRadius = radius * 0.40;
+    final innerStroke = radius * 0.26;
+    // Make outer ring start exactly where inner ring ends (no gap).
+    final outerRingRadius = innerRingRadius + innerStroke;
+    final outerStroke = radius * 0.24;
 
-    for (int i = 0; i < values.length; i++) {
-      final sweepAngle = (values[i] / total) * 360;
+    final totalParent = nodes.fold<int>(0, (sum, n) => sum + n.value);
+    if (totalParent == 0) return;
+
+    double startAngle = -90.0;
+
+    // Draw inner ring for Government vs Private (or other parent seat types)
+    for (int i = 0; i < nodes.length; i++) {
+      final node = nodes[i];
+      if (node.value <= 0) continue;
+      final parentSweep = (node.value / totalParent) * 360.0;
 
       final paint = Paint()
-        ..style = PaintingStyle.fill
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = innerStroke
         ..color = colors[i % colors.length];
+
+      final rect = Rect.fromCircle(
+        center: center,
+        radius: innerRingRadius + innerStroke / 2,
+      );
 
       canvas.drawArc(
         rect,
-        startAngle * (3.1416 / 180),
-        sweepAngle * (3.1416 / 180),
-        true,
+        _degToRad(startAngle),
+        _degToRad(parentSweep),
+        false,
         paint,
       );
 
-      startAngle += sweepAngle;
+      // Draw outer ring segments for children of this parent.
+      // Each child’s sweep is proportional to its share of the PARENT value,
+      // so the sum of children exactly matches the parent arc.
+      final children = node.children;
+      if (children.isNotEmpty) {
+        double childStart = startAngle;
+        for (int j = 0; j < children.length; j++) {
+          final child = children[j];
+          if (child.value <= 0) continue;
+          final childSweep = parentSweep * (child.value / node.value);
+
+          final childPaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = outerStroke
+            ..color = colors[(i + j + 1) % colors.length].withValues(alpha: 0.9);
+
+          final outerRect = Rect.fromCircle(
+            center: center,
+            radius: outerRingRadius + outerStroke / 2,
+          );
+
+          canvas.drawArc(
+            outerRect,
+            _degToRad(childStart),
+            _degToRad(childSweep),
+            false,
+            childPaint,
+          );
+
+          childStart += childSweep;
+        }
+      }
+
+      startAngle += parentSweep;
     }
+
+    // Center white circle
+    final innerHoleRadius = innerRingRadius * 0.9;
+    final holePaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+    canvas.drawCircle(center, innerHoleRadius, holePaint);
+
+    // Center text
+    final textSpan = TextSpan(
+      text: centerTitle,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+      ),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 3,
+    )..layout(maxWidth: innerHoleRadius * 1.6);
+
+    final textOffset = center - Offset(textPainter.width / 2, textPainter.height / 2);
+    textPainter.paint(canvas, textOffset);
   }
+
+  double _degToRad(double deg) => deg * 3.1415926535897932 / 180.0;
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;

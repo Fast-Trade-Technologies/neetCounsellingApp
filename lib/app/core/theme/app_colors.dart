@@ -30,7 +30,8 @@ class AppColors {
   // Main / Dashboard
   static const Color headerBg = Color(0xFFE8EEF5);
   static const Color headerTitleOrange = Color(0xFFE67E22);
-  static const Color navBarBg = Color(0xFF164A8B);
+  /// Bottom navigation background (rgba(0,117,181,1)).
+  static const Color navBarBg = Color.fromRGBO(0, 117, 181, 1);
   static const Color navBarActive = Color(0xFF5DADE2);
   static const Color cardBlue = Color(0xFF1A5276);
   static const Color bookNowBlue = Color(0xFF3498DB);

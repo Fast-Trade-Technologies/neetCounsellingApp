@@ -97,10 +97,14 @@ class SeatDistributionController extends GetxController {
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxString selectedStateId = '26'.obs;
   final RxString selectedStateName = 'uttar pradesh'.obs;
+  /// Counselling type filter: from API data.filters.counselling_types.
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
+  final RxString selectedCounsellingTypeId = ''.obs;
+  final RxString selectedCounsellingTypeName = 'Select Counselling Type'.obs;
   final RxString selectedCourseId = ''.obs;
   final RxString selectedCourseName = 'Select Course'.obs;
   final RxString selectedYear = '2025'.obs;
-  static const List<String> yearOptions = ['2025', '2024'];
+  final RxList<String> yearOptions = <String>['2025', '2024'].obs;
 
   /// Course options for seat distribution filter. id -> display name. Empty id = "Select Course".
   static const List<Map<String, String>> courseOptions = [
@@ -112,20 +116,7 @@ class SeatDistributionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadStateFilters();
-  }
-
-  Future<void> _loadStateFilters() async {
-    final (success, list, _) = await FiltersApi.getStates(showLoader: false);
-    if (success && list.isNotEmpty) {
-      stateFilters.assignAll(list);
-      final matches = list.where((e) => e.name.trim().toLowerCase() == 'uttar pradesh').toList();
-      final fallback = matches.isNotEmpty ? matches.first : list.first;
-      selectedStateId.value = fallback.id;
-      selectedStateName.value = fallback.name;
-    }
-    selectedYear.value = '2025';
-    await loadSeatDistribution(showLoader: false);
+    unawaited(loadSeatDistribution(showLoader: false));
   }
 
   void setStateFilter(FilterItem? item) {
@@ -141,6 +132,16 @@ class SeatDistributionController extends GetxController {
   void setCourseFilter(String id, String name) {
     selectedCourseId.value = id;
     selectedCourseName.value = name;
+  }
+
+  void setCounsellingType(FilterItem? item) {
+    if (item == null) {
+      selectedCounsellingTypeId.value = '';
+      selectedCounsellingTypeName.value = 'Select Counselling Type';
+    } else {
+      selectedCounsellingTypeId.value = item.id;
+      selectedCounsellingTypeName.value = item.name;
+    }
   }
 
   void setYear(String value) => selectedYear.value = value;
@@ -163,6 +164,9 @@ class SeatDistributionController extends GetxController {
       'state_id': stateId,
       'year': selectedYear.value,
     };
+    if (selectedCounsellingTypeId.value.isNotEmpty) {
+      extraQuery['state_id_counselling'] = selectedCounsellingTypeId.value;
+    }
     final (success, data, errorMessage) = await SeatDistributionApi.getSeatDistribution(
       showLoader: showLoader,
       extraQuery: extraQuery,
@@ -178,6 +182,115 @@ class SeatDistributionController extends GetxController {
     }
 
     year.value = data['year']?.toString() ?? '';
+
+    // Parse filters for states, counselling types, and years from API response.
+    final filters = data['filters'];
+    if (filters is Map) {
+      // States
+      final states = filters['states'];
+      if (states is List) {
+        final list = <FilterItem>[];
+        for (final s in states) {
+          if (s is Map) {
+            final m = Map<String, dynamic>.from(s);
+            final id = m['id']?.toString() ?? '';
+            final name = m['name']?.toString() ?? '';
+            if (id.isNotEmpty && name.isNotEmpty) {
+              list.add(FilterItem(id: id, name: name));
+            }
+          }
+        }
+        if (list.isNotEmpty) {
+          stateFilters.assignAll(list);
+
+          // Only auto-select default when there is no valid user selection yet.
+          final hasExisting =
+              selectedStateId.value.isNotEmpty && list.any((s) => s.id == selectedStateId.value);
+          if (!hasExisting) {
+            final apiSelectedStateName = data['selected_state_name']?.toString();
+            FilterItem? chosen;
+            if (apiSelectedStateName != null && apiSelectedStateName.trim().isNotEmpty) {
+              final target = apiSelectedStateName.trim().toLowerCase();
+              for (final s in list) {
+                if (s.name.trim().toLowerCase() == target) {
+                  chosen = s;
+                  break;
+                }
+              }
+            }
+            if (chosen == null) {
+              for (final s in list) {
+                if (s.name.trim().toLowerCase() == 'uttar pradesh') {
+                  chosen = s;
+                  break;
+                }
+              }
+            }
+            chosen ??= list.first;
+            selectedStateId.value = chosen.id;
+            selectedStateName.value = chosen.name;
+          }
+        }
+      }
+
+      // Counselling types
+      final counsellingTypes = filters['counselling_types'];
+      if (counsellingTypes is List) {
+        final list = <FilterItem>[];
+        for (final c in counsellingTypes) {
+          if (c is Map) {
+            final m = Map<String, dynamic>.from(c);
+            final id = m['id']?.toString() ?? '';
+            final name = m['name']?.toString() ?? '';
+            if (id.isNotEmpty && name.isNotEmpty) {
+              list.add(FilterItem(id: id, name: name));
+            }
+          }
+        }
+        if (list.isNotEmpty) {
+          counsellingTypeFilters.assignAll(list);
+
+          final hasExisting = selectedCounsellingTypeId.value.isNotEmpty &&
+              list.any((c) => c.id == selectedCounsellingTypeId.value);
+          if (!hasExisting) {
+            FilterItem chosen = list.first;
+            for (final c in list) {
+              if (c.name.trim().toLowerCase() == 'state') {
+                chosen = c;
+                break;
+              }
+            }
+            selectedCounsellingTypeId.value = chosen.id;
+            selectedCounsellingTypeName.value = chosen.name;
+          }
+        }
+      }
+
+      // Years
+      final years = filters['years'];
+      if (years is List) {
+        final parsedYears = <String>[];
+        for (final y in years) {
+          final ys = y?.toString();
+          if (ys != null && ys.isNotEmpty) {
+            parsedYears.add(ys);
+          }
+        }
+        if (parsedYears.isNotEmpty) {
+          yearOptions.assignAll(parsedYears);
+          final hasExisting =
+              selectedYear.value.isNotEmpty && parsedYears.contains(selectedYear.value);
+          if (!hasExisting) {
+            final apiYear = data['year']?.toString();
+            if (apiYear != null && apiYear.isNotEmpty && parsedYears.contains(apiYear)) {
+              selectedYear.value = apiYear;
+            } else {
+              selectedYear.value = parsedYears.first;
+            }
+          }
+        }
+      }
+    }
     final rawTable = data['table_data'];
     final rows = <SeatDistributionRow>[];
     if (rawTable is List) {

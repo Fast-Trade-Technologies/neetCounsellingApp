@@ -15,12 +15,34 @@ class MainView extends GetView<MainController> {
   const MainView({super.key});
 
   static const String _icons = 'assets/dashboard-icons';
+  static const String _bottomBarIcons = 'assets/bottom-bar-icons';
 
   static const List<_NavItem> _navItems = [
-    _NavItem(label: 'Dashboard', icon: Icons.home_rounded, iconAsset: null),
-    _NavItem(label: 'Analysis', icon: Icons.show_chart_rounded, iconAsset: null),
-    _NavItem(label: 'Tools', icon: Icons.build_rounded, iconAsset: null),
-    _NavItem(label: 'Post-Exam', icon: Icons.school_rounded, iconAsset: null),
+    _NavItem(
+      label: 'Dashboard',
+      icon: Icons.home_rounded,
+      iconAsset: '$_bottomBarIcons/home.png',
+    ),
+    _NavItem(
+      label: 'Analysis',
+      icon: Icons.show_chart_rounded,
+      iconAsset: '$_bottomBarIcons/analysis.png',
+    ),
+    _NavItem(
+      label: 'Tools',
+      icon: Icons.build_rounded,
+      iconAsset: '$_bottomBarIcons/tools.png',
+    ),
+    _NavItem(
+      label: 'Post-Exam',
+      icon: Icons.school_rounded,
+      iconAsset: '$_bottomBarIcons/post_exam.png',
+    ),
+    // _NavItem(
+    //   label: 'More',
+    //   icon: Icons.more_horiz_rounded,
+    //   iconAsset: '$_bottomBarIcons/more.png',
+    // ),
   ];
 
   static const List<String> _titles = [
@@ -28,6 +50,7 @@ class MainView extends GetView<MainController> {
     'Analysis',
     'Tools',
     'Post-Exam',
+    'More',
   ];
 
   @override
@@ -141,17 +164,7 @@ class MainView extends GetView<MainController> {
         ),
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.navBarBg,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textDark.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
+        color: AppColors.navBarBg,
         child: SafeArea(
           top: false,
           child: Padding(
@@ -325,45 +338,55 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppColors.navBarActive : Colors.white.withValues(alpha: 0.75);
+    final Color activeColor = Colors.white;
+    final Color activeIconColor = AppColors.navBarBg;
+    final Color inactiveColor = Colors.white.withValues(alpha: 0.8);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14.r),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           margin: EdgeInsets.symmetric(horizontal: 4.w),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 6.w),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.navBarActive.withValues(alpha: 0.28) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14.r),
-            border: isSelected ? Border.all(color: AppColors.navBarActive.withValues(alpha: 0.7), width: 1.2) : null,
+            // color: isSelected ? activeColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(24.r),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (iconAsset != null)
-                SizedBox(
-                  width: 26.w,
-                  height: 26.w,
-                  child: Image.asset(
-                    iconAsset!,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => Icon(icon, size: 24.sp, color: color),
-                  ),
-                )
-              else
-                Icon(icon, size: 24.sp, color: color),
+              Container(
+                width: isSelected ? 48.w : 40.w,
+                height: isSelected ? 30.h : 28.h,
+                decoration: BoxDecoration(
+                  color: isSelected ? activeColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24.r),
+                ),
+                alignment: Alignment.center,
+                child: iconAsset != null
+                    ? Image.asset(
+                        iconAsset!,
+                        width: 80.w,
+                        height: 80.h,
+                        fit: BoxFit.contain,
+                        color: isSelected ? activeIconColor : inactiveColor,
+                      )
+                    : Icon(
+                        icon,
+                        size: 22.sp,
+                        color: isSelected ? activeIconColor : inactiveColor,
+                      ),
+              ),
               SizedBox(height: 4.h),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 10.sp,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: color,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? activeColor : inactiveColor,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
