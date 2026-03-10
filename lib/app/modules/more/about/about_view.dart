@@ -85,7 +85,7 @@ class AboutView extends GetView<AboutController> {
   Widget _buildImage(String imageUrl) {
     return Container(
       width: double.infinity,
-      height: 200.h,
+      height: 220.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [

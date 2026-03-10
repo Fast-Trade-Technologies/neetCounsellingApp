@@ -107,7 +107,7 @@ class WebinarDetailView extends GetView<WebinarDetailController> {
                 if (controller.imageUrl.value.isNotEmpty) ...[
                   Container(
                     width: double.infinity,
-                    height: 280.h,
+                    height: 240.h,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -124,13 +124,13 @@ class WebinarDetailView extends GetView<WebinarDetailController> {
                           child: Image.network(
                             controller.imageUrl.value,
                             width: double.infinity,
-                            height: 260.h,
+                            height: 240.h,
                             fit: BoxFit.fill,
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Container(
                                 width: double.infinity,
-                                height: 280.h,
+                                height: 240.h,
                                 color: AppColors.chipBg,
                                 child: Center(
                                   child: CircularProgressIndicator(
