@@ -12,8 +12,10 @@ class MenuGridButton extends StatelessWidget {
     this.icon,
     this.iconAsset,
     this.onTap,
-  }) : assert(icon != null || iconAsset != null,
-            'Provide either icon or iconAsset');
+  }) : assert(
+         icon != null || iconAsset != null,
+         'Provide either icon or iconAsset',
+       );
 
   final String label;
   final IconData? icon;
@@ -36,34 +38,35 @@ class MenuGridButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(14.r),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(40.r),
         child: Container(
-          constraints: BoxConstraints(minHeight: 88.h),
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
           decoration: BoxDecoration(
-            color: AppColors.chipBg,
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: AppColors.chipBorder),
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(40.r),
             boxShadow: [
               BoxShadow(
-                color: AppColors.textDark.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 10.r,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
               iconWidget,
-              SizedBox(height: 10.h),
-              Text(
-                label,
-                style: AppTextStyles.menuButtonLabel,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+
+              SizedBox(width: 10.w),
+
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.menuButtonLabel.copyWith(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
               ),
             ],
           ),

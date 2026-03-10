@@ -564,7 +564,7 @@ class CompetitionStatisticsView
                   children: [
                     Obx(
                       () => Text(
-                        'Exam Details – ${controller.selectedYearState.value}',
+                        'Exam Details - ${controller.selectedYearState.value}',
                         style: AppTextStyles.welcomeHeading.copyWith(
                           fontSize: 14.sp,
                         ),
@@ -637,40 +637,40 @@ class CompetitionStatisticsView
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          TextField(
-            onChanged: controller.setStateWiseSearchQuery,
-            decoration: InputDecoration(
-              hintText: 'Search states...',
-              hintStyle: AppTextStyles.bodyS.copyWith(
-                fontSize: 13.sp,
-                color: AppColors.textMuted,
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                size: 22.sp,
-                color: AppColors.textMuted,
-              ),
-              filled: true,
-              fillColor: AppColors.chipBg,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(color: AppColors.chipBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(color: AppColors.chipBorder),
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 14.w,
-                vertical: 12.h,
-              ),
-            ),
-            style: AppTextStyles.bodyS.copyWith(
-              fontSize: 13.sp,
-              color: AppColors.textDark,
-            ),
-          ),
+          // SizedBox(height: 16.h),
+          // TextField(
+          //   onChanged: controller.setStateWiseSearchQuery,
+          //   decoration: InputDecoration(
+          //     hintText: 'Search states...',
+          //     hintStyle: AppTextStyles.bodyS.copyWith(
+          //       fontSize: 13.sp,
+          //       color: AppColors.textMuted,
+          //     ),
+          //     prefixIcon: Icon(
+          //       Icons.search,
+          //       size: 22.sp,
+          //       color: AppColors.textMuted,
+          //     ),
+          //     filled: true,
+          //     fillColor: AppColors.chipBg,
+          //     border: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(10.r),
+          //       borderSide: BorderSide(color: AppColors.chipBorder),
+          //     ),
+          //     enabledBorder: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(10.r),
+          //       borderSide: BorderSide(color: AppColors.chipBorder),
+          //     ),
+          //     contentPadding: EdgeInsets.symmetric(
+          //       horizontal: 14.w,
+          //       vertical: 12.h,
+          //     ),
+          //   ),
+          //   style: AppTextStyles.bodyS.copyWith(
+          //     fontSize: 13.sp,
+          //     color: AppColors.textDark,
+          //   ),
+          // ),
           SizedBox(height: 12.h),
           Obx(() {
             return _StateWiseMapChart(year: controller.selectedYearState.value);
@@ -1612,17 +1612,17 @@ class _StateWiseMapChart extends StatelessWidget {
     return stateMap[code.toLowerCase()] ?? code.toUpperCase();
   }
 
-  String _formatNumber(int n) {
-    final str = n.toString();
-    final buffer = StringBuffer();
-    for (int i = 0; i < str.length; i++) {
-      if (i > 0 && (str.length - i) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(str[i]);
-    }
-    return buffer.toString();
-  }
+  // String _formatNumber(int n) {
+  //   final str = n.toString();
+  //   final buffer = StringBuffer();
+  //   for (int i = 0; i < str.length; i++) {
+  //     if (i > 0 && (str.length - i) % 3 == 0) {
+  //       buffer.write(',');
+  //     }
+  //     buffer.write(str[i]);
+  //   }
+  //   return buffer.toString();
+  // }
 }
 
 class _TabChip extends StatelessWidget {
