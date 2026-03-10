@@ -79,6 +79,7 @@ flutter:
     - assets/auth/
     - assets/dashboard/
     - assets/dashboard-chips-icons/
+    - assets/dashboard-icons/
     - assets/bottom-bar-icons/
     - assets/sycc-reports/
     - assets/maps/

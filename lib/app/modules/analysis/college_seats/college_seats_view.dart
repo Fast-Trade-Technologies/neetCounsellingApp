@@ -38,7 +38,6 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
   Widget _buildLayout(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth >= 980;
         return Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -64,31 +63,11 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                 color: const Color(0xFFE8EEF6),
               ),
               SizedBox(height: 14.h),
-              if (isWide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 7, child: _buildMapPanel()),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        children: [
-                          _buildSummaryCard(),
-                          SizedBox(height: 14.h),
-                          _buildCollegeCard(),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              else ...[
-                _buildMapPanel(),
-                SizedBox(height: 14.h),
-                _buildSummaryCard(),
-                SizedBox(height: 14.h),
-                _buildCollegeCard(),
-              ],
+              _buildStateChip(),
+              SizedBox(height: 16.h),
+              _buildSummaryCard(),
+              SizedBox(height: 14.h),
+              _buildCollegeCard(),
             ],
           ),
         );
@@ -118,28 +97,171 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
   }
 
   Widget _buildStateDropdown() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: const Color(0xFFD8E2EE)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'State',
+    return Obx(() {
+      final states = controller.stateNames;
+
+      // If no data yet, show simple label (non-interactive)
+      if (states.isEmpty) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: const Color(0xFFD8E2EE)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'State',
+                style: AppTextStyles.bodyM.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF142A52),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+            ],
+          ),
+        );
+      }
+
+      String? value = controller.selectedStateName;
+      if (value == null || value.isEmpty || !states.contains(value)) {
+        value = states.first;
+        controller.setSelectedState(value);
+      }
+
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: const Color(0xFFD8E2EE)),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isDense: true,
+            value: value,
+            hint: Text(
+              'State',
+              style: AppTextStyles.bodyM.copyWith(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF142A52),
+              ),
+            ),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
             style: AppTextStyles.bodyM.copyWith(
               fontWeight: FontWeight.w600,
               color: const Color(0xFF142A52),
             ),
+            items: states
+                .map(
+                  (e) => DropdownMenuItem<String>(
+                    value: e,
+                    child: Text(e),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) {
+              if (v == null) return;
+              controller.setSelectedState(v);
+            },
           ),
-          SizedBox(width: 8.w),
-          const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-        ],
-      ),
-    );
+        ),
+      );
+    });
+  }
+
+  Widget _buildStateChip() {
+    return Obx(() {
+      final stateName = controller.selectedStateName;
+      final seats = controller.selectedStateSeats;
+      if (stateName.isEmpty) return const SizedBox.shrink();
+
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: AppColors.chipBorder),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppColors.chipBg,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    size: 16.sp,
+                    color: AppColors.primaryBlue,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    stateName,
+                    style: AppTextStyles.bodyM.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Total Seats',
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      child: Text(
+                        seats.toString(),
+                        style: AppTextStyles.bodyM.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildMapPanel() {
