@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -57,13 +58,31 @@ class WelcomeCard extends StatelessWidget {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _FeaturePill(label: 'Counselling Expert'),
-                    SizedBox(width: 6.w),
-                    _FeaturePill(label: 'All-round Support'),
-                    SizedBox(width: 6.w),
-                    _FeaturePill(label: 'Curated Strategies'),
+                    _FeaturePill(
+                      label: 'Counselling Expert',
+                      iconAsset: 'assets/dashboard-chips-icons/user-graduate-solid.svg',
+                    ),
+                    SizedBox(width: 8.w),
+                    _FeaturePill(
+                      label: 'All-round Support',
+                      iconAsset: 'assets/dashboard-chips-icons/handshake-angle-solid.svg',
+                    ),
+                    SizedBox(width: 8.w),
+                    _FeaturePill(
+                      label: 'Curated Strategies',
+                      iconAsset: 'assets/dashboard-chips-icons/lightbulb-solid.svg',
+                    ),
+                    SizedBox(width: 8.w),
+                    _FeaturePill(
+                      label: 'Documentation Support',
+                      iconAsset: 'assets/dashboard-chips-icons/file-lines-solid.svg',
+                    ),
+                    SizedBox(width: 8.w),
+                    _FeaturePill(
+                      label: 'Personalized College Support',
+                      iconAsset: 'assets/dashboard-chips-icons/user-graduate-green.svg',
+                    ),
                   ],
                 ),
               ),
@@ -136,29 +155,31 @@ class WelcomeCard extends StatelessWidget {
 }
 
 class _FeaturePill extends StatelessWidget {
-  const _FeaturePill({required this.label});
+  const _FeaturePill({required this.label, required this.iconAsset});
 
   final String label;
+  final String iconAsset;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: const Color(0xFFE8F3FF),
-        borderRadius: BorderRadius.circular(10.r),
-        // border: Border.all(color: const Color(0xFFB4D2FF)),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFB4D2FF)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.check_circle_rounded,
-            size: 14.sp,
-            color: const Color(0xFF1E88E5),
+          SvgPicture.asset(
+            iconAsset,
+            width: 14.w,
+            height: 14.w,
+            colorFilter: const ColorFilter.mode(Color(0xFF1E88E5), BlendMode.srcIn),
           ),
-          SizedBox(width: 4.w),
+          SizedBox(width: 6.w),
           Flexible(
             child: Text(
               label,
