@@ -107,12 +107,16 @@ class CounsellingController extends GetxController {
   Future<void> loadCounsellingData() async {
     final stateId = selectedStateId.value.isNotEmpty 
         ? selectedStateId.value 
-        : (stateFilters.isNotEmpty ? stateFilters.first.id : '0');
+        : '';
     final counsellingTypeId = selectedCounsellingTypeId.value.isNotEmpty
         ? selectedCounsellingTypeId.value
         : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
+    final stateTypeId = selectedStateTypeId.value.isNotEmpty
+        ? selectedStateTypeId.value
+        : (stateTypeFilters.isNotEmpty ? stateTypeFilters.first.id : '1');
     final (success, data, errorMessage) = await CounsellingApi.getCounselling(
       stateId: stateId,
+      stateTypeId: stateTypeId,
       counsellingTypeId: counsellingTypeId,
       showLoader: false,
     );
@@ -190,6 +194,10 @@ class CounsellingController extends GetxController {
       }
       if (list.isNotEmpty) {
         stateTypeFilters.assignAll(list);
+        if (selectedStateTypeId.value.isEmpty) {
+          selectedStateType.value = list.first.name;
+          selectedStateTypeId.value = list.first.id;
+        }
       }
     }
   }

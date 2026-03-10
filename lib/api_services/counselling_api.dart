@@ -12,10 +12,10 @@ class CounsellingApi {
   static final BaseAPI _api = BaseAPI();
 
   /// GET {{base_url}}/counselling
-  /// Required params: user_stream, state_id, counselling_type_id
-  /// Also includes nLoginUserIdNo
+  /// Required params: counselling_type_id, state_type_id, state_id (can be null), nLoginUserIdNo
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)> getCounselling({
     required String stateId,
+    required String stateTypeId,
     required String counsellingTypeId,
     bool showLoader = true,
     Map<String, dynamic>? extraQuery,
@@ -24,13 +24,12 @@ class CounsellingApi {
     if (userId == null || userId.isEmpty) {
       return (false, null, 'Please sign in to load counselling');
     }
-    final userStream = AppStorage.userStream ?? '1'; // Default to '1' if not set
     try {
       final query = <String, dynamic>{
         'nLoginUserIdNo': userId,
-        'user_stream': userStream,
-        'state_id': stateId,
         'counselling_type_id': counsellingTypeId,
+        'state_type_id': stateTypeId,
+        'state_id': stateId,
         ...?extraQuery,
       };
       final response = await _api.get(
