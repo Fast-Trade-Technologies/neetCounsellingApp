@@ -125,9 +125,20 @@ class MainView extends GetView<MainController> {
                   ),
                 ),
                 Obx(
-                  () => Text(
-                    _titles[controller.currentIndex.value],
-                    style: AppTextStyles.mainScreenTitle,
+                  () => ShaderMask(
+                    blendMode: BlendMode.srcIn,
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        AppColors.gradientTitleStart,
+                        AppColors.gradientTitleEnd,
+                      ],
+                    ).createShader(bounds),
+                    child: Text(
+                      _titles[controller.currentIndex.value],
+                      style: AppTextStyles.mainScreenTitle.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -214,9 +225,21 @@ class MainView extends GetView<MainController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Analysis',
-                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 18.sp),
+              ShaderMask(
+                blendMode: BlendMode.srcIn,
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.gradientTitleStart,
+                    AppColors.gradientTitleEnd,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Analysis',
+                  style: AppTextStyles.welcomeHeading.copyWith(
+                    fontSize: 18.sp,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               SizedBox(height: 8.h),
               Text(
@@ -247,9 +270,21 @@ class MainView extends GetView<MainController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Tools',
-                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 18.sp),
+              ShaderMask(
+                blendMode: BlendMode.srcIn,
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.gradientTitleStart,
+                    AppColors.gradientTitleEnd,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Tools',
+                  style: AppTextStyles.welcomeHeading.copyWith(
+                    fontSize: 18.sp,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               SizedBox(height: 8.h),
               Text(
@@ -280,9 +315,21 @@ class MainView extends GetView<MainController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Post-Exam',
-                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 18.sp),
+              ShaderMask(
+                blendMode: BlendMode.srcIn,
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.gradientTitleStart,
+                    AppColors.gradientTitleEnd,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Post-Exam',
+                  style: AppTextStyles.welcomeHeading.copyWith(
+                    fontSize: 18.sp,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               SizedBox(height: 8.h),
               Text(
@@ -430,13 +477,13 @@ class _DashboardContent extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'At "NEETCounseling.com", we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Our platform offers comprehensive counselling support, college predictions, and expert advice to help you make informed choices.',
-            style: AppTextStyles.bodyS.copyWith(
-              color: AppColors.textDark,
-              height: 1.4,
-            ),
-          ),
+          // Text(
+          //   'At "NEETCounseling.com", we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Our platform offers comprehensive counselling support, college predictions, and expert advice to help you make informed choices.',
+          //   style: AppTextStyles.bodyS.copyWith(
+          //     color: AppColors.textDark,
+          //     height: 1.4,
+          //   ),
+          // ),
           SizedBox(height: 16.h),
             LayoutGrid(
             children: [

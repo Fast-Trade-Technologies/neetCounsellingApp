@@ -10,12 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53fce68b-e4fe-4daf-a4ff-0ff0d0c5b2e3" name="Changes" comment="Merge branch 'Dev' of github.com:Fast-Trade-Technologies/neetCounsellingApp into anil&#10;&#10;# Conflicts:&#10;#&#9;.idea/libraries/Dart_Packages.xml&#10;#&#9;.idea/workspace.xml">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/core/widgets/menu_grid_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/core/widgets/menu_grid_button.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/analysis/competition_statistics/competition_statistics_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/analysis/competition_statistics/competition_statistics_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/more/about/about_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/more/about/about_view.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

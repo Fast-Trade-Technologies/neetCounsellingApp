@@ -24,13 +24,22 @@ class WelcomeCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
-        Text(
-          'Welcome Neet Counselling',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: AppColors.headerTitleOrange,
+        // Title (gradient text)
+        ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: [
+              AppColors.gradientTitleStart,
+              AppColors.gradientTitleEnd,
+            ],
+          ).createShader(bounds),
+          child: Text(
+            'Welcome Neet Counselling',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
           ),
         ),
         SizedBox(height: 4.h),
@@ -40,7 +49,7 @@ class WelcomeCard extends StatelessWidget {
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
             height: 1.3,
-            color: AppColors.textMuted,
+            color: AppColors.bookNowBlue,
           ),
         ),
         SizedBox(height: 10.h),
@@ -111,7 +120,7 @@ class WelcomeCard extends StatelessWidget {
                 'Schedule a counselling session with your Sr. Counselor :)',
                 style: AppTextStyles.welcomeHeading.copyWith(
                   fontSize: 14.sp,
-                  color: const Color(0xFF0E4A7B),
+                  color: AppColors.bookNowBlue,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -120,7 +129,7 @@ class WelcomeCard extends StatelessWidget {
               Text(
                 'At “NEETCounseling.com”, we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Since 2016, we have helped over 24,000 medical aspirants by offering expert support, personalized mentorship, and a smooth, stress-free counselling experience. Our dedicated team of 50+ senior counselors and medical admission experts works day and night to guide you through every step of the UG counselling process—be it All India, State, Deemed, Management or NRI quota.',
                 style: AppTextStyles.bodyS.copyWith(
-                  color: AppColors.textDark,
+                  color: AppColors.bookNowBlue,
                   height: 1.5,
                   fontSize: 11.5.sp,
                 ),

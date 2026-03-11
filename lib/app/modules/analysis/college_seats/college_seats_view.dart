@@ -18,10 +18,11 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
-        title: 'Analysis College &...',
+        title: 'Analysis College & Seats',
         subtitle: 'College & Seats',
         onBack: () => Get.back(),
-        onFilter: () => _openFilterSheet(context),
+        hideFilter: true,
+        // onFilter: () => _openFilterSheet(context),
       ),
       body: RefreshIndicator(
         onRefresh: () => controller.refresh(),
@@ -29,7 +30,13 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: _buildLayout(context),
+          child: Column(
+            children: [
+               _buildHeader(),
+               SizedBox(height: 14.h),
+              _buildLayout(context),
+            ],
+          ),
         ),
       ),
     );
@@ -42,21 +49,22 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFD),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(color: const Color(0xFFE6EDF5)),
             boxShadow: [
               BoxShadow(
                 color: AppColors.textDark.withValues(alpha: 0.06),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
+                blurRadius: 30,
+                offset: const Offset(0, 20),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              SizedBox(height: 14.h),
+              _buildStateDropdown(),
               SizedBox(height: 14.h),
               Container(
                 height: 1,
@@ -67,7 +75,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
               SizedBox(height: 16.h),
               _buildSummaryCard(),
               SizedBox(height: 14.h),
-              _buildCollegeCard(),
+              // _buildCollegeCard(),
             ],
           ),
         );
@@ -76,23 +84,38 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      children: [
-        Expanded(
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('College & Seats', style: AppTextStyles.welcomeHeading.copyWith(fontSize: 24.sp)),
-              SizedBox(height: 4.h),
-              Text(
-                'Navigate across different medical college seat distributions',
-                style: AppTextStyles.bodyM.copyWith(color: const Color(0xFF47576B)),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'College & Seats',
+              style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Navigate across different medical college seat distributions',
+              style: AppTextStyles.bodyM.copyWith(
+                color: const Color(0xFF47576B),
+                fontSize: 10.sp,
               ),
+            ),
             ],
           ),
         ),
-        _buildStateDropdown(),
-      ],
+      ),
     );
   }
 
@@ -103,6 +126,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
       // If no data yet, show simple label (non-interactive)
       if (states.isEmpty) {
         return Container(
+          width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -133,6 +157,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
       }
 
       return Container(
+        width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -338,8 +363,9 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
       width: double.infinity,
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F4F8),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.primaryBlue),
       ),
       child: Column(
         children: [
@@ -598,7 +624,7 @@ class _SegmentTab extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFCFE1F3) : Colors.transparent,
+          color: isActive ? const Color(0xFFCFE1F3) : null,
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Text(

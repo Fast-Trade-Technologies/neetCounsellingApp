@@ -30,6 +30,10 @@ class AppColors {
   // Main / Dashboard
   static const Color headerBg = Color(0xFFE8EEF5);
   static const Color headerTitleOrange = Color(0xFFE67E22);
+
+  /// Gradient title colors (rgba(250, 189, 0, 1) → rgba(243, 138, 1, 1))
+  static const Color gradientTitleStart = Color.fromRGBO(250, 189, 0, 1);
+  static const Color gradientTitleEnd = Color.fromRGBO(243, 138, 1, 1);
   /// Bottom navigation background (rgba(0,117,181,1)).
   static const Color navBarBg = Color.fromRGBO(0, 117, 181, 1);
   static const Color navBarActive = Color(0xFF5DADE2);
