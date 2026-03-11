@@ -30,6 +30,9 @@ class SeatDistributionApi {
       if (extraQuery != null && extraQuery['state_id_counselling'] != null) {
         query['state_id_counselling'] = extraQuery['state_id_counselling'];
       }
+      if (extraQuery != null && extraQuery['course_id'] != null && (extraQuery['course_id'] as String).isNotEmpty) {
+        query['course_id'] = extraQuery['course_id'];
+      }
       final response = await _api.get(
         url: seatDistributionPath,
         queryParameters: query,

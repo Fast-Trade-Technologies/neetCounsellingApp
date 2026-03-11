@@ -145,15 +145,17 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                         onTap: () {
                           controller.setStateFilter(null);
                           Navigator.pop(ctx);
+                          controller.submit();
                         },
                       ),
                       ...states.map((e) => ListTile(
-                        title: Text(e.name, style: AppTextStyles.bodyS),
-                        onTap: () {
-                          controller.setStateFilter(e);
-                          Navigator.pop(ctx);
-                        },
-                      )),
+                            title: Text(e.name, style: AppTextStyles.bodyS),
+                            onTap: () {
+                              controller.setStateFilter(e);
+                              Navigator.pop(ctx);
+                              controller.submit();
+                            },
+                          )),
                     ],
                   ),
                 ),
@@ -191,20 +193,26 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                     controller: scrollController,
                     shrinkWrap: true,
                     children: options
-                        .map((e) => ListTile(
-                              title: Text(
-                                e['name']!,
-                                style: AppTextStyles.bodyS.copyWith(
-                                  color: (e['id'] ?? '').isEmpty
-                                      ? AppColors.textMuted
-                                      : AppColors.textDark,
-                                ),
+                        .map(
+                          (e) => ListTile(
+                            title: Text(
+                              e['name']!,
+                              style: AppTextStyles.bodyS.copyWith(
+                                color: (e['id'] ?? '').isEmpty
+                                    ? AppColors.textMuted
+                                    : AppColors.textDark,
                               ),
-                              onTap: () {
-                                controller.setCourseFilter(e['id'] ?? '', e['name'] ?? 'Select Course');
-                                Navigator.pop(ctx);
-                              },
-                            ))
+                            ),
+                            onTap: () {
+                              controller.setCourseFilter(
+                                e['id'] ?? '',
+                                e['name'] ?? 'Select Course',
+                              );
+                              Navigator.pop(ctx);
+                              controller.submit();
+                            },
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -237,19 +245,24 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                 child: Scrollbar(
                   controller: scrollController,
                   thumbVisibility: true,
-                  child: Obx(() => ListView(
-                        controller: scrollController,
-                        shrinkWrap: true,
-                        children: controller.yearOptions
-                            .map((y) => ListTile(
-                                  title: Text(y, style: AppTextStyles.bodyS),
-                                  onTap: () {
-                                    controller.setYear(y);
-                                    Navigator.pop(ctx);
-                                  },
-                                ))
-                            .toList(),
-                      )),
+                  child: Obx(
+                    () => ListView(
+                      controller: scrollController,
+                      shrinkWrap: true,
+                      children: controller.yearOptions
+                          .map(
+                            (y) => ListTile(
+                              title: Text(y, style: AppTextStyles.bodyS),
+                              onTap: () {
+                                controller.setYear(y);
+                                Navigator.pop(ctx);
+                                controller.submit();
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
                 ),
               ),
             ],

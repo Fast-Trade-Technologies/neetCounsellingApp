@@ -13,6 +13,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/url_launcher_util.dart' show iosPurchaseDisclaimer;
 import '../../core/widgets/detail_app_bar.dart';
 import '../../../razorpay_service/razorpay_service.dart';
+import '../../../api_services/services_api.dart';
 
 class SubscriptionPlanView extends StatefulWidget {
   const SubscriptionPlanView({super.key});
@@ -25,6 +26,13 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   final RazorpayService _razorpayService = RazorpayService();
   String _selectedStream = 'UG';
   bool _isProcessingPayment = false;
+
+  // Plans loaded from Services API. When null, fall back to static definitions below.
+  List<_PlanModel>? _apiUgPlans;
+  List<_PlanModel>? _apiPgPlans;
+  bool _isLoadingPlans = false;
+  String? _plansError;
+  List<String> _availableStreams = const <String>['UG', 'PG'];
 
   static const List<_PlanModel> _ugPlans = <_PlanModel>[
     _PlanModel(
@@ -124,6 +132,7 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
       onError: _onPaymentError,
       onExternalWallet: _onExternalWallet,
     );
+    _loadPlansFromApi();
   }
 
   @override
@@ -135,7 +144,9 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   @override
   Widget build(BuildContext context) {
     final bool isIOS = !kIsWeb && Platform.isIOS;
-    final List<_PlanModel> plans = _selectedStream == 'UG' ? _ugPlans : _pgPlans;
+    final List<_PlanModel> plans = _selectedStream == 'UG'
+        ? (_apiUgPlans ?? _ugPlans)
+        : (_apiPgPlans ?? _pgPlans);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F3F5),
@@ -152,6 +163,20 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
           children: [
             _buildToggle(),
             SizedBox(height: 14.h),
+            if (_isLoadingPlans && _apiUgPlans == null && _apiPgPlans == null)
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+            if (_plansError != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: Text(
+                  _plansError!,
+                  style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             if (isIOS)
               Padding(
                 padding: EdgeInsets.only(bottom: 10.h),
@@ -187,20 +212,15 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
         ),
         child: Row(
           children: [
-            Expanded(
-              child: _ToggleTab(
-                text: 'UG',
-                selected: _selectedStream == 'UG',
-                onTap: () => setState(() => _selectedStream = 'UG'),
+            for (final stream in _availableStreams) ...[
+              Expanded(
+                child: _ToggleTab(
+                  text: stream,
+                  selected: _selectedStream == stream,
+                  onTap: () => setState(() => _selectedStream = stream),
+                ),
               ),
-            ),
-            Expanded(
-              child: _ToggleTab(
-                text: 'PG',
-                selected: _selectedStream == 'PG',
-                onTap: () => setState(() => _selectedStream = 'PG'),
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -412,6 +432,83 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
     }
     if (rest.isNotEmpty) groups.insert(0, rest);
     return '${groups.join(',')},$last3';
+  }
+
+  Future<void> _loadPlansFromApi() async {
+    setState(() {
+      _isLoadingPlans = true;
+      _plansError = null;
+    });
+
+    final (success, data, error) = await ServicesApi.getServices();
+    if (!mounted) return;
+
+    if (!success || data == null) {
+      setState(() {
+        _isLoadingPlans = false;
+        _plansError = error;
+      });
+      return;
+    }
+
+    final List<_PlanModel> ug = <_PlanModel>[];
+    final List<_PlanModel> pg = <_PlanModel>[];
+    final List<String> streamsFromApi = <String>[];
+
+    for (final type in data.courseTypes) {
+      final stream = type.name.trim().toUpperCase();
+      if (stream.isNotEmpty) streamsFromApi.add(stream);
+      for (final plan in type.pricingPlans) {
+        final bool isUg = stream == 'UG' || type.id == '1';
+        final bool isPg = stream == 'PG' || type.id == '2';
+
+        final discountLabel =
+            plan.hasDiscount && plan.discount > 0 ? '${plan.discount}% OFF' : '';
+        final savingsText = plan.hasDiscount && plan.discount > 0
+            ? 'You save ${plan.discount}%'
+            : 'No discount';
+
+        final List<_PlanFeature> features = plan.points
+            .map(
+              (p) => _PlanFeature(
+                p.text,
+                // Treat check icon as included, xmark as not included.
+                p.icon.toLowerCase().contains('check'),
+              ),
+            )
+            .toList();
+
+        final model = _PlanModel(
+          id: plan.id,
+          stream: isPg ? 'PG' : 'UG',
+          title: plan.name.trim(),
+          discountLabel: discountLabel,
+          originalPriceInPaise: plan.price * 100,
+          priceInPaise: plan.discountedPrice * 100,
+          savingsText: savingsText,
+          features: features,
+        );
+
+        if (isUg) {
+          ug.add(model);
+        } else if (isPg) {
+          pg.add(model);
+        }
+      }
+    }
+
+    setState(() {
+      _apiUgPlans = ug.isNotEmpty ? ug : null;
+      _apiPgPlans = pg.isNotEmpty ? pg : null;
+      _isLoadingPlans = false;
+      _plansError = null;
+      if (streamsFromApi.isNotEmpty) {
+        _availableStreams = streamsFromApi.toSet().toList();
+        if (!_availableStreams.contains(_selectedStream)) {
+          _selectedStream = _availableStreams.first;
+        }
+      }
+    });
   }
 
   void _openRazorpay(_PlanModel plan) {

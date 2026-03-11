@@ -14,7 +14,7 @@ import 'package:neetcounsellingapp/app/core/snackbar/app_snackbar.dart';
 import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 
 /// Base URL from NEET Counseling API Postman collection (variable base_url).
-const String baseUrl = 'http://neetcounseling.efasttrade.in/api/v1';
+const String baseUrl = 'https://neetcounseling.efasttrade.in/api/v1';
 
 /// Minimal overlay/loader and snackbar used by [BaseAPI]. Uses GetStorage via [AppStorage].
 class _BaseOverlays {

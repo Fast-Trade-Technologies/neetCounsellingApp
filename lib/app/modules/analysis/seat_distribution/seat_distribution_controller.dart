@@ -164,6 +164,9 @@ class SeatDistributionController extends GetxController {
       'state_id': stateId,
       'year': selectedYear.value,
     };
+    if (selectedCourseId.value.isNotEmpty) {
+      extraQuery['course_id'] = selectedCourseId.value;
+    }
     if (selectedCounsellingTypeId.value.isNotEmpty) {
       extraQuery['state_id_counselling'] = selectedCounsellingTypeId.value;
     }

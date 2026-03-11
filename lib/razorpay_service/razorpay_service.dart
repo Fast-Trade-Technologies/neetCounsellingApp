@@ -3,7 +3,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 class RazorpayService {
   static const String defaultKey = String.fromEnvironment(
     'RAZORPAY_KEY',
-    defaultValue: 'rzp_test_00k6GowBp2hYc3',
+    defaultValue: 'rzp_test_csjPrMKd9W7drl',
   );
 
   Razorpay? _razorpay;
@@ -18,6 +18,7 @@ class RazorpayService {
 
     _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS, onSuccess);
     _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR, onError);
+
     if (onExternalWallet != null) {
       _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET, onExternalWallet);
     }
@@ -35,6 +36,7 @@ class RazorpayService {
     Map<String, dynamic>? notes,
   }) {
     final checkout = _razorpay;
+
     if (checkout == null) {
       throw StateError(
         'RazorpayService is not initialized. Call init() first.',
@@ -47,12 +49,27 @@ class RazorpayService {
       'name': 'NEET Counselling',
       'description': description,
       'currency': 'INR',
+
       'prefill': {
         'contact': (contact ?? '').trim(),
         'email': (email ?? '').trim(),
       },
-      'theme': {'color': '#1C5FAE'},
-      'notes': notes ?? <String, dynamic>{'plan_name': planName},
+
+      /// Enable payment methods
+      'method': {
+        'upi': true,
+        'card': true,
+        'netbanking': true,
+        'wallet': true,
+        'emi': false,
+        'paylater': false,
+      },
+
+      'theme': {
+        'color': '#1C5FAE',
+      },
+
+      'notes': notes ?? {'plan_name': planName},
     };
 
     checkout.open(options);
