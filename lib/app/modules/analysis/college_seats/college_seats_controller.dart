@@ -69,6 +69,19 @@ class CollegeSeatsController extends GetxController {
     return _stateSeatByCode[codeMatch] ?? 0;
   }
 
+  /// SVG state code (e.g. 'in-up') for the currently selected state,
+  /// used to highlight the state path in the India map.
+  String? get selectedStateCode {
+    if (_selectedStateName.value.isEmpty) return null;
+    String? codeMatch;
+    _stateSeatByCode.forEach((code, _) {
+      if (_stateNameFromCode(code) == _selectedStateName.value) {
+        codeMatch = code;
+      }
+    });
+    return codeMatch;
+  }
+
   @override
   void onInit() {
     super.onInit();

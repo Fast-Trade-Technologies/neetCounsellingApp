@@ -31,6 +31,7 @@ class RazorpayService {
     required int amountInPaise,
     required String planName,
     required String description,
+    String? orderId,
     String? contact,
     String? email,
     Map<String, dynamic>? notes,
@@ -71,6 +72,10 @@ class RazorpayService {
 
       'notes': notes ?? {'plan_name': planName},
     };
+
+    if (orderId != null && orderId.isNotEmpty) {
+      options['order_id'] = orderId;
+    }
 
     checkout.open(options);
   }

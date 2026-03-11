@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -71,7 +72,10 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                 color: const Color(0xFFE8EEF6),
               ),
               SizedBox(height: 14.h),
-              _buildStateChip(),
+              // _buildStateChip(),
+              SizedBox(height: 16.h),
+              // Interactive India map showing state-wise colleges/seats.
+              _buildMapPanel(),
               SizedBox(height: 16.h),
               _buildSummaryCard(),
               SizedBox(height: 14.h),
@@ -291,7 +295,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
 
   Widget _buildMapPanel() {
     return Container(
-      height: 520.h,
+      height: 250.h,
       padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFD),
@@ -303,31 +307,116 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 26.w, vertical: 18.h),
-                child: InteractiveViewer(
-                  transformationController: controller.mapTransformController,
-                  minScale: 0.8,
-                  maxScale: 4.0,
-                  panEnabled: true,
-                  child: SvgPicture.asset(
-                    'assets/maps/india_states.svg',
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                child: Obx(() {
+                  final selectedCode = controller.selectedStateCode;
+                  return FutureBuilder<String>(
+                    future: rootBundle.loadString('assets/maps/india_states.svg'),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
+                      String svgData = snapshot.data!;
+
+                      // Highlight only the selected state's path by injecting a fill color.
+                      if (selectedCode != null && selectedCode.isNotEmpty) {
+                        final codeUpper = selectedCode.toUpperCase();
+                        final stateCode = codeUpper.replaceAll('-', '');
+                        // Ensure we match regardless of case in the SVG id attribute.
+                        svgData = svgData.replaceFirstMapped(
+                          RegExp('id=["\']$stateCode["\']', caseSensitive: false),
+                          (match) =>
+                              '${match.group(0)} fill="#00FFFF" stroke="#FFFFFF" stroke-width="1"',
+                        );
+                      }
+
+                      return InteractiveViewer(
+                        transformationController: controller.mapTransformController,
+                        minScale: 0.8,
+                        maxScale: 4.0,
+                        panEnabled: true,
+                        child: SvgPicture.string(
+                          svgData,
+                          fit: BoxFit.contain,
+                        ),
+                      );
+                    },
+                  );
+                }),
               ),
             ),
           ),
+          // Positioned(
+          //   left: 10.w,
+          //   top: 14.h,
+          //   child: Column(
+          //     children: [
+          //       _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
+          //       SizedBox(height: 10.h),
+          //       _buildMapAction(Icons.add, onTap: controller.zoomIn),
+          //       SizedBox(height: 10.h),
+          //       _buildMapAction(Icons.remove, onTap: controller.zoomOut),
+          //     ],
+          //   ),
+          // ),
+          // State-wise seats overlay in the map, driven by the top dropdown.
           Positioned(
-            left: 10.w,
-            top: 14.h,
-            child: Column(
-              children: [
-                _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
-                SizedBox(height: 10.h),
-                _buildMapAction(Icons.add, onTap: controller.zoomIn),
-                SizedBox(height: 10.h),
-                _buildMapAction(Icons.remove, onTap: controller.zoomOut),
-              ],
-            ),
+            right: 16.w,
+            bottom: 20.h,
+            child: Obx(() {
+              final name = controller.selectedStateName;
+              final seats = controller.selectedStateSeats;
+              if (name.isEmpty || seats <= 0) return const SizedBox.shrink();
+
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: const Color(0xFFD1DEEE)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.textDark.withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      name,
+                      style: AppTextStyles.bodyM.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0B2350),
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Total Seats:',
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          seats.toString(),
+                          style: AppTextStyles.bodyM.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),

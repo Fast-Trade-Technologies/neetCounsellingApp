@@ -14,6 +14,7 @@ import '../../core/utils/url_launcher_util.dart' show iosPurchaseDisclaimer;
 import '../../core/widgets/detail_app_bar.dart';
 import '../../../razorpay_service/razorpay_service.dart';
 import '../../../api_services/services_api.dart';
+import '../../../api_services/payments_api.dart';
 
 class SubscriptionPlanView extends StatefulWidget {
   const SubscriptionPlanView({super.key});
@@ -33,6 +34,8 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
   bool _isLoadingPlans = false;
   String? _plansError;
   List<String> _availableStreams = const <String>['UG', 'PG'];
+  _PlanModel? _lastPlan;
+  String? _lastOrderId;
 
   static const List<_PlanModel> _ugPlans = <_PlanModel>[
     _PlanModel(
@@ -517,27 +520,80 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
       return;
     }
     setState(() => _isProcessingPayment = true);
-    try {
-      _razorpayService.openCheckout(
-        amountInPaise: plan.priceInPaise,
-        planName: plan.title,
-        description: '${plan.stream} subscription plan',
-        contact: AppStorage.userPhone,
-        email: AppStorage.userEmail,
-        notes: <String, dynamic>{
-          'plan_id': plan.id,
-          'plan_stream': plan.stream,
-          'plan_title': plan.title,
-        },
-      );
-    } catch (error) {
-      setState(() => _isProcessingPayment = false);
-      AppSnackbar.error('Payment failed', error.toString());
-    }
+    () async {
+      try {
+        // Plan price is stored in paise; convert to rupees for create-order API.
+        final int amountInRupees = plan.priceInPaise ~/ 100;
+        final (success, order, error) =
+            await PaymentsApi.createOrder(amountInRupees: amountInRupees);
+
+        if (!mounted) return;
+
+        if (!success || order == null) {
+          setState(() => _isProcessingPayment = false);
+          AppSnackbar.error('Payment error', error ?? 'Failed to create order');
+          return;
+        }
+
+        _lastOrderId = order.id;
+        _lastPlan = plan;
+
+        _razorpayService.openCheckout(
+          amountInPaise: order.amount,
+          orderId: order.id,
+          planName: plan.title,
+          description: '${plan.stream} subscription plan',
+          contact: AppStorage.userPhone,
+          email: AppStorage.userEmail,
+          notes: <String, dynamic>{
+            'plan_id': plan.id,
+            'plan_stream': plan.stream,
+            'plan_title': plan.title,
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _isProcessingPayment = false);
+        AppSnackbar.error('Payment failed', e.toString());
+      }
+    }();
   }
 
   void _onPaymentSuccess(PaymentSuccessResponse response) {
     if (mounted) setState(() => _isProcessingPayment = false);
+
+    final plan = _lastPlan;
+    final orderId = response.orderId ?? _lastOrderId ?? '';
+    final paymentId = response.paymentId ?? '';
+    final signature = response.signature ?? '';
+
+    if (plan != null && orderId.isNotEmpty) {
+      final firstName = (AppStorage.userFirstName ?? '').trim();
+      final lastName = (AppStorage.userLastName ?? '').trim();
+      final email = AppStorage.userEmail ?? '';
+      final mobile = AppStorage.userPhone ?? '';
+      final streamInt = plan.stream.toUpperCase() == 'PG' ? 2 : 1;
+      final amountInRupees = plan.priceInPaise ~/ 100;
+      final packageId = int.tryParse(plan.id) ?? 0;
+
+      final payload = VerifyPaymentPayload(
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: orderId,
+        razorpaySignature: signature,
+        firstName: firstName.isEmpty ? 'User' : firstName,
+        lastName: lastName,
+        email: email,
+        mobile: mobile,
+        stream: streamInt,
+        amountInRupees: amountInRupees,
+        packageId: packageId,
+        paymentStatus: 1,
+      );
+
+      // Fire-and-forget; backend updates subscription.
+      verifyPayment(payload);
+    }
+
     AppSnackbar.success(
       'Payment successful',
       'Payment ID: ${response.paymentId ?? 'N/A'}',
@@ -546,6 +602,47 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
 
   void _onPaymentError(PaymentFailureResponse response) {
     if (mounted) setState(() => _isProcessingPayment = false);
+
+    final plan = _lastPlan;
+    String orderId = _lastOrderId ?? '';
+    String paymentId = '';
+
+    final errorData = response.error;
+    if (errorData is Map) {
+      final metadata = errorData['metadata'];
+      if (metadata is Map) {
+        paymentId = metadata['payment_id']?.toString() ?? paymentId;
+        orderId = metadata['order_id']?.toString() ?? orderId;
+      }
+    }
+
+    if (plan != null && orderId.isNotEmpty) {
+      final firstName = (AppStorage.userFirstName ?? '').trim();
+      final lastName = (AppStorage.userLastName ?? '').trim();
+      final email = AppStorage.userEmail ?? '';
+      final mobile = AppStorage.userPhone ?? '';
+      final streamInt = plan.stream.toUpperCase() == 'PG' ? 2 : 1;
+      final amountInRupees = plan.priceInPaise ~/ 100;
+      final packageId = int.tryParse(plan.id) ?? 0;
+
+      final payload = VerifyPaymentPayload(
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: orderId,
+        razorpaySignature: '',
+        firstName: firstName.isEmpty ? 'User' : firstName,
+        lastName: lastName,
+        email: email,
+        mobile: mobile,
+        stream: streamInt,
+        amountInRupees: amountInRupees,
+        packageId: packageId,
+        paymentStatus: 0,
+      );
+
+      // Fire-and-forget failure logging.
+      verifyPayment(payload);
+    }
+
     final String message = response.message?.trim().isNotEmpty == true
         ? response.message!.trim()
         : 'Payment was cancelled or failed.';
