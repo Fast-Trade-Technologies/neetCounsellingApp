@@ -34,7 +34,7 @@ class SyccReportView extends GetView<SyccReportController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeaderCard(),
               SizedBox(height: 24.h),
               _buildCard1(),
               SizedBox(height: 16.h),
@@ -49,26 +49,41 @@ class SyccReportView extends GetView<SyccReportController> {
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'SYCC Report',
-          style: AppTextStyles.titleXL.copyWith(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w800,
+  /// Header card (same style as seat distribution / college seats). No filters.
+  Widget _buildHeaderCard() {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'SYCC Report',
+                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Shortlist your counselling & colleges. Find the perfect institute with this activity to help understand your needs and narrow down your college options.',
+                style: AppTextStyles.bodyM.copyWith(
+                  color: const Color(0xFF47576B),
+                  fontSize: 10.sp,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 8.h),
-        Text(
-          'Shortlist your counselling & colleges. Find the perfect institue with this activity to help understand your needs and narrow down your college options.',
-          style: AppTextStyles.bodyM.copyWith(
-            color: AppColors.textDark,
-            height: 1.5,
-          ),
-        ),
-      ],
+      ),
     );
   }
 

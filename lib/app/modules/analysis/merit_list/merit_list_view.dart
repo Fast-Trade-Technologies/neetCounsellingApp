@@ -7,6 +7,7 @@ import 'package:neetcounsellingapp/app/core/widgets/plan_locked_section.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/detail_dropdown.dart';
 import 'merit_list_controller.dart';
 
 
@@ -35,7 +36,9 @@ class MeritListView extends GetView<MeritListController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFilterCard(context),
+              _buildHeaderCard(context),
+              SizedBox(height: 14.h),
+              _buildFilterRowCard(context),
               SizedBox(height: 20.h),
               _buildEligibleCandidatesSection(context),
             ],
@@ -45,93 +48,255 @@ class MeritListView extends GetView<MeritListController> {
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
-    return Container(
+  /// Header card (same style as seat distribution / college seats).
+  Widget _buildHeaderCard(BuildContext context) {
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
+      child: Card(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.chipBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Obx(() => Text(
-                controller.selectedState.value.isEmpty
-                    ? 'Merit List'
-                    : controller.selectedState.value,
-                style: AppTextStyles.welcomeHeading,
-              )),
-          SizedBox(height: 6.h),
-          Text(
-            'Select counselling type, state and year to view the merit list.',
-            style: AppTextStyles.detailScreenSubtitle.copyWith(
-              color: AppColors.textDark,
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Obx(() {
-            if (controller.filtersLoading.value) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                child: const Center(child: CircularProgressIndicator()),
-              );
-            }
-            return Column(
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Obx(() {
+            final title = controller.selectedState.value.isEmpty
+                ? 'Merit List'
+                : controller.selectedState.value;
+            return Row(
               children: [
-                _SelectTile(
-                  label: 'Counselling Type',
-                  value: controller.selectedCounsellingType.value,
-                  onTap: controller.counsellingTypes.isEmpty
-                      ? () {}
-                      : () => _showStringSheet(
-                            context,
-                            'Select Counselling Type',
-                            controller.counsellingTypes,
-                            controller.selectedCounsellingType.value,
-                            controller.setCounsellingType,
-                          ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Select counselling type, state and year to view the merit list.',
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: const Color(0xFF47576B),
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 10.h),
-                _SelectTile(
-                  label: 'State',
-                  value: controller.selectedState.value.isEmpty
-                      ? 'Select State'
-                      : controller.selectedState.value,
-                  onTap: controller.states.isEmpty
-                      ? () {}
-                      : () => _showStringSheet(
-                            context,
-                            'Select State',
-                            controller.states,
-                            controller.selectedState.value,
-                            controller.setState,
-                          ),
-                ),
-                SizedBox(height: 10.h),
-                _SelectTile(
-                  label: 'Year',
-                  value: controller.selectedYear.value,
-                  onTap: () => _showStringSheet(
-                    context,
-                    'Select Year',
-                    controller.years,
-                    controller.selectedYear.value,
-                    controller.setYear,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openFilterSheet(context),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        size: 24.sp,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
                   ),
                 ),
               ],
             );
           }),
+        ),
+      ),
+    );
+  }
+
+  /// Filter row card: 3 filters (Counselling Type, State, Year).
+  Widget _buildFilterRowCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE6EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
+      ),
+      child: Obx(() {
+        if (controller.filtersLoading.value) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        return Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: controller.counsellingTypes.isEmpty
+                    ? () {}
+                    : () => _showStringSheet(
+                          context,
+                          'Select Counselling Type',
+                          controller.counsellingTypes,
+                          controller.selectedCounsellingType.value,
+                          controller.setCounsellingType,
+                        ),
+                borderRadius: BorderRadius.circular(12.r),
+                child: DetailDropdown(
+                  label: 'Counselling Type',
+                  value: controller.selectedCounsellingType.value.isEmpty
+                      ? null
+                      : controller.selectedCounsellingType.value,
+                  items: null,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: InkWell(
+                onTap: controller.states.isEmpty
+                    ? () {}
+                    : () => _showStringSheet(
+                          context,
+                          'Select State',
+                          controller.states,
+                          controller.selectedState.value,
+                          controller.setState,
+                        ),
+                borderRadius: BorderRadius.circular(12.r),
+                child: DetailDropdown(
+                  label: 'State',
+                  value: controller.selectedState.value.isEmpty
+                      ? null
+                      : controller.selectedState.value,
+                  items: null,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: InkWell(
+                onTap: () => _showStringSheet(
+                  context,
+                  'Select Year',
+                  controller.years,
+                  controller.selectedYear.value,
+                  controller.setYear,
+                ),
+                borderRadius: BorderRadius.circular(12.r),
+                child: DetailDropdown(
+                  label: 'Year',
+                  value: controller.selectedYear.value.isEmpty
+                      ? null
+                      : controller.selectedYear.value,
+                  items: null,
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.6,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.12),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(
+          20.w,
+          16.h,
+          20.w,
+          16.h + MediaQuery.of(ctx).padding.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text('Filters', style: AppTextStyles.welcomeHeading),
+            SizedBox(height: 16.h),
+            if (controller.counsellingTypes.isNotEmpty)
+              _SelectTile(
+                label: 'Counselling Type',
+                value: controller.selectedCounsellingType.value,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showStringSheet(
+                    context,
+                    'Select Counselling Type',
+                    controller.counsellingTypes,
+                    controller.selectedCounsellingType.value,
+                    controller.setCounsellingType,
+                  );
+                },
+              ),
+            if (controller.counsellingTypes.isNotEmpty) SizedBox(height: 10.h),
+            if (controller.states.isNotEmpty)
+              _SelectTile(
+                label: 'State',
+                value: controller.selectedState.value,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showStringSheet(
+                    context,
+                    'Select State',
+                    controller.states,
+                    controller.selectedState.value,
+                    controller.setState,
+                  );
+                },
+              ),
+            if (controller.states.isNotEmpty) SizedBox(height: 10.h),
+            _SelectTile(
+              label: 'Year',
+              value: controller.selectedYear.value,
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _showStringSheet(
+                  context,
+                  'Select Year',
+                  controller.years,
+                  controller.selectedYear.value,
+                  controller.setYear,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:neetcounsellingapp/app/modules/tools/cutoff_allotments/cutoff_al
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/filter_bottom_sheet.dart';
 
 class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
   const CutoffAllotmentsView({super.key});
@@ -37,14 +38,7 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'An overview of college cut-offs & allotments, with round-wise closing ranks and fee structure by course, category, quota and rank type.',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(
-                  color: AppColors.textDark,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              _buildFilterCard(context),
+              _buildHeaderCard(context),
               SizedBox(height: 16.h),
               _buildResultsSection(context),
               SizedBox(height: 24.h),
@@ -84,120 +78,168 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
-    return Container(
+  /// Header card (same style as seat distribution / college seats). >3 filters → only in sheet.
+  Widget _buildHeaderCard(BuildContext context) {
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
-      child: Obx(() {
-        if (controller.filtersLoading.value) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.h),
-            child: const Center(child: CircularProgressIndicator()),
-          );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              controller.selectedState.value,
-              style: AppTextStyles.welcomeHeading,
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              'Round-wise updates with the latest closing ranks and allotments details of medical colleges',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(
-                color: AppColors.textDark,
-              ),
-            ),
-            SizedBox(height: 14.h),
-            Column(
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Obx(() {
+            final title = controller.selectedState.value.isEmpty
+                ? 'Cut Off Allotments'
+                : controller.selectedState.value;
+            return Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'State',
-                        value: controller.selectedState.value,
-                        items: controller.states,
-                        onChanged: controller.setState,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
                       ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Year',
-                        value: controller.selectedYear.value,
-                        items: controller.yearsForDropdown,
-                        onChanged: controller.setYear,
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Round-wise updates with the latest closing ranks and allotments details of medical colleges',
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: const Color(0xFF47576B),
+                          fontSize: 10.sp,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                SizedBox(height: 10.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Counselling Type',
-                        value: controller.selectedCounsellingType.value,
-                        items: controller.counsellingTypesForDropdown,
-                        onChanged: controller.setCounsellingType,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openFilterSheet(context),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        size: 24.sp,
+                        color: AppColors.primaryBlue,
                       ),
                     ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Institute Type',
-                        value: controller.selectedInstituteType.value,
-                        items: controller.instituteTypesForDropdown,
-                        onChanged: controller.setInstituteType,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Course',
-                        value: controller.selectedCourse.value,
-                        items: controller.coursesForDropdown,
-                        onChanged: controller.setCourse,
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Quota',
-                        value: controller.selectedQuota.value,
-                        items: controller.quotasForDropdown,
-                        onChanged: controller.setQuota,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FilterDropdown(
-                        label: 'Category',
-                        value: controller.selectedCategory.value,
-                        items: controller.categoriesForDropdown,
-                        onChanged: controller.setCategory,
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    _buildClinicalTypeDropdown(context),
-                    SizedBox(width: 10.w),
-                    const Expanded(child: SizedBox()),
-                  ],
+                  ),
                 ),
               ],
-            ),
-          ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showFilterSheet(
+      context: context,
+      onSubmit: () => controller.refresh(),
+      child: Obx(() {
+        if (controller.filtersLoading.value) {
+          return const Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'State',
+                      value: controller.selectedState.value,
+                      items: controller.states,
+                      onChanged: controller.setState,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Year',
+                      value: controller.selectedYear.value,
+                      items: controller.yearsForDropdown,
+                      onChanged: controller.setYear,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Counselling Type',
+                      value: controller.selectedCounsellingType.value,
+                      items: controller.counsellingTypesForDropdown,
+                      onChanged: controller.setCounsellingType,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Institute Type',
+                      value: controller.selectedInstituteType.value,
+                      items: controller.instituteTypesForDropdown,
+                      onChanged: controller.setInstituteType,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Course',
+                      value: controller.selectedCourse.value,
+                      items: controller.coursesForDropdown,
+                      onChanged: controller.setCourse,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Quota',
+                      value: controller.selectedQuota.value,
+                      items: controller.quotasForDropdown,
+                      onChanged: controller.setQuota,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Category',
+                      value: controller.selectedCategory.value,
+                      items: controller.categoriesForDropdown,
+                      onChanged: controller.setCategory,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  _buildClinicalTypeDropdown(context),
+                  SizedBox(width: 10.w),
+                  const Expanded(child: SizedBox()),
+                ],
+              ),
+            ],
+          ),
         );
       }),
     );
@@ -223,7 +265,13 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Showing Results', style: AppTextStyles.welcomeHeading),
+              Text(
+                'Showing Results',
+                style: AppTextStyles.welcomeHeading.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontSize: 16.sp,
+                ),
+              ),
               SizedBox(height: 16.h),
               Center(
                 child: Text(
@@ -238,14 +286,18 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
           ),
         );
       }
-      return Container(
+      return SizedBox(
         width: double.infinity,
-        padding: EdgeInsets.all(16.w),
-        decoration: _cardDecoration(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Showing Results', style: AppTextStyles.welcomeHeading),
+            Text(
+              'Showing Results',
+              style: AppTextStyles.welcomeHeading.copyWith(
+                color: AppColors.primaryBlue,
+                fontSize: 16.sp,
+              ),
+            ),
             SizedBox(height: 12.h),
             TextField(
               onChanged: controller.setSearchQuery,
@@ -312,15 +364,14 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
                   ),
                 );
               }
-              final perPage = controller.entriesPerPage.value;
-              final startIndex = (controller.currentPage.value - 1) * perPage;
+              final year = controller.selectedYear.value;
               return PlanLockedSection(
                 isActivePlan: isActivePlan,
                 itemCount: list.length,
                 unlockedCount: 4,
                 itemSpacing: 16.h,
                 itemBuilder: (context, i) =>
-                    _CutoffCard(row: list[i], serialNumber: startIndex + i + 1),
+                    _CutoffCard(row: list[i], year: year),
               );
             }),
           ],
@@ -332,23 +383,23 @@ class CutoffAllotmentsView extends GetView<CutoffAllotmentsController> {
 }
 
 class _CutoffCard extends StatelessWidget {
-  const _CutoffCard({required this.row, required this.serialNumber});
+  const _CutoffCard({required this.row, required this.year});
 
   final CutoffRow row;
-  final int serialNumber;
+  final String year;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.chipBorder, width: 1),
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE6EDF5)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.05),
+            color: AppColors.textDark.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 3),
             spreadRadius: 0,
@@ -358,72 +409,50 @@ class _CutoffCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 32.w,
-                height: 32.w,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Text(
-                  '$serialNumber',
-                  style: AppTextStyles.bodyS.copyWith(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13.sp,
-                  ),
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      row.instituteAndType,
-                      style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13.sp,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 12.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: [
-                        _Chip(label: 'Course', value: row.course),
-                        _Chip(label: 'Quota', value: row.quota),
-                        _Chip(label: 'Category', value: row.category),
-                        _Chip(label: 'Fees', value: row.fees),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-                    Row(
-                      children: [
-                        _RoundChip(label: 'R1', value: row.r1),
-                        SizedBox(width: 10.w),
-                        _RoundChip(label: 'R2', value: row.r2),
-                        SizedBox(width: 10.w),
-                        _RoundChip(label: 'R3', value: row.r3),
-                        SizedBox(width: 10.w),
-                        _RoundChip(label: 'R4', value: row.r4),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Text(
+            row.instituteAndType,
+            style: AppTextStyles.bodyS.copyWith(
+              color: AppColors.textDark,
+              fontWeight: FontWeight.w700,
+              fontSize: 14.sp,
+              height: 1.3,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 10.h),
+          Container(
+            height: 2,
+            width: double.infinity,
+            color: AppColors.primaryBlue,
+          ),
+          SizedBox(height: 14.h),
+          _DetailRow(
+            leftLabel: 'Course:',
+            leftValue: row.course,
+            rightLabel: 'Category:',
+            rightValue: row.category.isEmpty ? 'N/A' : row.category,
+          ),
+          SizedBox(height: 10.h),
+          _DetailRow(
+            leftLabel: 'Quota:',
+            leftValue: row.quota,
+            rightLabel: 'Fees:',
+            rightValue: row.fees,
+          ),
+          SizedBox(height: 10.h),
+          _DetailRow(
+            leftLabel: 'R1 ($year)',
+            leftValue: row.r1,
+            rightLabel: 'R2 ($year)',
+            rightValue: row.r2,
+          ),
+          SizedBox(height: 10.h),
+          _DetailRow(
+            leftLabel: 'R3 ($year)',
+            leftValue: row.r3,
+            rightLabel: 'R4 ($year)',
+            rightValue: row.r4,
           ),
         ],
       ),
@@ -431,84 +460,64 @@ class _CutoffCard extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.value});
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({
+    required this.leftLabel,
+    required this.leftValue,
+    required this.rightLabel,
+    required this.rightValue,
+  });
 
-  final String label;
-  final String value;
+  final String leftLabel;
+  final String leftValue;
+  final String rightLabel;
+  final String rightValue;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.chipBg,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: AppColors.chipBorder, width: 1),
-      ),
-      child: RichText(
-        text: TextSpan(
-          style: AppTextStyles.bodyS.copyWith(
-            fontSize: 11.sp,
-            color: AppColors.textMuted,
-          ),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            TextSpan(
-              text: value,
-              style: TextStyle(
-                color: AppColors.textDark,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _KeyValue(label: leftLabel, value: leftValue),
         ),
-      ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: _KeyValue(label: rightLabel, value: rightValue),
+        ),
+      ],
     );
   }
 }
 
-class _RoundChip extends StatelessWidget {
-  const _RoundChip({required this.label, required this.value});
+class _KeyValue extends StatelessWidget {
+  const _KeyValue({required this.label, required this.value});
 
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
-        decoration: BoxDecoration(
-          color: AppColors.chipBg,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: AppColors.chipBorder, width: 1),
+    return RichText(
+      text: TextSpan(
+        style: AppTextStyles.bodyS.copyWith(
+          fontSize: 12.sp,
+          color: AppColors.textDark,
+          height: 1.4,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: AppTextStyles.bodyS.copyWith(
-                fontSize: 10.sp,
-                color: AppColors.textMuted,
-                fontWeight: FontWeight.w500,
-              ),
+        children: [
+          TextSpan(
+            text: '$label ',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: AppColors.textMuted,
             ),
-            SizedBox(height: 4.h),
-            Text(
-              value,
-              style: AppTextStyles.bodyS.copyWith(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryBlue,
-              ),
-            ),
-          ],
-        ),
+          ),
+          TextSpan(
+            text: value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

@@ -17,21 +17,23 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
-        title: 'Seat Distribution',
-        subtitle: 'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
+        title: 'Analysis Seat Distribution',
+        subtitle: 'Seat Distribution',
         onBack: () => Get.back(),
-        onFilter: () => _openFilterSheet(context),
+        hideFilter: true,
       ),
       body: RefreshIndicator(
         onRefresh: () => controller.refresh(),
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTopCard(),
+              _buildHeader(context),
+              SizedBox(height: 14.h),
+              _buildFilterRowCard(context),
               SizedBox(height: 14.h),
               Obx(() => controller.showResults.value
                   ? _buildPieChartCard()
@@ -308,74 +310,130 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     );
   }
 
-  Widget _filterChip(String label, String value) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.chipBorder.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: AppColors.chipBorder),
-      ),
-      child: Text(
-        '$label: $value',
-        style: AppTextStyles.bodyS.copyWith(fontSize: 11.sp),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+  /// Header card: state name + subtitle + filter icon (same style as college_seats_view).
+  Widget _buildHeader(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Obx(() {
+            final stateName = controller.selectedStateName.value.isEmpty ||
+                    controller.selectedStateName.value == 'All States'
+                ? 'All States'
+                : controller.selectedStateName.value;
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        stateName,
+                        style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Select a year to view the Seat Distribution Analysis',
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: const Color(0xFF47576B),
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openFilterSheet(context),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        size: 24.sp,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
       ),
     );
   }
 
-  Widget _buildTopCard() {
-    return InkWell(
-      onTap: () => _openFilterSheet(Get.context!),
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.chipBorder),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textDark.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+  /// Filter row card: All States, Select Course, Year (same style as image).
+  Widget _buildFilterRowCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE6EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => _showStatePicker(context),
+              borderRadius: BorderRadius.circular(12.r),
+              child: Obx(() => DetailDropdown(
+                    label: 'All States',
+                    value: controller.selectedStateName.value.isEmpty ||
+                            controller.selectedStateName.value == 'All States'
+                        ? null
+                        : controller.selectedStateName.value,
+                    items: null,
+                  )),
             ),
-          ],
-        ),
-        child: Obx(() => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.selectedStateName.value.isEmpty || controller.selectedStateName.value == 'All States'
-                      ? 'All States'
-                      : controller.selectedStateName.value,
-                  style: AppTextStyles.welcomeHeading,
-                ),
-                SizedBox(height: 8.h),
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 6.h,
-                  children: [
-                    _filterChip('State', controller.selectedStateName.value.isEmpty ? 'All States' : controller.selectedStateName.value),
-                    _filterChip(
-                      'Counselling',
-                      controller.selectedCounsellingTypeId.value.isEmpty
-                          ? 'All'
-                          : controller.selectedCounsellingTypeName.value,
-                    ),
-                    _filterChip('Course', controller.selectedCourseName.value),
-                    _filterChip('Year', controller.selectedYear.value),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'An organised overview of seat distribution in medical colleges, by quota, category and sub-category under state and central counselling.',
-                  style: AppTextStyles.detailScreenSubtitle,
-                ),
-              ],
-            )),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: InkWell(
+              onTap: () => _showCoursePicker(context),
+              borderRadius: BorderRadius.circular(12.r),
+              child: Obx(() => DetailDropdown(
+                    label: 'Select Course',
+                    value: controller.selectedCourseName.value == 'Select Course'
+                        ? null
+                        : controller.selectedCourseName.value,
+                    items: null,
+                  )),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: InkWell(
+              onTap: () => _showYearPicker(context),
+              borderRadius: BorderRadius.circular(12.r),
+              child: Obx(() => DetailDropdown(
+                    label: 'Year',
+                    value: controller.selectedYear.value,
+                    items: controller.yearOptions,
+                  )),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -394,7 +452,7 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
   Widget _buildPieChartCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(7.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -463,37 +521,37 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
 
           SizedBox(height: 16.h),
 
-          /// Table data from API
+          /// Table data from API (styled like image: light grey container, white rows, thin grey dividers)
           Obx(() {
             final rows = controller.tableRows;
             if (rows.isEmpty) return const SizedBox.shrink();
             return Container(
               width: double.infinity,
-              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFD),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.chipBorder),
+                color: const Color(0xFFF1F4F8),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: const Color(0xFFE6EDF5)),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Seat Type Summary',
-                    style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
-                  ),
-                  SizedBox(height: 10.h),
-                  _buildTableHeader(),
-                  SizedBox(height: 6.h),
-                  const Divider(height: 1),
-                  SizedBox(height: 8.h),
+                  // Padding(
+                  //   padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 10.h),
+                  //   child: Text(
+                  //     'Seat Type Summary',
+                  //     style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                  //   ),
+                  // ),
+                  _buildSummaryTableHeader(),
                   for (int i = 0; i < rows.length; i++)
-                    _buildTableRow(
+                    _buildSummaryTableRow(
                       _chartColors[i % _chartColors.length],
                       rows[i].seatTypeName,
                       rows[i].totalSeats.toString(),
-                      rows[i].totalColleges.toString(),
                       rows[i].totalCategories.toString(),
+                      rows[i].totalColleges.toString(),
+                      isLast: i == rows.length - 1,
                     ),
                 ],
               ),
@@ -504,55 +562,89 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
     );
   }
 
-  // ignore: unused_element
-  Widget _buildTableHeader() {
-    return Row(
-      children: [
-        SizedBox(width: 20.w),
-        Expanded(
-          flex: 2,
-          child: Text(
-            'Seat Types',
-            style: AppTextStyles.bodyS.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+  static const Color _summaryDividerColor = Color(0xFFE2E8F0);
+
+  Widget _buildSummaryTableHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
+      decoration: BoxDecoration(
+        color: AppColors.chipBorder,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(width: 10.w),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Seat Types',
+              style: AppTextStyles.bodyS.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            'Total Seats',
-            style: AppTextStyles.bodyS.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+          Expanded(
+            child: Text(
+              'Total Seats',
+              style: AppTextStyles.bodyS.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            'Total Colleges',
-            style: AppTextStyles.bodyS.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+          Expanded(
+            child: Text(
+              'Total Categories',
+              style: AppTextStyles.bodyS.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
+               textAlign: TextAlign.center,
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            'Total Categories',
-            style: AppTextStyles.bodyS.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+          Expanded(
+            child: Text(
+              'Total Colleges',
+              style: AppTextStyles.bodyS.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
+              textAlign: TextAlign.end,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildTableRow(Color dotColor, String type, String seats, String colleges, String categories) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+  Widget _buildSummaryTableRow(
+    Color dotColor,
+    String type,
+    String seats,
+    String categories,
+    String colleges, {
+    required bool isLast,
+  }) {
+    return Container(
+      height: 35.h,
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isLast
+            ? BorderRadius.vertical(bottom: Radius.circular(16.r))
+            : null,
+        border: Border(
+          bottom: isLast
+              ? BorderSide.none
+              : BorderSide(color: _summaryDividerColor, width: 1),
+        ),
+      ),
       child: Row(
         children: [
           Container(
@@ -568,17 +660,55 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
             flex: 2,
             child: Text(
               type,
-              style: AppTextStyles.detailScreenSubtitle,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(child: Text(seats, style: AppTextStyles.detailScreenSubtitle)),
-          Expanded(child: Text(colleges, style: AppTextStyles.detailScreenSubtitle)),
-          Expanded(child: Text(categories, style: AppTextStyles.detailScreenSubtitle)),
+          Expanded(
+            child: Text(
+              seats,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              categories,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              colleges,
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.textDark,
+                fontSize: 12.sp,
+              ),
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  // ignore: unused_element
+  Widget _buildTableHeader() {
+    return _buildSummaryTableHeader();
+  }
+
+  Widget _buildTableRow(Color dotColor, String type, String seats, String colleges, String categories) {
+    return _buildSummaryTableRow(dotColor, type, seats, categories, colleges, isLast: false);
   }
 
 }

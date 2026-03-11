@@ -19,7 +19,7 @@ class MenuView extends GetView<MoreMenuController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.chipBg,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: DetailAppBar(
         title: 'Menu',
         titleColor: AppColors.primaryBlue,
@@ -31,14 +31,12 @@ class MenuView extends GetView<MoreMenuController> {
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
           child: Column(
             children: [
-              _buildProfileCard(),
-              SizedBox(height: 24.h),
-              _buildMenuCard(context),
-              SizedBox(height: 16.h),
-              _buildLogoutTile(),
+              _buildProfileSection(),
+              SizedBox(height: 32.h),
+              _buildMenuGrid(context),
               SizedBox(height: 24.h),
             ],
           ),
@@ -47,112 +45,84 @@ class MenuView extends GetView<MoreMenuController> {
     );
   }
 
-  Widget _buildProfileCard() {
-    return Obx(() => Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  spreadRadius: 0,
-                ),
-              ],
+  /// Profile: circular image, name, email – centered like the image.
+  Widget _buildProfileSection() {
+    return Obx(() => Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.textDark.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ProfileImage(
+                size: 200.w,
+                placeholderAsset: _profileAsset,
+                fit: BoxFit.cover,
+                imageUrl: controller.userImageUrl.value.isEmpty ? null : controller.userImageUrl.value,
+              ),
             ),
-            child: ProfileImage(
-              size: 88.w,
-              placeholderAsset: _profileAsset,
-              fit: BoxFit.fill,
-              imageUrl: controller.userImageUrl.value.isEmpty ? null : controller.userImageUrl.value,
+            SizedBox(height: 16.h),
+            Text(
+              controller.userName.value,
+              style: AppTextStyles.welcomeHeading.copyWith(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            controller.userName.value,
-            style: AppTextStyles.welcomeHeading.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            controller.userEmail.value,
-            style: AppTextStyles.detailScreenSubtitle.copyWith(fontSize: 12.sp),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 8.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: AppColors.chipBg,
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: AppColors.chipBorder),
+            SizedBox(height: 6.h),
+            Text(
+              controller.userEmail.value,
+              style: AppTextStyles.bodyS.copyWith(
+                fontSize: 13.sp,
+                color: AppColors.textDark,
+              ),
+              textAlign: TextAlign.center,
             ),
-            child: Text(
-              'NEET Counselling',
-              style: AppTextStyles.label.copyWith(fontSize: 10.sp, color: AppColors.primaryBlue),
-            ),
-          ),
-        ],
-      ),
-    ));
+          ],
+        ));
   }
 
-  Widget _buildMenuCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textDark.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _MenuListTile(
-            iconAsset: '$_icons/edit_profile.png',
-            label: 'Edit Profile',
-            onTap: () => Get.toNamed(AppRoutes.profile),
-          ),
-          _buildDivider(),
-          _MenuListTile(
-            iconAsset: '$_icons/About-Us.png',
-            label: 'About Us',
-            onTap: () => Get.toNamed(AppRoutes.about),
-          ),
-          // _buildDivider(),
-          // _MenuListTile(
-          //   iconAsset: '$_icons/Insights.png',
-          //   label: 'Insights',
-          //   onTap: () {},
-          // ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Divider(height: 1, color: AppColors.divider),
+  /// 2x2 grid: Edit Profile, Insights, About Us, Logout (Logout unchanged).
+  Widget _buildMenuGrid(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _MenuGridButton(
+                iconAsset: '$_icons/edit_profile.png',
+                label: 'Edit Profile',
+                onTap: () => Get.toNamed(AppRoutes.profile),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: _MenuGridButton(
+              iconAsset: '$_icons/About-Us.png',
+                label: 'About Us',
+                onTap: () => Get.toNamed(AppRoutes.about),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: _buildLogoutTile(),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -165,7 +135,7 @@ class MenuView extends GetView<MoreMenuController> {
         borderRadius: BorderRadius.circular(16.r),
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: Colors.red.shade100),
@@ -179,7 +149,7 @@ class MenuView extends GetView<MoreMenuController> {
                   color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.logout_rounded, size: 24.sp, color: Colors.red.shade700),
+                child: Icon(Icons.logout_rounded, size: 20.sp, color: Colors.red.shade700),
               ),
               SizedBox(width: 16.w),
               Expanded(
@@ -201,8 +171,9 @@ class MenuView extends GetView<MoreMenuController> {
   }
 }
 
-class _MenuListTile extends StatelessWidget {
-  const _MenuListTile({
+/// Rounded white button with icon + text for 2x2 menu grid (Edit Profile, Insights, About Us).
+class _MenuGridButton extends StatelessWidget {
+  const _MenuGridButton({
     required this.label,
     this.iconAsset,
     this.icon,
@@ -217,28 +188,23 @@ class _MenuListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget leading = iconAsset != null
-        ? Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: AppColors.chipBg,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: AppColors.chipBorder),
-            ),
-            child: AppAssetImage(iconAsset!, width: 24.w, height: 24.w, fit: BoxFit.contain),
-          )
-        : Icon(icon ?? Icons.circle, size: 24.sp, color: AppColors.primaryBlue);
+        ? AppAssetImage(iconAsset!, width: 20.w, height: 20.w, fit: BoxFit.contain)
+        : Icon(icon ?? Icons.circle, size: 20.w, color: AppColors.primaryBlue);
 
     return Material(
-      color: Colors.transparent,
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16.r),
+      shadowColor: AppColors.textDark.withValues(alpha: 0.08),
+      elevation: 4,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.r),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
           child: Row(
             children: [
               leading,
-              SizedBox(width: 16.w),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Text(
                   label,
@@ -247,9 +213,10 @@ class _MenuListTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, size: 24.sp, color: AppColors.textMuted),
             ],
           ),
         ),
