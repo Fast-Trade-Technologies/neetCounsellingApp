@@ -186,7 +186,7 @@ class _FeaturePill extends StatelessWidget {
             iconAsset,
             width: 14.w,
             height: 14.w,
-            colorFilter: const ColorFilter.mode(Color(0xFF1E88E5), BlendMode.srcIn),
+            // colorFilter: const ColorFilter.mode(Color(0xFF1E88E5), BlendMode.srcIn),
           ),
           SizedBox(width: 6.w),
           Flexible(

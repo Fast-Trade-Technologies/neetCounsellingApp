@@ -27,78 +27,118 @@ class CounsellingView extends GetView<CounsellingController> {
         color: AppColors.primaryBlue,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeaderSection(),
-            SizedBox(height: 12.h),
-            _buildFilterCard(context),
-            SizedBox(height: 12.h),
-            _buildResultsSection(context),
-            SizedBox(height: 12.h),
-          ],
-        ),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderCard(),
+              SizedBox(height: 14.h),
+              _buildFilterRowCard(context),
+              SizedBox(height: 16.h),
+              _buildResultsSection(context),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeaderSection() {
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryBlue.withValues(alpha: 0.08),
-            AppColors.primaryBlue.withValues(alpha: 0.03),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  Widget _buildHeaderCard() {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
         ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.info_outline_rounded,
-              color: AppColors.primaryBlue,
-              size: 22.sp,
-            ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Counselling',
+                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Find authorities, counselling types, state types, and resources all in one place.',
+                style: AppTextStyles.bodyM.copyWith(
+                  color: const Color(0xFF47576B),
+                  fontSize: 10.sp,
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'NEET Counselling Reference',
-                  style: AppTextStyles.welcomeHeading.copyWith(
-                    fontSize: 16.sp,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Find authorities, counselling types, state types, and resources all in one place.',
-                  style: AppTextStyles.bodyS.copyWith(
-                    color: AppColors.textMuted,
-                    fontSize: 12.sp,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterRowCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE6EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
+      child: Obx(() => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'Counselling Type',
+                      value: controller.selectedCounsellingType.value,
+                      items: controller.counsellingTypes,
+                      onChanged: controller.setCounsellingType,
+                      icon: Icons.account_balance_rounded,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'State Type',
+                      value: controller.selectedStateType.value,
+                      items: controller.stateTypes,
+                      onChanged: controller.setStateType,
+                      icon: Icons.category_rounded,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FilterDropdown(
+                      label: 'State',
+                      value: controller.selectedState.value,
+                      items: controller.states,
+                      onChanged: controller.setState,
+                      icon: Icons.location_on_rounded,
+                    ),
+                  ),
+                  const Expanded(child: SizedBox()),
+                ],
+              ),
+            ],
+          )),
     );
   }
 
@@ -118,86 +158,6 @@ class CounsellingView extends GetView<CounsellingController> {
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(14.w),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(
-                  Icons.tune_rounded,
-                  color: AppColors.primaryBlue,
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Counselling Filter',
-                      style: AppTextStyles.welcomeHeading.copyWith(fontSize: 16.sp),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      'Filter by counselling type and state',
-                      style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.textMuted,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Obx(() => Column(
-            children: [
-              Row(children: [
-                Expanded(child: _FilterDropdown(
-                  label: 'Counselling Type',
-                  value: controller.selectedCounsellingType.value,
-                  items: controller.counsellingTypes,
-                  onChanged: controller.setCounsellingType,
-                  icon: Icons.account_balance_rounded,
-                )),
-                SizedBox(width: 10.w),
-                Expanded(child: _FilterDropdown(
-                  label: 'State Type',
-                  value: controller.selectedStateType.value,
-                  items: controller.stateTypes,
-                  onChanged: controller.setStateType,
-                  icon: Icons.category_rounded,
-                )),
-              ]),
-              SizedBox(height: 10.h),
-              Row(children: [
-                Expanded(child: _FilterDropdown(
-                  label: 'State',
-                  value: controller.selectedState.value,
-                  items: controller.states,
-                  onChanged: controller.setState,
-                  icon: Icons.location_on_rounded,
-                )),
-              ]),
-            ],
-          )),
-        ],
-      ),
-    );
-  }
 
   Widget _buildResultsSection(BuildContext context) {
     return Container(

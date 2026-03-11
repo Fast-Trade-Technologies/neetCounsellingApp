@@ -7,6 +7,7 @@ import 'package:neetcounsellingapp/app/modules/tools/fees_seat_matrix/fees_seat_
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/filter_bottom_sheet.dart';
 import '../../../core/widgets/pagination_bar.dart';
 import '../../../core/widgets/plan_locked_section.dart';
 
@@ -35,12 +36,7 @@ class FeesSeatMatrixView extends GetView<FeesSeatMatrixController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'View seat distributions and corresponding fee structure offered by colleges for every category and subcategory.',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-              ),
-              SizedBox(height: 16.h),
-              _buildFilterCard(context),
+              _buildHeaderCard(context),
               SizedBox(height: 16.h),
               _buildResultsSection(context),
               SizedBox(height: 24.h),
@@ -78,40 +74,92 @@ class FeesSeatMatrixView extends GetView<FeesSeatMatrixController> {
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
-    return Container(
+  Widget _buildHeaderCard(BuildContext context) {
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Obx(() {
+            final title = controller.selectedState.value.isEmpty
+                ? 'Fees & Seat Matrix'
+                : controller.selectedState.value;
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'View seat distributions and corresponding fee structure offered by colleges for every category and subcategory.',
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: const Color(0xFF47576B),
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openFilterSheet(context),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        size: 24.sp,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showFilterSheet(
+      context: context,
+      onSubmit: () => controller.refresh(),
       child: Obx(() {
         if (controller.filtersLoading.value) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.h),
-            child: const Center(child: CircularProgressIndicator()),
+          return const Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading),
-            SizedBox(height: 4.h),
-            Text(
-              'Round-wise updates with the latest seat intakes of medical colleges',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 14.h),
-            Column(
-              children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: controller.yearsForDropdown, onChanged: controller.setYear))]),
-                SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse))]),
-                SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: controller.quotasForDropdown, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: controller.categoriesForDropdown, onChanged: controller.setCategory))]),
-                SizedBox(height: 10.h),
-                Row(children: [_buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
-              ],
-            ),
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Year', value: controller.selectedYear.value, items: controller.yearsForDropdown, onChanged: controller.setYear))]),
+              SizedBox(height: 10.h),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Course', value: controller.selectedCourse.value, items: controller.coursesForDropdown, onChanged: controller.setCourse))]),
+              SizedBox(height: 10.h),
+              Row(children: [Expanded(child: _FilterDropdown(label: 'Quota', value: controller.selectedQuota.value, items: controller.quotasForDropdown, onChanged: controller.setQuota)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Category', value: controller.selectedCategory.value, items: controller.categoriesForDropdown, onChanged: controller.setCategory))]),
+              SizedBox(height: 10.h),
+              Row(children: [_buildClinicalTypeDropdown(context), SizedBox(width: 10.w), const Expanded(child: SizedBox())]),
+            ],
+          ),
         );
       }),
     );

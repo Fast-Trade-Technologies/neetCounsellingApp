@@ -245,7 +245,7 @@ class MainView extends GetView<MainController> {
               Text(
                 'Comprehensive data analysis tools to help you understand competition trends, seat distributions, merit lists, and course availability. Make informed decisions with detailed insights.',
                 style: AppTextStyles.bodyS.copyWith(
-                  color: AppColors.textDark,
+                  color: AppColors.bookNowBlue,
                   height: 1.5,
                 ),
               ),
@@ -290,7 +290,7 @@ class MainView extends GetView<MainController> {
               Text(
                 'Essential tools for NEET counselling including cut-offs, allotments, fees, seat matrices, college rankings, counselling schedules, and university information. Everything you need in one place.',
                 style: AppTextStyles.bodyS.copyWith(
-                  color: AppColors.textDark,
+                  color: AppColors.bookNowBlue,
                   height: 1.5,
                 ),
               ),
@@ -335,7 +335,7 @@ class MainView extends GetView<MainController> {
               Text(
                 'Post-examination resources including SYCC reports, checklists, and sample views. Access comprehensive guides and documentation to navigate the counselling process smoothly.',
                 style: AppTextStyles.bodyS.copyWith(
-                  color: AppColors.textDark,
+                  color: AppColors.bookNowBlue,
                   height: 1.5,
                 ),
               ),

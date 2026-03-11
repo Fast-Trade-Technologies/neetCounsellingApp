@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/url_launcher_util.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/filter_bottom_sheet.dart';
 import '../../../core/widgets/pagination_bar.dart';
 import 'universities_institutes_controller.dart';
 
@@ -32,12 +33,7 @@ class UniversitiesInstitutesView extends GetView<UniversitiesInstitutesControlle
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Access college-specific important counselling links & resources to ease your NEET Counselling journey!',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-              ),
-              SizedBox(height: 16.h),
-              _buildFilterCard(context),
+              _buildHeaderCard(context),
               SizedBox(height: 16.h),
               _buildResultsSection(context),
               SizedBox(height: 24.h),
@@ -63,36 +59,100 @@ class UniversitiesInstitutesView extends GetView<UniversitiesInstitutesControlle
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
-    return Container(
+  Widget _buildHeaderCard(BuildContext context) {
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Obx(() {
+            final title = controller.selectedState.value.isEmpty
+                ? 'Universities & Institutes'
+                : controller.selectedState.value;
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Access college-specific important counselling links & resources to ease your NEET Counselling journey!',
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: const Color(0xFF47576B),
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openFilterSheet(context),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        size: 24.sp,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showFilterSheet(
+      context: context,
+      onSubmit: () => controller.refresh(),
       child: Obx(() {
         if (controller.filtersLoading.value) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.h),
-            child: const Center(child: CircularProgressIndicator()),
+          return const Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Obx(() => Text(controller.selectedState.value, style: AppTextStyles.welcomeHeading)),
-            SizedBox(height: 4.h),
-            Text(
-              'Necessary particulars of medical institutes of your desired universities.',
-              style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-            ),
-            SizedBox(height: 14.h),
-            Column(
-              children: [
-                Row(children: [Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypesForDropdown, onChanged: controller.setCounsellingType))]),
-                SizedBox(height: 10.h),
-                Row(children: [Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)), SizedBox(width: 10.w), Expanded(child: _FilterDropdown(label: 'University', value: controller.selectedUniversity.value, items: controller.universitiesForDropdown, onChanged: controller.setUniversity))]),
-              ],
-            ),
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: _FilterDropdown(label: 'State', value: controller.selectedState.value, items: controller.states, onChanged: controller.setState)),
+                  SizedBox(width: 10.w),
+                  Expanded(child: _FilterDropdown(label: 'Counselling Type', value: controller.selectedCounsellingType.value, items: controller.counsellingTypesForDropdown, onChanged: controller.setCounsellingType)),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(child: _FilterDropdown(label: 'Institute Type', value: controller.selectedInstituteType.value, items: controller.instituteTypesForDropdown, onChanged: controller.setInstituteType)),
+                  SizedBox(width: 10.w),
+                  Expanded(child: _FilterDropdown(label: 'University', value: controller.selectedUniversity.value, items: controller.universitiesForDropdown, onChanged: controller.setUniversity)),
+                ],
+              ),
+            ],
+          ),
         );
       }),
     );

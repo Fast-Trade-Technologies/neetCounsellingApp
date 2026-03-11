@@ -34,12 +34,9 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Look at the correct format for uploading the required documents for different counselling types. Ensure zero errors in your application!',
-                style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
-              ),
-              SizedBox(height: 16.h),
-              _buildFilterCard(context),
+              _buildHeaderCard(),
+              SizedBox(height: 14.h),
+              _buildFilterRowCard(context),
               SizedBox(height: 16.h),
               _buildSearchAndSections(context),
               SizedBox(height: 24.h),
@@ -64,46 +61,93 @@ class ChecklistSampleView extends GetView<ChecklistSampleController> {
     );
   }
 
-  Widget _buildFilterCard(BuildContext context) {
+  Widget _buildHeaderCard() {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
+          side: BorderSide(color: AppColors.border),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Checklist & Sample Views',
+                style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Look at the correct format for uploading the required documents for different counselling types. Ensure zero errors in your application!',
+                style: AppTextStyles.bodyM.copyWith(
+                  color: const Color(0xFF47576B),
+                  fontSize: 10.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterRowCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration(),
-      child: Obx(() => Row(
-        children: [
-          Text(
-            'State',
-            style: AppTextStyles.bodyS.copyWith(
-              color: AppColors.textMuted,
-              fontSize: 12.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: controller.selectedState.value,
-                  isExpanded: true,
-                  isDense: true,
-                  icon: Icon(Icons.keyboard_arrow_down_rounded, size: 20.sp, color: AppColors.textMuted),
-                  style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 12.sp),
-                  items: controller.states
-                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => v != null ? controller.setState(v) : null,
-                ),
-              ),
-            ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE6EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
-      )),
+      ),
+      child: Obx(() => Row(
+            children: [
+              Text(
+                'State',
+                style: AppTextStyles.bodyS.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 12.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: controller.selectedState.value,
+                      isExpanded: true,
+                      isDense: true,
+                      icon: Icon(Icons.keyboard_arrow_down_rounded, size: 20.sp, color: AppColors.textMuted),
+                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 12.sp),
+                      items: controller.states
+                          .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                          .toList(),
+                      onChanged: (v) => v != null ? controller.setState(v) : null,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )),
     );
   }
 
