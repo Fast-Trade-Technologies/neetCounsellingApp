@@ -28,17 +28,43 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
       body: RefreshIndicator(
         onRefresh: () => controller.refresh(),
         color: AppColors.primaryBlue,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(
-            children: [
-               _buildHeader(),
-               SizedBox(height: 14.h),
-              _buildLayout(context),
-            ],
-          ),
-        ),
+        child: Obx(() {
+          if (controller.mapDataLoading.value) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Center(child: const CircularProgressIndicator()),
+              ),
+            );
+          }
+          if (controller.mapDataError.value.isNotEmpty) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 48.h),
+                child: Center(
+                  child: Text(
+                    controller.mapDataError.value,
+                    style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            child: Column(
+              children: [
+                _buildHeader(),
+                SizedBox(height: 14.h),
+                _buildLayout(context),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }

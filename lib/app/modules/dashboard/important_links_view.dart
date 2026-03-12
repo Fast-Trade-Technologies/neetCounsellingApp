@@ -9,26 +9,17 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/url_launcher_util.dart';
 import '../../core/widgets/detail_app_bar.dart';
+import '../../core/widgets/detail_dropdown.dart';
 import '../../routes/app_routes.dart';
+import 'important_links_controller.dart';
 
-class ImportantLinksView extends StatelessWidget {
+class ImportantLinksView extends GetView<ImportantLinksController> {
   const ImportantLinksView({super.key});
 
-  // Plan value: show full data only when user has active/paid plan
   bool get isActivePlan => AppStorage.hasActivePlan;
-
-  static List<T> _listFromArguments<T>(dynamic arguments) {
-    if (arguments == null) return [];
-    if (arguments is List<T>) return arguments;
-    if (arguments is List) return arguments.cast<T>();
-    return [];
-  }
 
   @override
   Widget build(BuildContext context) {
-    final list = _listFromArguments<ImportantLinkItem>(Get.arguments);
-    final itemCount = list.length;
-    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: DetailAppBar(
@@ -38,19 +29,11 @@ class ImportantLinksView extends StatelessWidget {
         onBack: () => Get.back(),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          // Navigate back and refresh dashboard to reload important links
-          // Get.back();
-          // try {
-          //   final mainController = Get.find<MainController>();
-          //   await mainController.loadDashboard();
-          // } catch (e) {
-          //   // MainController not found, skip refresh
-          // }
-        },
+        onRefresh: () => controller.loadData(),
         color: AppColors.primaryBlue,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+          cacheExtent: 200,
           slivers: [
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -60,37 +43,153 @@ class ImportantLinksView extends StatelessWidget {
                     'Optimize and boost your confidence with these essential resources.',
                     style: AppTextStyles.detailScreenSubtitle.copyWith(color: AppColors.textDark),
                   ),
+                  SizedBox(height: 12.h),
+                  _StateDropdown(controller: controller),
                   SizedBox(height: 16.h),
                 ]),
               ),
             ),
-            if (itemCount == 0)
-              SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
-                sliver: SliverToBoxAdapter(
-                  child: Center(
-                    child: Text(
-                      'No important links at the moment.',
-                      style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+            Obx(() {
+              if (controller.loading.value) {
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  sliver: const SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                );
+              }
+              if (controller.error.value.isNotEmpty) {
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+                  sliver: SliverToBoxAdapter(
+                    child: Center(
+                      child: Text(
+                        controller.error.value,
+                        style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
-                ),
-              )
-            else
-              SliverPadding(
+                );
+              }
+              final itemCount = controller.list.length;
+              if (itemCount == 0) {
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+                  sliver: SliverToBoxAdapter(
+                    child: Center(
+                      child: Text(
+                        'No important links at the moment.',
+                        style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              if (isActivePlan) {
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) => RepaintBoundary(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: i < itemCount - 1 ? 12.h : 0),
+                          child: _ImportantLinkTile(item: controller.list[i]),
+                        ),
+                      ),
+                      childCount: itemCount,
+                    ),
+                  ),
+                );
+              }
+              return SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 sliver: SliverToBoxAdapter(
                   child: PlanLockedSection(
-                    isActivePlan: isActivePlan,
-                    itemCount: list.length,
+                    isActivePlan: false,
+                    itemCount: itemCount,
                     unlockedCount: 2,
                     itemSpacing: 12.h,
-                    itemBuilder: (context, i) => _ImportantLinkTile(item: list[i]),
+                    itemBuilder: (context, i) => RepaintBoundary(
+                      child: _ImportantLinkTile(item: controller.list[i]),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StateDropdown extends StatelessWidget {
+  const _StateDropdown({required this.controller});
+  final ImportantLinksController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _showStatePicker(context),
+      borderRadius: BorderRadius.circular(12.r),
+      child: Obx(() => DetailDropdown(
+            label: 'State',
+            value: controller.selectedStateName.value.isEmpty
+                ? null
+                : controller.selectedStateName.value,
+            items: null,
+          )),
+    );
+  }
+
+  void _showStatePicker(BuildContext context) {
+    final states = controller.stateFilters;
+    final scrollController = ScrollController();
+    final maxHeight = MediaQuery.of(context).size.height * 0.5;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Text('Select State', style: AppTextStyles.welcomeHeading),
+              ),
+              SizedBox(
+                height: maxHeight,
+                child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
+                  child: ListView(
+                    controller: scrollController,
+                    shrinkWrap: true,
+                    children: [
+                      ListTile(
+                        title: Text('All States', style: AppTextStyles.bodyS),
+                        onTap: () {
+                          controller.setStateFilter(null);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      ...states.map((e) => ListTile(
+                            title: Text(e.name, style: AppTextStyles.bodyS),
+                            onTap: () {
+                              controller.setStateFilter(e);
+                              Navigator.pop(ctx);
+                            },
+                          )),
+                    ],
                   ),
                 ),
               ),
-            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -168,5 +267,3 @@ class _ImportantLinkTile extends StatelessWidget {
     );
   }
 }
-
-

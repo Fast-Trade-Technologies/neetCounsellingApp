@@ -16,6 +16,9 @@ import '../bindings/menu_binding.dart';
 import '../bindings/profile_binding.dart';
 import '../bindings/about_binding.dart';
 import '../bindings/webinar_detail_binding.dart';
+import '../bindings/news_list_binding.dart';
+import '../bindings/counselling_links_binding.dart';
+import '../bindings/important_links_binding.dart';
 import '../bindings/competition_statistics_binding.dart';
 import '../bindings/courses_binding.dart';
 import '../bindings/merit_list_binding.dart';
@@ -169,10 +172,12 @@ class AppPages {
     GetPage(
       name: AppRoutes.dashboardNews,
       page: () => const NewsListView(),
+      binding: NewsListBinding(),
     ),
     GetPage(
       name: AppRoutes.dashboardCounsellingLinks,
       page: () => const CounsellingLinksView(),
+      binding: CounsellingLinksBinding(),
     ),
     GetPage(
       name: AppRoutes.dashboardWebinars,
@@ -181,6 +186,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.dashboardImportantLinks,
       page: () => const ImportantLinksView(),
+      binding: ImportantLinksBinding(),
     ),
     GetPage(
       name: AppRoutes.subscriptionPlans,

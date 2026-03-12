@@ -9,7 +9,6 @@ class MainController extends GetxController {
   final Rxn<DashboardData> dashboardData = Rxn<DashboardData>();
   final RxBool dashboardLoading = false.obs;
   final RxString dashboardError = ''.obs;
-  /// Reactive header profile image URL (keeps dashboard avatar in sync with profile changes).
   final RxString userImageUrl = (AppStorage.userImageUrl ?? '').obs;
 
   void setIndex(int index) => currentIndex.value = index;
@@ -21,7 +20,6 @@ class MainController extends GetxController {
     if (args != null && args is int && args >= 0 && args <= 3) {
       currentIndex.value = args;
     }
-    // Initialize header image from storage on first load.
     userImageUrl.value = AppStorage.userImageUrl ?? '';
     loadDashboard();
   }

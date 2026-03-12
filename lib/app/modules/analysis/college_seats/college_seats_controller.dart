@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../api_services/dashboard_api.dart';
+
 class CollegeSeatsController extends GetxController {
   final RxInt selectedTab = 0.obs; // 0 = Seat Wise, 1 = College Wise
 
@@ -8,42 +10,17 @@ class CollegeSeatsController extends GetxController {
   final TransformationController mapTransformController = TransformationController();
   double _currentScale = 1.0;
 
-  /// Hard-coded state seats data (from API response) for this screen.
-  final Map<String, int> _stateSeatByCode = const {
-    'in-ap': 5784,
-    'in-ar': 85,
-    'in-as': 1377,
-    'in-br': 2442,
-    'in-cg': 1890,
-    'in-ga': 153,
-    'in-gj': 5386,
-    'in-hr': 1609,
-    'in-hp': 762,
-    'in-jh': 578,
-    'in-ka': 7052,
-    'in-kl': 3828,
-    'in-mp': 4560,
-    'in-mh': 8585,
-    'in-mn': 322,
-    'in-ml': 192,
-    'in-mz': 85,
-    'in-nl': 85,
-    'in-or': 1367,
-    'in-pb': 1537,
-    'in-rj': 5420,
-    'in-tn': 8785,
-    'in-tg': 5946,
-    'in-tr': 377,
-    'in-up': 10868,
-    'in-ut': 985,
-    'in-wb': 4438,
-    'in-an': 98,
-    'in-ch': 127,
-    'in-dnhdd': 128,
-    'in-dl': 162,
-    'in-py': 830,
-    'in-jk': 1011,
-  };
+  /// State code (e.g. in-up) -> seat count. Fetched from dashboard/fetch-data API.
+  final RxMap<String, int> _stateSeatByCode = <String, int>{}.obs;
+
+  final RxBool mapDataLoading = false.obs;
+  final RxString mapDataError = ''.obs;
+
+  /// Counselling type and course type for fetch_map_data API (defaults 1).
+  String get counsellingTypeId => _counsellingTypeId;
+  String _counsellingTypeId = '1';
+  String get courseTypeId => _courseTypeId;
+  String _courseTypeId = '1';
 
   /// Currently selected state (human readable).
   final RxString _selectedStateName = ''.obs;
@@ -60,11 +37,12 @@ class CollegeSeatsController extends GetxController {
   int get selectedStateSeats {
     if (_selectedStateName.value.isEmpty) return 0;
     String? codeMatch;
-    _stateSeatByCode.forEach((code, _) {
+    for (final code in _stateSeatByCode.keys) {
       if (_stateNameFromCode(code) == _selectedStateName.value) {
         codeMatch = code;
+        break;
       }
-    });
+    }
     if (codeMatch == null) return 0;
     return _stateSeatByCode[codeMatch] ?? 0;
   }
@@ -73,19 +51,36 @@ class CollegeSeatsController extends GetxController {
   /// used to highlight the state path in the India map.
   String? get selectedStateCode {
     if (_selectedStateName.value.isEmpty) return null;
-    String? codeMatch;
-    _stateSeatByCode.forEach((code, _) {
-      if (_stateNameFromCode(code) == _selectedStateName.value) {
-        codeMatch = code;
-      }
-    });
-    return codeMatch;
+    for (final code in _stateSeatByCode.keys) {
+      if (_stateNameFromCode(code) == _selectedStateName.value) return code;
+    }
+    return null;
   }
 
   @override
-  void onInit() {
-    super.onInit();
-    // Default selected state: Uttar Pradesh if available, else first state.
+  void onReady() {
+    super.onReady();
+    loadMapData();
+  }
+
+  Future<void> loadMapData() async {
+    mapDataError.value = '';
+    mapDataLoading.value = true;
+    final (success, map, errorMessage) = await DashboardApi.fetchMapData(
+      counsellingTypeId: _counsellingTypeId,
+      courseTypeId: _courseTypeId,
+      showLoader: false,
+    );
+    mapDataLoading.value = false;
+    if (success && map.isNotEmpty) {
+      _stateSeatByCode.assignAll(map);
+      _setDefaultSelectedState();
+    } else {
+      mapDataError.value = errorMessage ?? 'Failed to load map data';
+    }
+  }
+
+  void _setDefaultSelectedState() {
     final names = stateNames;
     if (names.isEmpty) return;
     if (names.any((e) => e.toLowerCase().contains('uttar pradesh'))) {
@@ -96,9 +91,15 @@ class CollegeSeatsController extends GetxController {
     }
   }
 
+  void setFilters({String? counsellingTypeId, String? courseTypeId}) {
+    if (counsellingTypeId != null) _counsellingTypeId = counsellingTypeId;
+    if (courseTypeId != null) _courseTypeId = courseTypeId;
+    loadMapData();
+  }
+
   @override
   Future<void> refresh() async {
-    // No-op for now; data is static.
+    await loadMapData();
   }
 
   void setTab(int index) => selectedTab.value = index;

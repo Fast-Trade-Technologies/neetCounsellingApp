@@ -152,28 +152,37 @@ class MainView extends GetView<MainController> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
           padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
-          child: Obx(() {
-            final currentIndex = controller.currentIndex.value;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Show banner only on Dashboard tab (index 0)
-                if (currentIndex == 0) ...[
-                  WelcomeCard(
-                    bookNowImageAsset: 'assets/dashboard/dashboard-banner.png',
-                    onBookNow: _onBookNow,
-                  ),
-                  SizedBox(height: 20.h),
-                ] else ...[
-                  // Show page details for other tabs
-                  _buildPageDetails(currentIndex),
-                  SizedBox(height: 20.h),
-                ],
-                _buildTabContent(currentIndex),
-                SizedBox(height: 24.h),
-              ],
-            );
-          }),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Obx(() {
+                final idx = controller.currentIndex.value;
+                if (idx == 0) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WelcomeCard(
+                        bookNowImageAsset: 'assets/dashboard/dashboard-banner.png',
+                        onBookNow: _onBookNow,
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                  );
+                }
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPageDetails(idx),
+                    SizedBox(height: 20.h),
+                  ],
+                );
+              }),
+              Obx(() => _buildTabContent(controller.currentIndex.value)),
+              SizedBox(height: 24.h),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -477,31 +486,19 @@ class _DashboardContent extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Text(
-          //   'At "NEETCounseling.com", we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Our platform offers comprehensive counselling support, college predictions, and expert advice to help you make informed choices.',
-          //   style: AppTextStyles.bodyS.copyWith(
-          //     color: AppColors.textDark,
-          //     height: 1.4,
-          //   ),
-          // ),
           SizedBox(height: 16.h),
-            LayoutGrid(
+          RepaintBoundary(
+            child: LayoutGrid(
             children: [
               MenuGridButton(
                 label: 'News & Updates',
                 iconAsset: '${MainView._icons}/news-update.png',
-                onTap: () => Get.toNamed(
-                  AppRoutes.dashboardNews,
-                  arguments: controller.dashboardData.value?.newsUpdates,
-                ),
+                onTap: () => Get.toNamed(AppRoutes.dashboardNews),
               ),
               MenuGridButton(
                 label: 'Counselling Links',
                 iconAsset: '${MainView._icons}/Counselling-Links.png',
-                onTap: () => Get.toNamed(
-                  AppRoutes.dashboardCounsellingLinks,
-                  arguments: controller.dashboardData.value?.counsellingLinks,
-                ),
+                onTap: () => Get.toNamed(AppRoutes.dashboardCounsellingLinks),
               ),
               MenuGridButton(
                 label: 'Colleges & Seats',
@@ -519,12 +516,10 @@ class _DashboardContent extends StatelessWidget {
               MenuGridButton(
                 label: 'Important Links',
                 iconAsset: '${MainView._icons}/links.png',
-                onTap: () => Get.toNamed(
-                  AppRoutes.dashboardImportantLinks,
-                  arguments: controller.dashboardData.value?.importantLinks,
-                ),
+                onTap: () => Get.toNamed(AppRoutes.dashboardImportantLinks),
               ),
             ],
+            ),
           ),
         ],
       );
@@ -540,7 +535,8 @@ class _AnalysisContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutGrid(
+    return RepaintBoundary(
+      child: LayoutGrid(
       children: [
         MenuGridButton(
           label: 'Past Years Competition',
@@ -563,6 +559,7 @@ class _AnalysisContent extends StatelessWidget {
           onTap: () => Get.toNamed(AppRoutes.analysisCourses),
         ),
       ],
+    ),
     );
   }
 }
@@ -572,7 +569,8 @@ class _ToolsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutGrid(
+    return RepaintBoundary(
+      child: LayoutGrid(
       children: [
         MenuGridButton(
           label: 'Cut-Offs & Allotments',
@@ -604,6 +602,7 @@ class _ToolsContent extends StatelessWidget {
         //   iconAsset: '${MainView._icons}/Documentation.png',
         // ),
       ],
+    ),
     );
   }
 }

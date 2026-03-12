@@ -122,7 +122,8 @@ class CoursesView extends GetView<CoursesController> {
               child: _LabelDropdown(
                 label: 'Degree Type',
                 value: controller.selectedDegreeTypeName.value,
-                items: controller.degreeTypeNames,
+                // Add a non-selectable header item (label-only) for better readability.
+                items: ["Degree Types", ...controller.degreeTypeNames],
                 onChanged: controller.setDegreeType,
               ),
             ),
@@ -436,16 +437,19 @@ class _LabelDropdown extends StatelessWidget {
     required this.label,
     required this.value,
     required this.items,
+    this.extraItems = const [],
     required this.onChanged,
   });
 
   final String label;
   final String value;
   final List<String> items;
+  final List<String> extraItems;
   final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final allItems = <String>[...items, ...extraItems];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -479,7 +483,25 @@ class _LabelDropdown extends StatelessWidget {
               isDense: true,
               icon: Icon(Icons.keyboard_arrow_down_rounded, size: 20.sp, color: AppColors.textMuted),
               style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark, fontSize: 12.sp),
-              items: items.map((e) => DropdownMenuItem<String>(value: e, child: Text(e, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(),
+              items: allItems.map((e) {
+                final isHeader = e.trim().startsWith('—') && e.trim().endsWith('—');
+                return DropdownMenuItem<String>(
+                  value: e,
+                  enabled: !isHeader,
+                  child: Text(
+                    e,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: isHeader
+                        ? AppTextStyles.bodyS.copyWith(
+                            color: AppColors.textMuted,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          )
+                        : null,
+                  ),
+                );
+              }).toList(),
               onChanged: (v) => v != null ? onChanged(v) : null,
             ),
           ),
