@@ -596,8 +596,19 @@ class _SubscriptionPlanViewState extends State<SubscriptionPlanView> {
 
     AppSnackbar.success(
       'Payment successful',
-      'Payment ID: ${response.paymentId ?? 'N/A'}',
+      'Payment successful',
     );
+
+    // Close subscription screen and return to previous (e.g. Dashboard).
+    if (Get.isOverlaysOpen || Get.isSnackbarOpen) {
+      // small delay to let snackbar show
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (Get.isOverlaysOpen) return;
+        Get.back();
+      });
+    } else {
+      Get.back();
+    }
   }
 
   void _onPaymentError(PaymentFailureResponse response) {

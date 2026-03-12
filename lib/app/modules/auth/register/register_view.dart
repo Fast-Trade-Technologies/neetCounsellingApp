@@ -85,15 +85,15 @@ class RegisterView extends GetView<RegisterController> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: () => controller.setStream('0'),
+                        onTap: () => controller.setStream('1'),
                         borderRadius: BorderRadius.circular(10.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                           decoration: BoxDecoration(
-                            color: controller.selectedStream.value == '0' ? AppColors.chipBg : Colors.white,
+                            color: controller.selectedStream.value == '1' ? AppColors.chipBg : Colors.white,
                             borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
-                              color: controller.selectedStream.value == '0'
+                              color: controller.selectedStream.value == '1'
                                   ? AppColors.primaryBlue
                                   : AppColors.border,
                             ),
@@ -118,7 +118,7 @@ class RegisterView extends GetView<RegisterController> {
                                     height: 9.w,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: controller.selectedStream.value == '0'
+                                      color: controller.selectedStream.value == '1'
                                           ? AppColors.primaryBlue
                                           : Colors.transparent,
                                     ),
@@ -141,15 +141,15 @@ class RegisterView extends GetView<RegisterController> {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: InkWell(
-                        onTap: () => controller.setStream('1'),
+                        onTap: () => controller.setStream('2'),
                         borderRadius: BorderRadius.circular(10.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                           decoration: BoxDecoration(
-                            color: controller.selectedStream.value == '1' ? AppColors.chipBg : Colors.white,
+                            color: controller.selectedStream.value == '2' ? AppColors.chipBg : Colors.white,
                             borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
-                              color: controller.selectedStream.value == '1'
+                              color: controller.selectedStream.value == '2'
                                   ? AppColors.primaryBlue
                                   : AppColors.border,
                             ),
@@ -174,7 +174,7 @@ class RegisterView extends GetView<RegisterController> {
                                     height: 9.w,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: controller.selectedStream.value == '1'
+                                      color: controller.selectedStream.value == '2'
                                           ? AppColors.primaryBlue
                                           : Colors.transparent,
                                     ),

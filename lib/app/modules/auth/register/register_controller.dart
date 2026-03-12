@@ -11,8 +11,8 @@ class RegisterController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final RxBool isLoading = false.obs;
-  /// API stream mapping: UG -> 0, PG -> 1.
-  final RxString selectedStream = '0'.obs;
+  /// API stream mapping: UG -> 1, PG -> 2.
+  final RxString selectedStream = '1'.obs;
 
   Future<void> onSignUp() async {
     final firstName = firstNameController.text.trim();

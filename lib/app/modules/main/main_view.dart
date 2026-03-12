@@ -212,7 +212,11 @@ class MainView extends GetView<MainController> {
     );
   }
 
-  static void _onBookNow() => Get.toNamed(AppRoutes.subscriptionPlans);
+  static void _onBookNow() {
+    // If user already has an active plan, do not open subscription page again.
+    if (AppStorage.hasActivePlan) return;
+    Get.toNamed(AppRoutes.subscriptionPlans);
+  }
 
   Widget _buildPageDetails(int index) {
     switch (index) {

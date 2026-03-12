@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' as getx;
 
 import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
 import 'base_api.dart';
@@ -171,7 +172,16 @@ Future<(bool success, String? errorMessage)> verifyPayment(
       return (false, 'Failed to verify payment');
     }
 
-    // We don't enforce response body structure; assume backend logs and updates status.
+    // On successful verification, mark plan as active locally so locked
+    // content can be accessed immediately. Backend will also update status.
+    if (payload.paymentStatus == 1) {
+      AppStorage.userPaidStatus = '1';
+      // Force a rebuild so screens that read AppStorage.hasActivePlan
+      // in their build methods (News, Tools, etc.) see the updated value
+      // without requiring an app restart.
+      getx.Get.forceAppUpdate();
+    }
+
     return (true, null);
   } on DioException catch (e) {
     final msg = e.message ?? 'Something went wrong';
