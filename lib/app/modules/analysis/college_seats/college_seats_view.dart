@@ -91,6 +91,8 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 14.h),
+              _buildCounsellingTypeDropdown(),
+              SizedBox(height: 14.h),
               _buildStateDropdown(),
               SizedBox(height: 14.h),
               Container(
@@ -105,12 +107,89 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
               SizedBox(height: 16.h),
               _buildSummaryCard(),
               SizedBox(height: 14.h),
-              // _buildCollegeCard(),
+              _buildCollegeListSection(),
             ],
           ),
         );
       },
     );
+  }
+
+  Widget _buildCounsellingTypeDropdown() {
+    return Obx(() {
+      if (controller.filtersLoading.value) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox(
+            height: 32.h,
+            width: 120.w,
+            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        );
+      }
+      final types = controller.counsellingTypes;
+      if (types.isEmpty) {
+        return Text(
+          'Counselling Type',
+          style: AppTextStyles.bodyM.copyWith(
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF142A52),
+          ),
+        );
+      }
+
+      String value = controller.selectedCounsellingTypeName.value;
+      if (value.isEmpty) {
+        value = types.first.name;
+        controller.setCounsellingType(value);
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Counselling Type',
+            style: AppTextStyles.detailScreenSubtitle.copyWith(
+              fontSize: 11.sp,
+              color: AppColors.textMuted,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: const Color(0xFFD8E2EE)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isDense: true,
+                value: value,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                style: AppTextStyles.bodyM.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF142A52),
+                ),
+                items: types
+                    .map(
+                      (e) => DropdownMenuItem<String>(
+                        value: e.name,
+                        child: Text(e.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v == null) return;
+                  controller.setCounsellingType(v);
+                },
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildHeader() {
@@ -512,25 +591,63 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             ),
           ),
           SizedBox(height: 10.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricTile(value: '86854', label: 'Seats'),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _buildMetricTile(value: '739', label: 'Colleges'),
-              ),
-            ],
-          ),
+          Obx(() {
+            final seats = controller.totalSeats.value;
+            final colleges = controller.totalColleges.value;
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildMetricTile(value:controller.selectedTab.value == 1 ? colleges.toString() : seats.toString(), label:controller.selectedTab.value == 1? 'Colleges' : 'Seats'),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: _buildMetricTile(value:controller.selectedTab.value == 1 ? seats.toString() : colleges.toString(), label:controller.selectedTab.value == 1? 'Seats' : 'Colleges'),
+                ),
+              ],
+            );
+          }),
           SizedBox(height: 12.h),
-          _buildStatLine(title: 'Private (319)', value: '40,027'),
-          SizedBox(height: 6.h),
-          _buildProgress(0.47, const Color(0xFF0284C7)),
-          SizedBox(height: 14.h),
-          _buildStatLine(title: 'Government (420)', value: '46,352'),
-          SizedBox(height: 6.h),
-          _buildProgress(0.55, const Color(0xFF5DAD33)),
+          Obx(() {
+            final institutes = controller.instituteData;
+            if (institutes.isEmpty) return const SizedBox.shrink();
+            final totalSeats = controller.totalSeats.value == 0
+                ? institutes.fold<int>(0, (sum, e) => sum + e.seats)
+                : controller.totalSeats.value;
+
+            double ratioFor(InstituteSummary s) =>
+                totalSeats == 0 ? 0 : s.seats / totalSeats;
+
+            final first = institutes.isNotEmpty ? institutes.first : null;
+            final second = institutes.length > 1 ? institutes[1] : null;
+            debugPrint("institutes --- ${institutes.first.instituteName}");
+            debugPrint("institutes --- ${institutes.first.colleges}");
+            debugPrint("institutes --- ${institutes.first.seats}");
+            debugPrint("institutes --- ${institutes[1].instituteName}");
+            debugPrint("institutes --- ${institutes[1].colleges}");
+            debugPrint("institutes --- ${institutes[1].seats}");
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (first != null) ...[
+                  _buildStatLine(
+                    title: '${first.instituteName} (${first.colleges})',
+                    value: first.seats.toString(),
+                  ),
+                  SizedBox(height: 6.h),
+                  _buildProgress(ratioFor(first).clamp(0.0, 1.0), const Color(0xFF0284C7)),
+                  SizedBox(height: 14.h),
+                ],
+                if (second != null) ...[
+                  _buildStatLine(
+                    title: '${second.instituteName} (${second.colleges})',
+                    value: second.seats.toString(),
+                  ),
+                  SizedBox(height: 6.h),
+                  _buildProgress(ratioFor(second).clamp(0.0, 1.0), const Color(0xFF5DAD33)),
+                ],
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -703,6 +820,74 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
     );
   }
 
+  Widget _buildCollegeListSection() {
+    return Obx(() {
+      final list = controller.filteredColleges;
+      if (list.isEmpty) return const SizedBox.shrink();
+
+      final total = controller.collegeList.length;
+      final hasSearch = controller.collegeSearchQuery.value.trim().isNotEmpty;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Colleges',
+            style: AppTextStyles.welcomeHeading.copyWith(fontSize: 13.sp),
+          ),
+          SizedBox(height: 10.h),
+          TextField(
+            onChanged: controller.setCollegeSearchQuery,
+            decoration: InputDecoration(
+              hintText: 'Search colleges by name',
+              hintStyle: AppTextStyles.fieldHint,
+              filled: true,
+              fillColor: Colors.white,
+              prefixIcon: const Icon(Icons.search, size: 18),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              isDense: true,
+            ),
+            style: AppTextStyles.bodyS.copyWith(color: AppColors.textDark),
+          ),
+          SizedBox(height: 10.h),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: list.length,
+            separatorBuilder: (_, __) => SizedBox(height: 8.h),
+            itemBuilder: (context, index) {
+              final college = list[index];
+              return _CollegeListTile(college: college);
+            },
+          ),
+          if (!hasSearch && list.length < total) ...[
+            SizedBox(height: 10.h),
+            Center(
+              child: TextButton(
+                onPressed: controller.loadMoreColleges,
+                child: Text(
+                  'Load more colleges',
+                  style: AppTextStyles.bodyM.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    });
+  }
+
   void _openFilterSheet(BuildContext context) {
     showFilterSheet(
       context: context,
@@ -750,6 +935,110 @@ class _SegmentTab extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CollegeListTile extends StatelessWidget {
+  const _CollegeListTile({required this.college});
+
+  final CollegeInfo college;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F4F8),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34.w,
+            height: 34.w,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(9.r),
+            ),
+            child: const Icon(Icons.account_balance_outlined, size: 20),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        college.name,
+                        style: AppTextStyles.detailScreenTitle.copyWith(
+                          color: const Color(0xFF0B2350),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    if (college.type.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF3FA),
+                          borderRadius: BorderRadius.circular(18.r),
+                          border: Border.all(color: const Color(0xFFD1DEEE)),
+                        ),
+                        child: Text(
+                          college.type,
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: const Color(0xFF193A64),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Seats : ${college.totalSeats}',
+                  style: AppTextStyles.bodyM.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF3C526D),
+                  ),
+                ),
+                if (college.website.isNotEmpty) ...[
+                  SizedBox(height: 8.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF6F8FC),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(color: const Color(0xFFD5DFEC)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.language_rounded, size: 14, color: Color(0xFF5C6D81)),
+                        SizedBox(width: 6.w),
+                        Text(
+                          college.website,
+                          style: AppTextStyles.bodyS.copyWith(
+                            color: const Color(0xFF465A74),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

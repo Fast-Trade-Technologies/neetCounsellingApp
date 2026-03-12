@@ -152,4 +152,52 @@ class DashboardApi {
       return (false, <String, int>{}, msg ?? 'Something went wrong');
     }
   }
+
+  /// GET dashboard/fetch-data for College & Seats (metric=college_wise).
+  /// Returns the full "data" map so the caller can read map_data, totals, institute_data, college_list.
+  static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)>
+      fetchCollegeWiseData({
+    required String counsellingTypeId,
+    bool showLoader = false,
+  }) async {
+    final userId = AppStorage.userId;
+    if (userId == null || userId.isEmpty) {
+      return (false, null, 'Please sign in to load college-wise data');
+    }
+    try {
+      final response = await _api.get(
+        url: '$dashboardPath/fetch-data',
+        queryParameters: {
+          'nLoginUserIdNo': userId,
+          'action': 'fetch_map_data',
+          'counselling_type_id': counsellingTypeId,
+          'metric': 'college_wise',
+        },
+        showLoader: showLoader,
+      );
+
+      if (response == null) return (false, null, 'No response from server');
+      if (response.statusCode != 200) {
+        final msg = _messageFromResponse(response);
+        return (false, null, msg ?? 'Failed to load college-wise data');
+      }
+
+      final body = _parseBody(response.data);
+      if (body == null) return (false, null, 'Invalid response');
+
+      final isSuccess = body['isSuccess'] == true || body['success'] == true;
+      if (!isSuccess) {
+        return (false, null, body['message']?.toString() ?? 'Failed to load college-wise data');
+      }
+
+      final dataRaw = body['data'];
+      if (dataRaw is Map) {
+        return (true, Map<String, dynamic>.from(dataRaw), null);
+      }
+      return (false, null, 'Invalid data format');
+    } on DioException catch (e) {
+      final msg = e.response != null ? _messageFromResponse(e.response!) : e.message;
+      return (false, null, msg ?? 'Something went wrong');
+    }
+  }
 }
