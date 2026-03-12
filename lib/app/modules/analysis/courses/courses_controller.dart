@@ -10,13 +10,53 @@ class CourseFilterItem {
   final String name;
 }
 
-/// Item for graph from data.tree_data.
+/// Item for graph from data.tree_data (flat, legacy).
 class TreeDataItem {
   TreeDataItem({this.label, this.value, this.name});
   final String? label;
   final String? name;
   final num? value;
   String get displayName => label ?? name ?? '';
+}
+
+/// Tree node for sunburst chart: name, value, children (e.g. course -> year/duration).
+class CourseTreeNode {
+  CourseTreeNode({required this.name, required this.value, this.children = const []});
+  final String name;
+  final int value;
+  final List<CourseTreeChild> children;
+
+  static CourseTreeNode? fromJson(dynamic json) {
+    if (json is! Map) return null;
+    final map = Map<String, dynamic>.from(json);
+    int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    final childrenRaw = map['children'] ?? map['child'];
+    final childList = <CourseTreeChild>[];
+    if (childrenRaw is List) {
+      for (final c in childrenRaw) {
+        if (c is Map) {
+          final cm = Map<String, dynamic>.from(c);
+          final childName = (cm['name'] ?? cm['label'] ?? '').toString().trim();
+          childList.add(CourseTreeChild(
+            name: childName,
+            value: toInt(cm['value']),
+          ));
+        }
+      }
+    }
+    final nodeName = (map['name'] ?? map['label'] ?? '').toString().trim();
+    return CourseTreeNode(
+      name: nodeName,
+      value: toInt(map['value']),
+      children: childList,
+    );
+  }
+}
+
+class CourseTreeChild {
+  CourseTreeChild({required this.name, required this.value});
+  final String name;
+  final int value;
 }
 
 class CourseItem {
@@ -82,6 +122,8 @@ class CoursesController extends GetxController {
   final RxList<CourseFilterItem> degreeTypesFromApi = <CourseFilterItem>[].obs;
   final RxList<CourseFilterItem> seatMatrixCoursesFromApi = <CourseFilterItem>[].obs;
   final RxList<TreeDataItem> treeDataForChart = <TreeDataItem>[].obs;
+  /// Tree data with children for sunburst chart (from API tree_data).
+  final RxList<CourseTreeNode> treeDataNodes = <CourseTreeNode>[].obs;
 
   List<String> get degreeTypeNames =>
       degreeTypesFromApi.isEmpty ? ['Select'] : degreeTypesFromApi.map((e) => e.name).toList();
@@ -173,6 +215,7 @@ class CoursesController extends GetxController {
       _allCourses.clear();
       filteredCourses.clear();
       treeDataForChart.clear();
+      treeDataNodes.clear();
       return;
     }
 
@@ -191,6 +234,7 @@ class CoursesController extends GetxController {
 
     final rawTree = data['tree_data'];
     final treeList = <TreeDataItem>[];
+    final treeNodes = <CourseTreeNode>[];
     if (rawTree is List) {
       for (final e in rawTree) {
         if (e is Map) {
@@ -199,10 +243,13 @@ class CoursesController extends GetxController {
           final name = m['name']?.toString();
           final value = m['value'] is num ? m['value'] as num : num.tryParse(m['value']?.toString() ?? '');
           treeList.add(TreeDataItem(label: label, name: name, value: value));
+          final node = CourseTreeNode.fromJson(e);
+          if (node != null && node.name.isNotEmpty) treeNodes.add(node);
         }
       }
     }
     treeDataForChart.assignAll(treeList);
+    treeDataNodes.assignAll(treeNodes);
 
     _applyFilters();
   }

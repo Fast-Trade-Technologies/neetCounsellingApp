@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -226,78 +228,41 @@ class CoursesView extends GetView<CoursesController> {
   }
 
   Widget _buildDonutChart() {
-    final treeData = controller.treeDataForChart;
-    final courses = controller.filteredCourses;
-    final hasTree = treeData.isNotEmpty;
-    final chartItems = hasTree
-        ? treeData
-            .asMap()
-            .entries
-            .map((e) => (
-                  label: e.value.displayName,
-                  duration: e.value.value?.toString() ?? '',
-                  color: _chartColors[e.key % _chartColors.length],
-                ))
-            .toList()
-        : courses
-            .asMap()
-            .entries
-            .map((e) => (
-                  label: e.value.degreeTerms,
-                  duration: e.value.durationShort,
-                  color: _chartColors[e.key % _chartColors.length],
-                ))
-            .toList();
+    final nodes = controller.treeDataNodes;
+    if (nodes.isEmpty) {
+      return SizedBox(
+        height: 220.w,
+        width: 220.w,
+        child: Center(
+          child: Text(
+            'No chart data',
+            style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
+          ),
+        ),
+      );
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 200.w,
-          width: 200.w,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CustomPaint(
-                size: Size(200.w, 200.w),
-                painter: _DonutChartPainter(items: chartItems),
-              ),
-              SizedBox(
-                width: 84.w,
-                height: 84.w,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.textDark.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Medical\nUG',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyS.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryBlue,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          height: 260.w,
+          width: 260.w,
+          child: CustomPaint(
+            size: Size(260.w, 260.w),
+            painter: _CoursesSunburstPainter(
+              nodes: nodes.toList(),
+              centerTitle: 'UG\nMedical',
+              colors: _chartColors,
+            ),
           ),
         ),
         SizedBox(height: 12.h),
         Wrap(
           spacing: 8.w,
           runSpacing: 4.h,
-          children: (chartItems).asMap().entries.map((e) {
-            final label = e.value.label;
-            final color = e.value.color;
+          children: nodes.asMap().entries.map((e) {
+            final label = e.value.name;
+            final color = _chartColors[e.key % _chartColors.length];
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -580,38 +545,229 @@ class _EntriesDropdown extends StatelessWidget {
   }
 }
 
-class _DonutChartPainter extends CustomPainter {
-  _DonutChartPainter({required this.items});
+/// Sunburst chart for courses: inner ring = course name, outer ring = year/duration (from API tree_data).
+class _CoursesSunburstPainter extends CustomPainter {
+  _CoursesSunburstPainter({
+    required this.nodes,
+    required this.centerTitle,
+    required this.colors,
+  });
 
-  final List<({String label, String duration, Color color})> items;
+  final List<CourseTreeNode> nodes;
+  final String centerTitle;
+  final List<Color> colors;
+
+  double _degToRad(double deg) => deg * math.pi / 180.0;
+
+  /// Shorten duration text: use capital Y for year, no trailing "s". e.g. "5.5 Years (1 Year Internship)" -> "5.5Y +1Y Int."
+  static String _shorten(String year) {
+    final y = year.trim();
+    if (y.isEmpty) return '';
+    // Replace "Years" and "Year" with capital "Y" so no stray "s" appears
+    String toY(String s) =>
+        s.replaceAll('Years', 'Y').replaceAll('Year', 'Y').replaceAll(RegExp(r'\s+'), ' ').trim();
+    final lower = y.toLowerCase();
+    if (lower.contains('internship')) {
+      final parts = y.split('(');
+      final firstPart = toY(parts.first);
+      final intern = parts.length > 1 ? parts[1].replaceAll(')', '').trim() : '';
+      final i = toY(intern)
+          .replaceAll('Internship', ' Int.')
+          .replaceAll('months', 'mo')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+      // First part e.g. "Year 5.5 Y" -> "Y 5.5 Y"; drop leading Y, get "5.5Y"
+      final f = firstPart.replaceAll(' ', '');
+      final fClean = f.replaceFirst(RegExp(r'^Y+'), '');
+      // Internship part e.g. "1 Y Int." -> "1Y Int." (capital Y for year)
+      final iClean = i.replaceAll(' Y ', 'Y ').replaceAll(RegExp(r'\s+'), ' ').trim();
+      return iClean.isEmpty ? fClean : '$fClean +$iClean';
+    }
+    return toY(y).replaceAll(' ', '');
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (items.isEmpty) return;
+    if (nodes.isEmpty) return;
+
     final center = Offset(size.width / 2, size.height / 2);
-    final outerRadius = size.shortestSide / 2 - 4;
-    final innerRadius = outerRadius * 0.42;
-    final strokeWidth = outerRadius - innerRadius;
-    final arcRadius = innerRadius + strokeWidth / 2;
-    final sweepPerItem = (2 * 3.14159265359) / items.length;
-    var start = -3.14159265359 / 2;
-    for (final item in items) {
+    final radius = size.shortestSide / 2;
+
+    final innerRingRadius = radius * 0.55;
+    final innerStroke = radius * 0.22;
+    final outerRingRadius = innerRingRadius + innerStroke;
+    final outerStroke = radius * 0.38;
+
+    final totalParent = nodes.fold<int>(0, (sum, n) => sum + n.value);
+    if (totalParent == 0) return;
+
+    double startAngle = -90.0;
+
+    for (int i = 0; i < nodes.length; i++) {
+      final node = nodes[i];
+      if (node.value <= 0) continue;
+      final parentSweep = (node.value / totalParent) * 360.0;
+
+      final parentColor = colors[i % colors.length];
       final paint = Paint()
-        ..color = item.color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.butt;
+        ..strokeWidth = innerStroke
+        ..color = parentColor;
+
+      final rect = Rect.fromCircle(
+        center: center,
+        radius: innerRingRadius + innerStroke / 2,
+      );
+
       canvas.drawArc(
-        Rect.fromCircle(center: center, radius: arcRadius),
-        start,
-        sweepPerItem - 0.02,
+        rect,
+        _degToRad(startAngle),
+        _degToRad(parentSweep),
         false,
         paint,
       );
-      start += sweepPerItem;
+
+      final children = node.children;
+      if (children.isNotEmpty) {
+        double childStart = startAngle;
+        for (int j = 0; j < children.length; j++) {
+          final child = children[j];
+          if (child.value <= 0) continue;
+          final childSweep = parentSweep * (child.value / node.value);
+
+          final childPaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = outerStroke
+            ..color = parentColor.withValues(alpha: 0.5);
+
+          final outerRect = Rect.fromCircle(
+            center: center,
+            radius: outerRingRadius + outerStroke / 2,
+          );
+
+          canvas.drawArc(
+            outerRect,
+            _degToRad(childStart),
+            _degToRad(childSweep),
+            false,
+            childPaint,
+          );
+
+          final dividerPaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1
+            ..color = Colors.white.withValues(alpha: 0.9);
+          final startRad = _degToRad(childStart);
+          final from = center +
+              Offset(
+                (innerRingRadius + innerStroke) * math.cos(startRad),
+                (innerRingRadius + innerStroke) * math.sin(startRad),
+              );
+          final to = center +
+              Offset(
+                (outerRingRadius + outerStroke) * math.cos(startRad),
+                (outerRingRadius + outerStroke) * math.sin(startRad),
+              );
+          canvas.drawLine(from, to, dividerPaint);
+
+          final childMidDeg = childStart + childSweep / 2;
+          final childMidRad = _degToRad(childMidDeg);
+          final childLabelRadius = outerRingRadius + outerStroke * 0.5;
+          final childLabelOffset = center +
+              Offset(
+                childLabelRadius * math.cos(childMidRad),
+                childLabelRadius * math.sin(childMidRad),
+              );
+
+          final shortLabel = _shorten(child.name);
+          final childLabelSpan = TextSpan(
+            text: shortLabel.isEmpty ? child.name : shortLabel,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+          final childLabelPainter = TextPainter(
+            text: childLabelSpan,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr,
+            maxLines: 2,
+          )..layout(maxWidth: radius * 0.4);
+
+          final childLabelTopLeft = childLabelOffset -
+              Offset(childLabelPainter.width / 2, childLabelPainter.height / 2);
+          childLabelPainter.paint(canvas, childLabelTopLeft);
+
+          childStart += childSweep;
+        }
+      }
+
+      startAngle += parentSweep;
+    }
+
+    final innerHoleRadius = innerRingRadius * 0.65;
+    final holePaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+    canvas.drawCircle(center, innerHoleRadius, holePaint);
+
+    final textSpan = TextSpan(
+      text: centerTitle,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+      ),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+    )..layout(maxWidth: innerHoleRadius * 1.6);
+
+    final textOffset = center - Offset(textPainter.width / 2, textPainter.height / 2);
+    textPainter.paint(canvas, textOffset);
+
+    startAngle = -90.0;
+    for (int i = 0; i < nodes.length; i++) {
+      final node = nodes[i];
+      if (node.value <= 0) continue;
+      final parentSweep = (node.value / totalParent) * 360.0;
+      final midAngleDeg = startAngle + parentSweep / 2;
+      final midRad = _degToRad(midAngleDeg);
+
+      final labelRadius = innerRingRadius + innerStroke * 0.35;
+      final labelOffset = center +
+          Offset(
+            labelRadius * math.cos(midRad),
+            labelRadius * math.sin(midRad),
+          );
+
+      final labelSpan = TextSpan(
+        text: node.name,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontSize: 9,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      final labelPainter = TextPainter(
+        text: labelSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: 2,
+      )..layout(maxWidth: radius * 0.32);
+
+      final labelTopLeft = labelOffset -
+          Offset(labelPainter.width / 2, labelPainter.height / 2);
+      labelPainter.paint(canvas, labelTopLeft);
+
+      startAngle += parentSweep;
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
