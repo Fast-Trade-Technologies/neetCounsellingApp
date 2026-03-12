@@ -25,7 +25,7 @@ class SeatDistributionApi {
       final query = <String, dynamic>{
         'nLoginUserIdNo': userId,
         'state_id': extraQuery?['state_id'] ?? '1',
-        'year': extraQuery?['year'] ?? '2025',
+        'year': extraQuery?['year'] ?? '',
       };
       if (extraQuery != null && extraQuery['state_id_counselling'] != null) {
         query['state_id_counselling'] = extraQuery['state_id_counselling'];

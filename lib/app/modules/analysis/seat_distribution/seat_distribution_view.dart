@@ -103,7 +103,9 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                   borderRadius: BorderRadius.circular(12.r),
                   child: Obx(() => DetailDropdown(
                         label: 'Year',
-                        value: controller.selectedYear.value,
+                        value: controller.selectedYear.value.isEmpty
+                            ? null
+                            : controller.selectedYear.value,
                         items: controller.yearOptions,
                       )),
                 ),
@@ -442,7 +444,9 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
               borderRadius: BorderRadius.circular(12.r),
               child: Obx(() => DetailDropdown(
                     label: 'Year',
-                    value: controller.selectedYear.value,
+                    value: controller.selectedYear.value.isEmpty
+                        ? null
+                        : controller.selectedYear.value,
                     items: controller.yearOptions,
                   )),
             ),

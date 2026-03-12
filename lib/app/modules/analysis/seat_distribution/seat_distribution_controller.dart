@@ -103,8 +103,10 @@ class SeatDistributionController extends GetxController {
   final RxString selectedCounsellingTypeName = 'Select Counselling Type'.obs;
   final RxString selectedCourseId = ''.obs;
   final RxString selectedCourseName = 'Select Course'.obs;
-  final RxString selectedYear = '2025'.obs;
-  final RxList<String> yearOptions = <String>['2025', '2024'].obs;
+  /// Year filter should be empty by default; API will use its default year
+  /// until the user explicitly selects one.
+  final RxString selectedYear = ''.obs;
+  final RxList<String> yearOptions = <String>[].obs;
 
   /// Course options from API (data.courses). First item is always "Select Course".
   final RxList<Map<String, String>> courseOptions = <Map<String, String>>[
@@ -160,8 +162,10 @@ class SeatDistributionController extends GetxController {
     final stateId = selectedStateId.value.isNotEmpty ? selectedStateId.value : '0';
     final extraQuery = <String, dynamic>{
       'state_id': stateId,
-      'year': selectedYear.value,
     };
+    if (selectedYear.value.isNotEmpty) {
+      extraQuery['year'] = selectedYear.value;
+    }
     if (selectedCourseId.value.isNotEmpty) {
       extraQuery['course_id'] = selectedCourseId.value;
     }
@@ -250,20 +254,8 @@ class SeatDistributionController extends GetxController {
         }
         if (list.isNotEmpty) {
           counsellingTypeFilters.assignAll(list);
-
-          final hasExisting = selectedCounsellingTypeId.value.isNotEmpty &&
-              list.any((c) => c.id == selectedCounsellingTypeId.value);
-          if (!hasExisting) {
-            FilterItem chosen = list.first;
-            for (final c in list) {
-              if (c.name.trim().toLowerCase() == 'state') {
-                chosen = c;
-                break;
-              }
-            }
-            selectedCounsellingTypeId.value = chosen.id;
-            selectedCounsellingTypeName.value = chosen.name;
-          }
+          // Do NOT auto-select any counselling type; keep it empty so
+          // initial API calls are filtered only by State.
         }
       }
 
@@ -279,16 +271,8 @@ class SeatDistributionController extends GetxController {
         }
         if (parsedYears.isNotEmpty) {
           yearOptions.assignAll(parsedYears);
-          final hasExisting =
-              selectedYear.value.isNotEmpty && parsedYears.contains(selectedYear.value);
-          if (!hasExisting) {
-            final apiYear = data['year']?.toString();
-            if (apiYear != null && apiYear.isNotEmpty && parsedYears.contains(apiYear)) {
-              selectedYear.value = apiYear;
-            } else {
-              selectedYear.value = parsedYears.first;
-            }
-          }
+          // Do NOT auto-select a year; let the server default handle it.
+          // User can pick a year explicitly, after which it will be sent.
         }
       }
     }
