@@ -106,12 +106,10 @@ class SeatDistributionController extends GetxController {
   final RxString selectedYear = '2025'.obs;
   final RxList<String> yearOptions = <String>['2025', '2024'].obs;
 
-  /// Course options for seat distribution filter. id -> display name. Empty id = "Select Course".
-  static const List<Map<String, String>> courseOptions = [
+  /// Course options from API (data.courses). First item is always "Select Course".
+  final RxList<Map<String, String>> courseOptions = <Map<String, String>>[
     {'id': '', 'name': 'Select Course'},
-    {'id': '1', 'name': 'MBBS'},
-    {'id': '2', 'name': 'BDS'},
-  ];
+  ].obs;
 
   @override
   void onInit() {
@@ -294,6 +292,24 @@ class SeatDistributionController extends GetxController {
         }
       }
     }
+
+    // Courses from API (data.courses)
+    final rawCourses = data['courses'] ?? data['filters']?['courses'];
+    if (rawCourses is List && rawCourses.isNotEmpty) {
+      final list = <Map<String, String>>[
+        {'id': '', 'name': 'Select Course'},
+      ];
+      for (final c in rawCourses) {
+        if (c is Map) {
+          final m = Map<String, dynamic>.from(c);
+          final id = (m['id'] ?? m['course_id'] ?? '').toString().trim();
+          final name = (m['name'] ?? m['course_name'] ?? '').toString().trim();
+          if (name.isNotEmpty) list.add({'id': id, 'name': name});
+        }
+      }
+      courseOptions.assignAll(list);
+    }
+
     final rawTable = data['table_data'];
     final rows = <SeatDistributionRow>[];
     if (rawTable is List) {

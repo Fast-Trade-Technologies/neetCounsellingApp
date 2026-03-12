@@ -171,7 +171,7 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
   void _showCoursePicker(BuildContext context) {
     final scrollController = ScrollController();
     final maxHeight = MediaQuery.of(context).size.height * 0.45;
-    final options = SeatDistributionController.courseOptions;
+    final options = controller.courseOptions;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -828,6 +828,7 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
         double childStart = startAngle;
         for (int j = 0; j < children.length; j++) {
           final child = children[j];
+          debugPrint("child --- ${child.name} --- ${child.value}");
           if (child.value <= 0) continue;
           final childSweep = parentSweep * (childDisplayShares[j] ?? (child.value / node.value));
 
@@ -877,7 +878,6 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
                 childLabelRadius * math.cos(childMidRad),
                 childLabelRadius * math.sin(childMidRad),
               );
-
           final childLabelSpan = TextSpan(
             text: '${child.name}\n${child.value}',
             style: const TextStyle(
@@ -890,7 +890,7 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
             text: childLabelSpan,
             textAlign: TextAlign.center,
             textDirection: TextDirection.ltr,
-            maxLines: 2,
+            maxLines: 3,
           )..layout(maxWidth: radius * 0.35);
 
           final childLabelTopLeft = childLabelOffset -
