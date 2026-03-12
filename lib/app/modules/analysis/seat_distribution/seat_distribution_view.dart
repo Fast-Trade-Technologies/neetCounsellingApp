@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'dart:math' as math;
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -745,14 +746,34 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.shortestSide / 2;
 
-    final innerRingRadius = radius * 0.40;
-    final innerStroke = radius * 0.26;
+    final innerRingRadius = radius * 0.70;
+    final innerStroke = radius * 0.30;
     // Make outer ring start exactly where inner ring ends (no gap).
     final outerRingRadius = innerRingRadius + innerStroke;
-    final outerStroke = radius * 0.24;
+    final outerStroke = radius * 0.50;
 
     final totalParent = nodes.fold<int>(0, (sum, n) => sum + n.value);
     if (totalParent == 0) return;
+
+    // Balance sizes: big sections smaller, small sections bigger so small ones are visible.
+    const blendWithUniform = 0.55; // higher = more equal sizing (small segments visible)
+    final validParents = <int, SeatTreeNode>{};
+    for (int i = 0; i < nodes.length; i++) {
+      if (nodes[i].value > 0) validParents[i] = nodes[i];
+    }
+    final nParent = validParents.length;
+    if (nParent == 0) return;
+    final parentDisplayShares = <int, double>{};
+    double sumDisplay = 0.0;
+    for (final e in validParents.entries) {
+      final raw = e.value.value / totalParent;
+      final blended = (1 - blendWithUniform) * raw + blendWithUniform / nParent;
+      parentDisplayShares[e.key] = blended;
+      sumDisplay += blended;
+    }
+    for (final k in parentDisplayShares.keys) {
+      parentDisplayShares[k] = parentDisplayShares[k]! / sumDisplay;
+    }
 
     double startAngle = -90.0;
 
@@ -760,12 +781,13 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
     for (int i = 0; i < nodes.length; i++) {
       final node = nodes[i];
       if (node.value <= 0) continue;
-      final parentSweep = (node.value / totalParent) * 360.0;
+      final parentSweep = 360.0 * (parentDisplayShares[i] ?? (node.value / totalParent));
 
-      final paint = Paint()
+        final parentColor = colors[i % colors.length];
+        final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = innerStroke
-        ..color = colors[i % colors.length];
+          ..color = parentColor;
 
       final rect = Rect.fromCircle(
         center: center,
@@ -785,16 +807,35 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
       // so the sum of children exactly matches the parent arc.
       final children = node.children;
       if (children.isNotEmpty) {
+        final validChildIndices = <int>[];
+        for (int j = 0; j < children.length; j++) {
+          if (children[j].value > 0) validChildIndices.add(j);
+        }
+        final nChild = validChildIndices.length;
+        final childDisplayShares = <int, double>{};
+        if (nChild > 0) {
+          double sumDisplay = 0.0;
+          for (final j in validChildIndices) {
+            final raw = children[j].value / node.value;
+            final blended = (1 - blendWithUniform) * raw + blendWithUniform / nChild;
+            childDisplayShares[j] = blended;
+            sumDisplay += blended;
+          }
+          for (final j in childDisplayShares.keys) {
+            childDisplayShares[j] = childDisplayShares[j]! / sumDisplay;
+          }
+        }
         double childStart = startAngle;
         for (int j = 0; j < children.length; j++) {
           final child = children[j];
           if (child.value <= 0) continue;
-          final childSweep = parentSweep * (child.value / node.value);
+          final childSweep = parentSweep * (childDisplayShares[j] ?? (child.value / node.value));
 
+          // Child color: lighter variant of the parent color (same hue, lower opacity).
           final childPaint = Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = outerStroke
-            ..color = colors[(i + j + 1) % colors.length].withValues(alpha: 0.9);
+            ..color = parentColor.withValues(alpha: 0.45);
 
           final outerRect = Rect.fromCircle(
             center: center,
@@ -809,6 +850,53 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
             childPaint,
           );
 
+          // Divider line at child boundary (between parent and child segments).
+          final dividerPaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1
+            ..color = Colors.white.withValues(alpha: 0.9);
+          final startRad = _degToRad(childStart);
+          final from = center +
+              Offset(
+                (innerRingRadius + innerStroke) * math.cos(startRad),
+                (innerRingRadius + innerStroke) * math.sin(startRad),
+              );
+          final to = center +
+              Offset(
+                (outerRingRadius + outerStroke) * math.cos(startRad),
+                (outerRingRadius + outerStroke) * math.sin(startRad),
+              );
+          canvas.drawLine(from, to, dividerPaint);
+
+          // Label for child: show name and count (e.g. "EWS\n1234") just outside outer ring.
+          final childMidDeg = childStart + childSweep / 2;
+          final childMidRad = _degToRad(childMidDeg);
+          final childLabelRadius = outerRingRadius + outerStroke * 0.5;
+          final childLabelOffset = center +
+              Offset(
+                childLabelRadius * math.cos(childMidRad),
+                childLabelRadius * math.sin(childMidRad),
+              );
+
+          final childLabelSpan = TextSpan(
+            text: '${child.name}\n${child.value}',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 8,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+          final childLabelPainter = TextPainter(
+            text: childLabelSpan,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr,
+            maxLines: 2,
+          )..layout(maxWidth: radius * 0.35);
+
+          final childLabelTopLeft = childLabelOffset -
+              Offset(childLabelPainter.width / 2, childLabelPainter.height / 2);
+          childLabelPainter.paint(canvas, childLabelTopLeft);
+
           childStart += childSweep;
         }
       }
@@ -817,7 +905,7 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
     }
 
     // Center white circle
-    final innerHoleRadius = innerRingRadius * 0.9;
+    final innerHoleRadius = innerRingRadius * 0.7;
     final holePaint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.white;
@@ -841,6 +929,45 @@ class _SeatDistributionSunburstPainter extends CustomPainter {
 
     final textOffset = center - Offset(textPainter.width / 2, textPainter.height / 2);
     textPainter.paint(canvas, textOffset);
+
+    // Draw parent labels around the inner ring (use same balanced sweep for position).
+    startAngle = -90.0;
+    for (int i = 0; i < nodes.length; i++) {
+      final node = nodes[i];
+      if (node.value <= 0) continue;
+      final parentSweep = 360.0 * (parentDisplayShares[i] ?? (node.value / totalParent));
+      final midAngleDeg = startAngle + parentSweep / 2;
+      final midRad = _degToRad(midAngleDeg);
+
+      // Position label slightly outside the inner ring.
+      final labelRadius = innerRingRadius + innerStroke * 0.3;
+      final labelOffset = center +
+          Offset(
+            labelRadius * math.cos(midRad),
+            labelRadius * math.sin(midRad),
+          );
+
+      final labelSpan = TextSpan(
+        text: node.name,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontSize: 9,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      final labelPainter = TextPainter(
+        text: labelSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: 2,
+      )..layout(maxWidth: radius * 0.4);
+
+      final labelTopLeft = labelOffset -
+          Offset(labelPainter.width / 2, labelPainter.height / 2);
+      labelPainter.paint(canvas, labelTopLeft);
+
+      startAngle += parentSweep;
+    }
   }
 
   double _degToRad(double deg) => deg * 3.1415926535897932 / 180.0;
