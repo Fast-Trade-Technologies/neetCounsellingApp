@@ -11,10 +11,12 @@ class WelcomeCard extends StatelessWidget {
     super.key,
     this.bookNowImageAsset,
     this.onBookNow,
+    this.isActivePlan = false,
   });
 
   final String? bookNowImageAsset;
   final VoidCallback? onBookNow;
+  final bool isActivePlan;
 
   static const String _defaultBannerImage =
       'assets/dashboard/dashboard-banner.png';
@@ -142,15 +144,22 @@ class WelcomeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   InkWell(
-                    onTap: onBookNow,
+                    onTap: isActivePlan ? null : onBookNow,
                     borderRadius: BorderRadius.circular(10.r),
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       decoration: BoxDecoration(
-                        color: AppColors.bookNowBlue,
+                        color: isActivePlan
+                            ? AppColors.textMuted.withValues(alpha: 0.4)
+                            : AppColors.bookNowBlue,
                         borderRadius: BorderRadius.circular(10.r),
                       ),
-                      child: Text('Book Now', style: AppTextStyles.buttonText),
+                      child: Text(
+                        'Book Now',
+                        style: AppTextStyles.buttonText.copyWith(
+                          color: isActivePlan ? AppColors.textMuted : Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],

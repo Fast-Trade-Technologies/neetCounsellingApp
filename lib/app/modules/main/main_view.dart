@@ -158,6 +158,7 @@ class MainView extends GetView<MainController> {
               Obx(() {
                 final idx = controller.currentIndex.value;
                 if (idx == 0) {
+                  final isActivePlan = AppStorage.hasActivePlan;
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,6 +166,7 @@ class MainView extends GetView<MainController> {
                       WelcomeCard(
                         bookNowImageAsset: 'assets/dashboard/dashboard-banner.png',
                         onBookNow: _onBookNow,
+                        isActivePlan: isActivePlan,
                       ),
                       SizedBox(height: 20.h),
                     ],
