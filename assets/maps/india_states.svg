@@ -87,78 +87,402 @@
   <circle class="35.5620675307733|95.95035972961863" cx="860.1" cy="97" id="2">
   </circle>
  </g>
- <g id="label_points">
-  <circle class="Andaman and Nicobar" cx="770.3" cy="814.6" id="INAN">
-  </circle>
-  <circle class="Telangana" cx="396.7" cy="641.9" id="INTG">
-  </circle>
-  <circle class="Andhra Pradesh" cx="392.3" cy="730.7" id="INAP">
-  </circle>
-  <circle class="Arunachal Pradesh" cx="826.3" cy="325.9" id="INAR">
-  </circle>
-  <circle class="Assam" cx="775.9" cy="393.9" id="INAS">
-  </circle>
-  <circle class="Bihar" cx="575.8" cy="411" id="INBR">
-  </circle>
-  <circle class="Chandigarh" cx="334.9" cy="255.1" id="INCH">
-  </circle>
-  <circle class="Chhattisgarh" cx="473.5" cy="533.4" id="INCT">
-  </circle>
-  <circle class="Dādra and Nagar Haveli and Damān and Diu" cx="232.5" cy="573.8" id="INDH">
-  </circle>
-  <circle class="Delhi" cx="344.1" cy="320" id="INDL">
-  </circle>
-  <circle class="Goa" cx="261.6" cy="713.9" id="INGA">
-  </circle>
-  <circle class="Gujarat" cx="199.2" cy="481" id="INGJ">
-  </circle>
-  <circle class="Haryana" cx="323" cy="305.2" id="INHR">
-  </circle>
-  <circle class="Himachal Pradesh" cx="348.4" cy="217.7" id="INHP">
-  </circle>
-  <circle class="Jharkhand" cx="563.9" cy="475.8" id="INJH">
-  </circle>
-  <circle class="Karnataka" cx="302.1" cy="728.1" id="INKA">
-  </circle>
-  <circle class="Kerala" cx="325.5" cy="848.9" id="INKL">
-  </circle>
-  <circle class="Madhya Pradesh" cx="378.4" cy="494.2" id="INMP">
-  </circle>
-  <circle class="Maharashtra" cx="305.7" cy="597.9" id="INMH">
-  </circle>
-  <circle class="Manipur" cx="801.5" cy="443.1" id="INMN">
-  </circle>
-  <circle class="Meghalaya" cx="737" cy="417.6" id="INML">
-  </circle>
-  <circle class="Mizoram" cx="776.2" cy="476.2" id="INMZ">
-  </circle>
-  <circle class="Nagaland" cx="822.1" cy="399" id="INNL">
-  </circle>
-  <circle class="Orissa" cx="549.9" cy="559.3" id="INOR">
-  </circle>
-  <circle class="Puducherry" cx="417.7" cy="838.9" id="INPY">
-  </circle>
-  <circle class="Punjab" cx="300.5" cy="254.4" id="INPB">
-  </circle>
-  <circle class="Rajasthan" cx="256.7" cy="375.8" id="INRJ">
-  </circle>
-  <circle class="Sikkim" cx="654.3" cy="355.6" id="INSK">
-  </circle>
-  <circle class="Tamil Nadu" cx="379.6" cy="835.6" id="INTN">
-  </circle>
-  <circle class="Tripura" cx="740.6" cy="472.2" id="INTR">
-  </circle>
-  <circle class="Uttar Pradesh" cx="438.7" cy="375.5" id="INUP">
-  </circle>
-  <circle class="Uttaranchal" cx="401.4" cy="272.1" id="INUT">
-  </circle>
-  <circle class="West Bengal" cx="637.1" cy="485.8" id="INWB">
-  </circle>
-  <circle class="Lakshadweep" cx="233" cy="912.6" id="INLD">
-  </circle>
-  <circle class="Jammu and Kashmir" cx="274.8" cy="156.1" id="INJK">
-  </circle>
-  <circle class="Ladakh" cx="344.9" cy="136.5" id="INLA">
-  </circle>
- </g>
+<g id="label_points">
+ <circle class="Andaman and Nicobar" cx="770.3" cy="814.6" id="INAN">
+ </circle>
+ <text
+   x="770.3"
+   y="814.6"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INAN}}
+   </text>
+ <circle class="Telangana" cx="396.7" cy="641.9" id="INTG">
+ </circle>
+ <text
+   x="396.7"
+   y="641.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INTG}}
+   </text>
+ <circle class="Andhra Pradesh" cx="392.3" cy="730.7" id="INAP">
+ </circle>
+ <text
+   x="392.3"
+   y="730.7"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INAP}}
+   </text>
+ <circle class="Arunachal Pradesh" cx="826.3" cy="325.9" id="INAR">
+ </circle>
+ <text
+   x="826.3"
+   y="325.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INAR}}
+   </text>
+ <circle class="Assam" cx="775.9" cy="393.9" id="INAS">
+ </circle>
+ <text
+   x="775.9"
+   y="393.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INAS}}
+   </text>
+ <circle class="Bihar" cx="575.8" cy="411" id="INBR">
+ </circle>
+ <text
+   x="575.8"
+   y="411"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INBR}}
+   </text>
+ <circle class="Chandigarh" cx="334.9" cy="255.1" id="INCH">
+ </circle>
+ <text
+   x="334.9"
+   y="255.1"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="12"
+   fill="black">
+   {{INCH}}
+   </text>
+ <circle class="Chhattisgarh" cx="473.5" cy="533.4" id="INCT">
+ </circle>
+ <text
+   x="473.5"
+   y="533.4"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INCT}}
+   </text>
+ <circle class="Dādra and Nagar Haveli and Damān and Diu" cx="232.5" cy="573.8" id="INDH">
+ </circle>
+ <text
+   x="232.5"
+   y="573.8"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INDH}}
+   </text>
+ <circle class="Delhi" cx="344.1" cy="320" id="INDL">
+ </circle>
+ <text
+   x="344.1"
+   y="320"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INDL}}
+   </text>
+ <circle class="Goa" cx="261.6" cy="713.9" id="INGA">
+ </circle>
+ <text
+   x="261.6"
+   y="713.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INGA}}
+   </text>
+ <circle class="Gujarat" cx="199.2" cy="481" id="INGJ">
+ </circle>
+ <text
+   x="199.2"
+   y="481"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INGJ}}
+   </text>
+ <circle class="Haryana" cx="323" cy="305.2" id="INHR">
+ </circle>
+ <text
+   x="323"
+   y="305.2"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INHR}}
+   </text>
+ <circle class="Himachal Pradesh" cx="348.4" cy="217.7" id="INHP">
+ </circle>
+ <text
+   x="348.4"
+   y="217.7"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INHP}}
+   </text>
+ <circle class="Jharkhand" cx="563.9" cy="475.8" id="INJH">
+ </circle>
+ <text
+   x="563.9"
+   y="475.8"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INJH}}
+   </text>
+ <circle class="Karnataka" cx="302.1" cy="728.1" id="INKA">
+ </circle>
+ <text
+   x="302.1"
+   y="728.1"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INKA}}
+   </text>
+ <circle class="Kerala" cx="325.5" cy="848.9" id="INKL">
+ </circle>
+ <text
+   x="325.5"
+   y="848.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INKL}}
+   </text>
+ <circle class="Madhya Pradesh" cx="378.4" cy="494.2" id="INMP">
+ </circle>
+ <text
+   x="378.4"
+   y="494.2"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INMP}}
+   </text>
+ <circle class="Maharashtra" cx="305.7" cy="597.9" id="INMH">
+ </circle>
+ <text
+   x="305.7"
+   y="597.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INMH}}
+   </text>
+ <circle class="Manipur" cx="801.5" cy="443.1" id="INMN">
+ </circle>
+ <text
+   x="801.5"
+   y="443.1"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INMN}}
+   </text>
+ <circle class="Meghalaya" cx="737" cy="417.6" id="INML">
+ </circle>
+ <text
+   x="737"
+   y="417.6"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INML}}
+   </text>
+ <circle class="Mizoram" cx="776.2" cy="476.2" id="INMZ">
+ </circle>
+ <text
+   x="776.2"
+   y="476.2"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INMZ}}
+   </text>
+ <circle class="Nagaland" cx="822.1" cy="399" id="INNL">
+ </circle>
+ <text
+   x="822.1"
+   y="399"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INNL}}
+   </text>
+ <circle class="Orissa" cx="549.9" cy="559.3" id="INOR">
+ </circle>
+ <text
+   x="549.9"
+   y="559.3"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INOR}}
+   </text>
+ <circle class="Puducherry" cx="417.7" cy="838.9" id="INPY">
+ </circle>
+ <text
+   x="417.7"
+   y="838.9"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INPY}}
+   </text>
+ <circle class="Punjab" cx="300.5" cy="254.4" id="INPB">
+ </circle>
+ <text
+   x="300.5"
+   y="254.4"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INPB}}
+   </text>
+ <circle class="Rajasthan" cx="256.7" cy="375.8" id="INRJ">
+ </circle>
+ <text
+   x="256.7"
+   y="375.8"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INRJ}}
+   </text>
+ <circle class="Sikkim" cx="654.3" cy="355.6" id="INSK">
+ </circle>
+ <text
+   x="654.3"
+   y="355.6"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INSK}}
+   </text>
+ <circle class="Tamil Nadu" cx="379.6" cy="835.6" id="INTN">
+ </circle>
+ <text
+   x="379.6"
+   y="835.6"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INTN}}
+   </text>
+ <circle class="Tripura" cx="740.6" cy="472.2" id="INTR">
+ </circle>
+ <text
+   x="740.6"
+   y="472.2"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INTR}}
+   </text>
+ <circle class="Uttar Pradesh" cx="438.7" cy="375.5" id="INUP">
+ </circle>
+ <text
+   x="438.7"
+   y="375.5"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INUP}}
+   </text>
+ <circle class="Uttaranchal" cx="401.4" cy="272.1" id="INUT">
+ </circle>
+ <text
+   x="401.4"
+   y="272.1"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INUT}}
+   </text>
+ <circle class="West Bengal" cx="637.1" cy="485.8" id="INWB">
+ </circle>
+ <text
+   x="637.1"
+   y="485.8"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INWB}}
+   </text>
+ <circle class="Lakshadweep" cx="233" cy="912.6" id="INLD">
+ </circle>
+ <text
+   x="233"
+   y="912.6"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INLD}}
+   </text>
+ <circle class="Jammu and Kashmir" cx="274.8" cy="156.1" id="INJK">
+ </circle>
+ <text
+   x="274.8"
+   y="156.1"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INJK}}
+   </text>
+ <circle class="Ladakh" cx="344.9" cy="136.5" id="INLA">
+ </circle>
+ <text
+   x="344.9"
+   y="136.5"
+   text-anchor="middle"
+   dominant-baseline="middle"
+   font-size="20"
+   fill="white">
+   {{INLA}}
+   </text>
+</g>
 </svg>

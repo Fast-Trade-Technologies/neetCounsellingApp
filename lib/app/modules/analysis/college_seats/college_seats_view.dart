@@ -422,6 +422,17 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                       }
                       String svgData = snapshot.data!;
 
+                      // Replace SVG placeholders like {{INUP}} with actual seat counts
+                      // coming from the map_data API (only states present in API).
+                      final stateSeatsMap = controller.stateSeatsBySvgId;
+                      stateSeatsMap.forEach((svgId, count) {
+                        svgData = svgData.replaceAll('{{$svgId}}', count.toString());
+                      });
+
+                      // Remove any unreplaced placeholders (states not present in API)
+                      // so that they are not shown on the map.
+                      svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
+
                       // Highlight only the selected state's path by injecting a fill color.
                       if (selectedCode != null && selectedCode.isNotEmpty) {
                         final codeUpper = selectedCode.toUpperCase();
@@ -429,8 +440,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                         // Ensure we match regardless of case in the SVG id attribute.
                         svgData = svgData.replaceFirstMapped(
                           RegExp('id=["\']$stateCode["\']', caseSensitive: false),
-                          (match) =>
-                              '${match.group(0)} fill="#00FFFF" stroke="#FFFFFF" stroke-width="1"',
+                          (match) => '${match.group(0)} stroke-width="1"',
                         );
                       }
 
@@ -450,19 +460,19 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
               ),
             ),
           ),
-          // Positioned(
-          //   left: 10.w,
-          //   top: 14.h,
-          //   child: Column(
-          //     children: [
-          //       _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
-          //       SizedBox(height: 10.h),
-          //       _buildMapAction(Icons.add, onTap: controller.zoomIn),
-          //       SizedBox(height: 10.h),
-          //       _buildMapAction(Icons.remove, onTap: controller.zoomOut),
-          //     ],
-          //   ),
-          // ),
+          Positioned(
+            left: 10.w,
+            top: 14.h,
+            child: Column(
+              children: [
+                _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
+                SizedBox(height: 10.h),
+                _buildMapAction(Icons.add, onTap: controller.zoomIn),
+                SizedBox(height: 10.h),
+                _buildMapAction(Icons.remove, onTap: controller.zoomOut),
+              ],
+            ),
+          ),
           // State-wise seats overlay in the map, driven by the top dropdown.
           Positioned(
             right: 16.w,

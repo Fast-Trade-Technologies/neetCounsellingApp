@@ -41,8 +41,11 @@ class CollegeSeatsController extends GetxController {
   final TransformationController mapTransformController = TransformationController();
   double _currentScale = 1.0;
 
-  /// State code (e.g. in-up) -> count from map_data (college wise).
-  final RxMap<String, int> _stateSeatByCode = <String, int>{}.obs;
+  /// State code (e.g. in-up) -> count from map_data (seat wise: total_seats).
+  final RxMap<String, int> _seatWiseStateByCode = <String, int>{}.obs;
+
+  /// State code (e.g. in-up) -> count from map_data (college wise: number of colleges).
+  final RxMap<String, int> _collegeWiseStateByCode = <String, int>{}.obs;
 
   final RxBool mapDataLoading = false.obs;
   final RxString mapDataError = ''.obs;
@@ -68,7 +71,10 @@ class CollegeSeatsController extends GetxController {
 
   /// Exposed getters used by the view.
   List<String> get stateNames {
-    final names = _stateSeatByCode.keys.map(_stateNameFromCode).toList();
+    final allCodes = <String>{}
+      ..addAll(_seatWiseStateByCode.keys)
+      ..addAll(_collegeWiseStateByCode.keys);
+    final names = allCodes.map(_stateNameFromCode).toList();
     names.sort();
     return names;
   }
@@ -78,24 +84,41 @@ class CollegeSeatsController extends GetxController {
   int get selectedStateSeats {
     if (_selectedStateName.value.isEmpty) return 0;
     String? codeMatch;
-    for (final code in _stateSeatByCode.keys) {
+    final sourceMap =
+        selectedTab.value == 0 ? _seatWiseStateByCode : _collegeWiseStateByCode;
+    for (final code in sourceMap.keys) {
       if (_stateNameFromCode(code) == _selectedStateName.value) {
         codeMatch = code;
         break;
       }
     }
     if (codeMatch == null) return 0;
-    return _stateSeatByCode[codeMatch] ?? 0;
+    return sourceMap[codeMatch] ?? 0;
   }
 
   /// SVG state code (e.g. 'in-up') for the currently selected state,
   /// used to highlight the state path in the India map.
   String? get selectedStateCode {
     if (_selectedStateName.value.isEmpty) return null;
-    for (final code in _stateSeatByCode.keys) {
+    final sourceMap =
+        selectedTab.value == 0 ? _seatWiseStateByCode : _collegeWiseStateByCode;
+    for (final code in sourceMap.keys) {
       if (_stateNameFromCode(code) == _selectedStateName.value) return code;
     }
     return null;
+  }
+
+  /// Helper map for SVG placeholders: converts API keys like 'in-up'
+  /// to SVG ids like 'INUP' so that `{{INUP}}` can be replaced in the SVG.
+  Map<String, int> get stateSeatsBySvgId {
+    final result = <String, int>{};
+    final sourceMap =
+        selectedTab.value == 0 ? _seatWiseStateByCode : _collegeWiseStateByCode;
+    for (final entry in sourceMap.entries) {
+      final svgId = entry.key.toUpperCase().replaceAll('-', '');
+      result[svgId] = entry.value;
+    }
+    return result;
   }
 
   @override
@@ -129,75 +152,101 @@ class CollegeSeatsController extends GetxController {
   Future<void> loadMapData() async {
     mapDataError.value = '';
     mapDataLoading.value = true;
-    final (success, data, errorMessage) = await DashboardApi.fetchCollegeWiseData(
-      counsellingTypeId: _counsellingTypeId,
-      showLoader: false,
-    );
-    mapDataLoading.value = false;
-    if (!success || data == null) {
-      mapDataError.value = errorMessage ?? 'Failed to load map data';
-      return;
-    }
+    try {
+      int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
 
-    int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
-
-    // Parse map_data for state-wise counts.
-    final stateMap = <String, int>{};
-    final mapData = data['map_data'];
-    if (mapData is Map) {
-      for (final e in mapData.entries) {
-        final key = e.key.toString().trim().toLowerCase();
-        if (key.isEmpty) continue;
-        stateMap[key] = toInt(e.value);
+      // 1) Default: seat_wise (metric=seat_wise). Map shows state-wise seat counts.
+      final (seatSuccess, seatData, seatError) = await DashboardApi.fetchMapDataWithMetric(
+        counsellingTypeId: _counsellingTypeId,
+        metric: 'seat_wise',
+        showLoader: false,
+      );
+      if (seatSuccess && seatData != null) {
+        final seatMap = <String, int>{};
+        final mapData = seatData['map_data'];
+        if (mapData is Map) {
+          for (final e in mapData.entries) {
+            final key = e.key.toString().trim().toLowerCase();
+            if (key.isEmpty) continue;
+            seatMap[key] = toInt(e.value);
+          }
+        }
+        _seatWiseStateByCode.assignAll(seatMap);
+      } else {
+        mapDataError.value = seatError ?? 'Failed to load seat-wise data';
       }
-    }
-    _stateSeatByCode.assignAll(stateMap);
 
-    // Totals.
-    totalColleges.value = toInt(data['total_colleges']);
-    totalSeats.value = toInt(data['total_seats']);
-
-    // Institute breakdown.
-    final institutesRaw = data['institute_data'];
-    final parsedInstitutes = <InstituteSummary>[];
-    if (institutesRaw is List) {
-      for (final e in institutesRaw) {
-        if (e is! Map) continue;
-        final m = Map<String, dynamic>.from(e);
-        parsedInstitutes.add(
-          InstituteSummary(
-            instituteTypeId: toInt(m['institute_type_id']),
-            instituteName: (m['institute_name'] ?? '').toString().trim(),
-            colleges: toInt(m['colleges']),
-            seats: toInt(m['seats']),
-          ),
-        );
+      // 2) College-wise (metric=college_wise). Map shows state-wise college counts; also has totals, institute_data, college_list.
+      final (collegeSuccess, data, collegeError) = await DashboardApi.fetchMapDataWithMetric(
+        counsellingTypeId: _counsellingTypeId,
+        metric: 'college_wise',
+        showLoader: false,
+      );
+      if (!collegeSuccess || data == null) {
+        if (mapDataError.value.isEmpty) {
+          mapDataError.value = collegeError ?? 'Failed to load college-wise data';
+        }
+        return;
       }
-    }
-    instituteData.assignAll(parsedInstitutes);
 
-    // College list.
-    final collegesRaw = data['college_list'];
-    final parsedColleges = <CollegeInfo>[];
-    if (collegesRaw is List) {
-      for (final e in collegesRaw) {
-        if (e is! Map) continue;
-        final m = Map<String, dynamic>.from(e);
-        parsedColleges.add(
-          CollegeInfo(
-            id: (m['id'] ?? '').toString(),
-            name: (m['name'] ?? '').toString().trim(),
-            totalSeats: toInt(m['total_seats']),
-            type: (m['type'] ?? '').toString().trim(),
-            website: (m['website'] ?? '').toString().trim(),
-          ),
-        );
+      // Parse map_data for college-wise state counts.
+      final collegeMap = <String, int>{};
+      final mapData = data['map_data'];
+      if (mapData is Map) {
+        for (final e in mapData.entries) {
+          final key = e.key.toString().trim().toLowerCase();
+          if (key.isEmpty) continue;
+          collegeMap[key] = toInt(e.value);
+        }
       }
-    }
-    collegeList.assignAll(parsedColleges);
-    _collegeVisibleCount.value = 30;
+      _collegeWiseStateByCode.assignAll(collegeMap);
 
-    _setDefaultSelectedState();
+      // Totals and lists from college_wise response.
+      totalColleges.value = toInt(data['total_colleges']);
+      totalSeats.value = toInt(data['total_seats']);
+
+      final institutesRaw = data['institute_data'];
+      final parsedInstitutes = <InstituteSummary>[];
+      if (institutesRaw is List) {
+        for (final e in institutesRaw) {
+          if (e is! Map) continue;
+          final m = Map<String, dynamic>.from(e);
+          parsedInstitutes.add(
+            InstituteSummary(
+              instituteTypeId: toInt(m['institute_type_id']),
+              instituteName: (m['institute_name'] ?? '').toString().trim(),
+              colleges: toInt(m['colleges']),
+              seats: toInt(m['seats']),
+            ),
+          );
+        }
+      }
+      instituteData.assignAll(parsedInstitutes);
+
+      final collegesRaw = data['college_list'];
+      final parsedColleges = <CollegeInfo>[];
+      if (collegesRaw is List) {
+        for (final e in collegesRaw) {
+          if (e is! Map) continue;
+          final m = Map<String, dynamic>.from(e);
+          parsedColleges.add(
+            CollegeInfo(
+              id: (m['id'] ?? '').toString(),
+              name: (m['name'] ?? '').toString().trim(),
+              totalSeats: toInt(m['total_seats']),
+              type: (m['type'] ?? '').toString().trim(),
+              website: (m['website'] ?? '').toString().trim(),
+            ),
+          );
+        }
+      }
+      collegeList.assignAll(parsedColleges);
+      _collegeVisibleCount.value = 30;
+
+      _setDefaultSelectedState();
+    } finally {
+      mapDataLoading.value = false;
+    }
   }
 
   void _setDefaultSelectedState() {
@@ -256,7 +305,14 @@ class CollegeSeatsController extends GetxController {
     await loadMapData();
   }
 
-  void setTab(int index) => selectedTab.value = index;
+  void setTab(int index) {
+    if (selectedTab.value == index) return;
+    selectedTab.value = index;
+    // When toggling between Seat Wise / College Wise, we keep the same
+    // selected state but the active map data (seat-wise vs college-wise)
+    // for the SVG changes via [stateSeatsBySvgId]. No extra API call
+    // is needed here because both maps are loaded in [loadMapData].
+  }
 
   void setSelectedState(String stateName) {
     _selectedStateName.value = stateName;

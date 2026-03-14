@@ -87,82 +87,19 @@ class DashboardApi {
     return null;
   }
 
-  /// GET dashboard/fetch-data for map data (state-wise seats).
-  /// Params: nLoginUserIdNo, action=fetch_map_data, counselling_type_id, course_type_id, metric=total_seats.
-  /// Returns map of state code (e.g. in-up) -> seat count.
-  static Future<(bool success, Map<String, int> stateSeatByCode, String? errorMessage)> fetchMapData({
-    required String counsellingTypeId,
-    required String courseTypeId,
-    bool showLoader = false,
-  }) async {
-    final userId = AppStorage.userId;
-    if (userId == null || userId.isEmpty) {
-      return (false, <String, int>{}, 'Please sign in to load map data');
-    }
-    try {
-      final response = await _api.get(
-        url: '$dashboardPath/fetch-data',
-        queryParameters: {
-          'nLoginUserIdNo': userId,
-          'action': 'fetch_map_data',
-          'counselling_type_id': counsellingTypeId,
-          'course_type_id': courseTypeId,
-          'metric': 'total_seats',
-        },
-        showLoader: showLoader,
-      );
-
-      if (response == null) return (false, <String, int>{}, 'No response from server');
-      if (response.statusCode != 200) {
-        final msg = _messageFromResponse(response);
-        return (false, <String, int>{}, msg ?? 'Failed to load map data');
-      }
-
-      final body = _parseBody(response.data);
-      if (body == null) return (false, <String, int>{}, 'Invalid response');
-
-      final isSuccess = body['isSuccess'] == true || body['success'] == true;
-      if (!isSuccess) {
-        return (false, <String, int>{}, body['message']?.toString() ?? 'Failed to load map data');
-      }
-
-      final dataRaw = body['data'];
-      final map = <String, int>{};
-
-      int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
-
-      if (dataRaw is Map) {
-        for (final e in dataRaw.entries) {
-          final key = e.key?.toString().trim().toLowerCase();
-          if (key != null && key.isNotEmpty) map[key] = toInt(e.value);
-        }
-      } else if (dataRaw is List) {
-        for (final e in dataRaw) {
-          if (e is! Map) continue;
-          final m = Map<String, dynamic>.from(e);
-          final code = (m['state_code'] ?? m['state_name'] ?? m['state_code_id'] ?? m['code'] ?? '').toString().trim().toLowerCase();
-          final value = toInt(m['total_seats'] ?? m['value'] ?? m['seats'] ?? m['count']);
-          if (code.isNotEmpty) map[code] = value;
-        }
-      }
-
-      return (true, map, null);
-    } on DioException catch (e) {
-      final msg = e.response != null ? _messageFromResponse(e.response!) : e.message;
-      return (false, <String, int>{}, msg ?? 'Something went wrong');
-    }
-  }
-
-  /// GET dashboard/fetch-data for College & Seats (metric=college_wise).
-  /// Returns the full "data" map so the caller can read map_data, totals, institute_data, college_list.
+  /// GET dashboard/fetch-data with metric=seat_wise (default) or metric=college_wise.
+  /// Params: nLoginUserIdNo, action=fetch_map_data, counselling_type_id, metric.
+  /// Default metric is seat_wise; use college_wise when College Wise is selected.
+  /// Returns the full "data" map (map_data, total_colleges, total_seats, institute_data, college_list when available).
   static Future<(bool success, Map<String, dynamic>? data, String? errorMessage)>
-      fetchCollegeWiseData({
+      fetchMapDataWithMetric({
     required String counsellingTypeId,
+    String metric = 'seat_wise',
     bool showLoader = false,
   }) async {
     final userId = AppStorage.userId;
     if (userId == null || userId.isEmpty) {
-      return (false, null, 'Please sign in to load college-wise data');
+      return (false, null, 'Please sign in to load map data');
     }
     try {
       final response = await _api.get(
@@ -171,7 +108,7 @@ class DashboardApi {
           'nLoginUserIdNo': userId,
           'action': 'fetch_map_data',
           'counselling_type_id': counsellingTypeId,
-          'metric': 'college_wise',
+          'metric': metric,
         },
         showLoader: showLoader,
       );
@@ -179,7 +116,7 @@ class DashboardApi {
       if (response == null) return (false, null, 'No response from server');
       if (response.statusCode != 200) {
         final msg = _messageFromResponse(response);
-        return (false, null, msg ?? 'Failed to load college-wise data');
+        return (false, null, msg ?? 'Failed to load map data');
       }
 
       final body = _parseBody(response.data);
@@ -187,7 +124,7 @@ class DashboardApi {
 
       final isSuccess = body['isSuccess'] == true || body['success'] == true;
       if (!isSuccess) {
-        return (false, null, body['message']?.toString() ?? 'Failed to load college-wise data');
+        return (false, null, body['message']?.toString() ?? 'Failed to load map data');
       }
 
       final dataRaw = body['data'];
