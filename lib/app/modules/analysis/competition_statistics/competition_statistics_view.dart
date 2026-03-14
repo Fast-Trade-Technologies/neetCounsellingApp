@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -603,15 +604,9 @@ class CompetitionStatisticsView
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Obx(
-                      () => Text(
-                        'State-Wise Competition - ${controller.selectedYearState.value}',
+          Obx(
+              () => Text(
+               'State-Wise Competition - ${controller.selectedYearState.value}',
                         style: AppTextStyles.welcomeHeading.copyWith(
                           fontSize: 14.sp,
                         ),
@@ -624,72 +619,133 @@ class CompetitionStatisticsView
                         color: AppColors.textDark,
                       ),
                     ),
+                Row(
+                // mainAxisSize: MainAxisSize.min,
+                children: [
+                  Obx(
+                    () => Expanded(
+                      child: _StateDropdown(
+                        label: 'State',
+                        value: controller.selectedState.value,
+                        items: controller.statesList,
+                        onChanged: controller.setState,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Obx(
+                    () => _YearDropdown(
+                      label: 'Year',
+                      value: controller.selectedYearState.value,
+                      items: controller.yearsList,
+                      onChanged: controller.setYearState,
+                    ),
+                  ),
+                ],
+              ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10.h),
+                    Obx(() => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _StateWiseLegendChip(
+                          label: 'Registered',
+                          color: AppColors.progressGreen,
+                          isSelected: controller.selectedStateWiseDataType.value == 'registered',
+                          onTap: () => controller.setStateWiseDataType('registered'),
+                        ),
+                        SizedBox(width: 12.w),
+                        _StateWiseLegendChip(
+                          label: 'Appeared',
+                          color: AppColors.primaryBlue,
+                          isSelected: controller.selectedStateWiseDataType.value == 'appeared',
+                          onTap: () => controller.setStateWiseDataType('appeared'),
+                        ),
+                        SizedBox(width: 12.w),
+                        _StateWiseLegendChip(
+                          label: 'Qualified',
+                          color: AppColors.accentOrange,
+                          isSelected: controller.selectedStateWiseDataType.value == 'qualified',
+                          onTap: () => controller.setStateWiseDataType('qualified'),
+                        ),
+                      ],
+                    )),
                   ],
                 ),
               ),
-              Obx(
-                () => _YearDropdown(
-                  label: 'Year',
-                  value: controller.selectedYearState.value,
-                  items: controller.yearsList,
-                  onChanged: controller.setYearState,
-                ),
-              ),
+            
             ],
           ),
-          // SizedBox(height: 16.h),
-          // TextField(
-          //   onChanged: controller.setStateWiseSearchQuery,
-          //   decoration: InputDecoration(
-          //     hintText: 'Search states...',
-          //     hintStyle: AppTextStyles.bodyS.copyWith(
-          //       fontSize: 13.sp,
-          //       color: AppColors.textMuted,
-          //     ),
-          //     prefixIcon: Icon(
-          //       Icons.search,
-          //       size: 22.sp,
-          //       color: AppColors.textMuted,
-          //     ),
-          //     filled: true,
-          //     fillColor: AppColors.chipBg,
-          //     border: OutlineInputBorder(
-          //       borderRadius: BorderRadius.circular(10.r),
-          //       borderSide: BorderSide(color: AppColors.chipBorder),
-          //     ),
-          //     enabledBorder: OutlineInputBorder(
-          //       borderRadius: BorderRadius.circular(10.r),
-          //       borderSide: BorderSide(color: AppColors.chipBorder),
-          //     ),
-          //     contentPadding: EdgeInsets.symmetric(
-          //       horizontal: 14.w,
-          //       vertical: 12.h,
-          //     ),
-          //   ),
-          //   style: AppTextStyles.bodyS.copyWith(
-          //     fontSize: 13.sp,
-          //     color: AppColors.textDark,
-          //   ),
-          // ),
           SizedBox(height: 12.h),
           Obx(() {
-            return _StateWiseMapChart(year: controller.selectedYearState.value);
+            final dataType = controller.selectedStateWiseDataType.value;
+            controller.selectedYearState.value;
+            controller.selectedState.value;
+            controller.apiData;
+            final selectedCode = controller.selectedStateCodeForMap;
+            final stateValuesBySvgId = controller.stateWiseMapValuesBySvgId;
+            return FutureBuilder<String>(
+              future: rootBundle.loadString('assets/maps/india_states.svg'),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return SizedBox(
+                    height: 260.h,
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+                String svgData = snapshot.data!;
+                stateValuesBySvgId.forEach((svgId, count) {
+                  svgData = svgData.replaceAll('{{$svgId}}', _formatNumberForMap(count));
+                });
+                svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
+                if (selectedCode != null && selectedCode.isNotEmpty) {
+                  final codeUpper = selectedCode.toUpperCase();
+                  final stateCode = codeUpper.replaceAll('-', '');
+                  final svgId = stateCode == 'INCG'
+                      ? 'INCT'
+                      : (stateCode == 'INDHDD' ? 'INDH' : stateCode);
+                  svgData = svgData.replaceFirstMapped(
+                    RegExp('id=["\']$svgId["\']', caseSensitive: false),
+                    (match) => '${match.group(0)} stroke="#0D47A1" stroke-width="2.5" fill="#E3F2FD"',
+                  );
+                }
+                return Container(
+                  key: ValueKey('state_map_$dataType'),
+                  height: 260.h,
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFD),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.chipBorder),
+                  ),
+                  child: SvgPicture.string(
+                    svgData,
+                    fit: BoxFit.contain,
+                  ),
+                );
+              },
+            );
           }),
           SizedBox(height: 8.h),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     _LegendDot(color: AppColors.progressGreen, label: 'Registered'),
-          //     SizedBox(width: 12.w),
-          //     _LegendDot(color: AppColors.primaryBlue, label: 'Appeared'),
-          //     SizedBox(width: 12.w),
-          //     _LegendDot(color: AppColors.accentOrange, label: 'Qualified'),
-          //   ],
-          // ),
-          _buildStateOverviewMapSection(context),
+          // _buildStateOverviewMapSection(context),
         ],
       ),
     );
+  }
+
+  static String _formatNumberForMap(int n) {
+    final str = n.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
   }
 
   Widget _buildStateOverviewMapSection(BuildContext context) {
@@ -698,12 +754,16 @@ class CompetitionStatisticsView
       final selectedYear = controller.selectedYearState.value;
       final selectedStateName = controller.selectedState.value;
       final stateMapData = data['state_map_data'];
+      Map<String, dynamic>? yearData;
+      if (stateMapData is Map && stateMapData[selectedYear] is Map) {
+        yearData = Map<String, dynamic>.from(stateMapData[selectedYear] as Map);
+      }
+      if (yearData == null && data[selectedYear] is Map) {
+        yearData = Map<String, dynamic>.from(data[selectedYear] as Map);
+      }
 
       final valuesByState = <String, Map<String, int>>{};
-      if (stateMapData is Map && stateMapData[selectedYear] is Map) {
-        final yearData = Map<String, dynamic>.from(
-          stateMapData[selectedYear] as Map,
-        );
+      if (yearData != null) {
         final reg = Map<String, dynamic>.from(
           yearData['registered'] as Map? ?? {},
         );
@@ -1397,234 +1457,6 @@ class _ExamChart extends StatelessWidget {
   }
 }
 
-class _StateWiseMapChart extends StatelessWidget {
-  const _StateWiseMapChart({required this.year});
-
-  final String year;
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<CompetitionStatisticsController>();
-
-    // Use Obx to reactively get the state map data and year
-    return Obx(() {
-      final currentYear = controller.selectedYearState.value;
-      final stateMapData = controller.apiData['state_map_data'];
-
-      if (stateMapData == null || stateMapData[currentYear] == null) {
-        return Center(
-          child: Padding(
-            padding: EdgeInsets.all(24.h),
-            child: Text(
-              'State-wise data not available for $currentYear',
-              style: AppTextStyles.bodyS.copyWith(color: AppColors.textMuted),
-            ),
-          ),
-        );
-      }
-
-      final yearData = stateMapData[currentYear] as Map<String, dynamic>?;
-      final registeredData =
-          yearData?['registered'] as Map<String, dynamic>? ?? {};
-      final appearedData = yearData?['appeared'] as Map<String, dynamic>? ?? {};
-      final qualifiedData =
-          yearData?['qualified'] as Map<String, dynamic>? ?? {};
-
-      // Get state codes and values
-      final stateCodes = <String>[];
-      final stateValues = <String, Map<String, int>>{};
-
-      registeredData.forEach((code, value) {
-        if (!stateCodes.contains(code)) stateCodes.add(code);
-        if (!stateValues.containsKey(code)) {
-          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-        }
-        stateValues[code]!['registered'] = value is int
-            ? value
-            : int.tryParse(value.toString()) ?? 0;
-      });
-
-      appearedData.forEach((code, value) {
-        if (!stateCodes.contains(code)) stateCodes.add(code);
-        if (!stateValues.containsKey(code)) {
-          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-        }
-        stateValues[code]!['appeared'] = value is int
-            ? value
-            : int.tryParse(value.toString()) ?? 0;
-      });
-
-      qualifiedData.forEach((code, value) {
-        if (!stateCodes.contains(code)) stateCodes.add(code);
-        if (!stateValues.containsKey(code)) {
-          stateValues[code] = {'registered': 0, 'appeared': 0, 'qualified': 0};
-        }
-        stateValues[code]!['qualified'] = value is int
-            ? value
-            : int.tryParse(value.toString()) ?? 0;
-      });
-
-      // Sort by registered count (descending)
-      stateCodes.sort((a, b) {
-        final aVal = stateValues[a]?['registered'] ?? 0;
-        final bVal = stateValues[b]?['registered'] ?? 0;
-        return bVal.compareTo(aVal);
-      });
-
-      // Filter by search query (state name)
-      final query = controller.stateWiseSearchQuery.value.trim().toLowerCase();
-      final filteredCodes = query.isEmpty
-          ? stateCodes
-          : stateCodes
-                .where(
-                  (code) => _getStateName(code).toLowerCase().contains(query),
-                )
-                .toList();
-
-      // Show states: state name + Registered, Appeared, Qualified
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            filteredCodes.isEmpty
-                ? (query.isEmpty
-                      ? 'All States – Registered, Appeared & Qualified'
-                      : 'No state found for "$query"')
-                : 'All States – Registered, Appeared & Qualified',
-            style: AppTextStyles.bodyS.copyWith(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          // ...filteredCodes.map((code) {
-          //   final values = stateValues[code]!;
-          //   final reg = values['registered'] ?? 0;
-          //   final app = values['appeared'] ?? 0;
-          //   final qual = values['qualified'] ?? 0;
-          //   final stateName = _getStateName(code);
-          //   return Padding(
-          //     padding: EdgeInsets.only(bottom: 12.h),
-          //     child: Container(
-          //       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          //       decoration: BoxDecoration(
-          //         color: AppColors.chipBg.withValues(alpha: 0.5),
-          //         borderRadius: BorderRadius.circular(8.r),
-          //         border: Border.all(color: AppColors.chipBorder),
-          //       ),
-          //       child: Column(
-          //         crossAxisAlignment: CrossAxisAlignment.start,
-          //         children: [
-          //           Text(
-          //             stateName,
-          //             style: AppTextStyles.bodyS.copyWith(
-          //               fontSize: 12.sp,
-          //               color: AppColors.textDark,
-          //               fontWeight: FontWeight.w600,
-          //             ),
-          //           ),
-          //           SizedBox(height: 6.h),
-          //           Row(
-          //             children: [
-          //               Expanded(
-          //                 child: Text(
-          //                   'Registered: ${_formatNumber(reg)}',
-          //                   style: AppTextStyles.bodyS.copyWith(
-          //                     fontSize: 10.sp,
-          //                     color: AppColors.progressGreen,
-          //                     fontWeight: FontWeight.w500,
-          //                   ),
-          //                 ),
-          //               ),
-          //               Expanded(
-          //                 child: Text(
-          //                   'Appeared: ${_formatNumber(app)}',
-          //                   style: AppTextStyles.bodyS.copyWith(
-          //                     fontSize: 10.sp,
-          //                     color: AppColors.primaryBlue,
-          //                     fontWeight: FontWeight.w500,
-          //                   ),
-          //                 ),
-          //               ),
-          //               Expanded(
-          //                 child: Text(
-          //                   'Qualified: ${_formatNumber(qual)}',
-          //                   style: AppTextStyles.bodyS.copyWith(
-          //                     fontSize: 10.sp,
-          //                     color: AppColors.accentOrange,
-          //                     fontWeight: FontWeight.w500,
-          //                   ),
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ],
-          //       ),
-          //     ),
-          //   );
-          // }),
-        ],
-      );
-    });
-  }
-
-  String _getStateName(String code) {
-    // Convert state code to readable name
-    final stateMap = {
-      'in-up': 'Uttar Pradesh',
-      'in-mh': 'Maharashtra',
-      'in-rj': 'Rajasthan',
-      'in-ka': 'Karnataka',
-      'in-tn': 'Tamil Nadu',
-      'in-gj': 'Gujarat',
-      'in-wb': 'West Bengal',
-      'in-mp': 'Madhya Pradesh',
-      'in-br': 'Bihar',
-      'in-ap': 'Andhra Pradesh',
-      'in-tg': 'Telangana',
-      'in-kl': 'Kerala',
-      'in-or': 'Odisha',
-      'in-pb': 'Punjab',
-      'in-hr': 'Haryana',
-      'in-jh': 'Jharkhand',
-      'in-ch': 'Chandigarh',
-      'in-dl': 'Delhi',
-      'in-hp': 'Himachal Pradesh',
-      'in-ut': 'Uttarakhand',
-      'in-jk': 'Jammu & Kashmir',
-      'in-as': 'Assam',
-      'in-an': 'Andaman & Nicobar',
-      'in-ar': 'Arunachal Pradesh',
-      'in-mn': 'Manipur',
-      'in-ml': 'Meghalaya',
-      'in-mz': 'Mizoram',
-      'in-nl': 'Nagaland',
-      'in-sk': 'Sikkim',
-      'in-tr': 'Tripura',
-      'in-ga': 'Goa',
-      'in-py': 'Puducherry',
-      'in-ladakh': 'Ladakh',
-      'in-dnhdd': 'Dadra & Nagar Haveli',
-      'in-ld': 'Lakshadweep',
-      'in-cg': 'Chhattisgarh',
-    };
-    return stateMap[code.toLowerCase()] ?? code.toUpperCase();
-  }
-
-  // String _formatNumber(int n) {
-  //   final str = n.toString();
-  //   final buffer = StringBuffer();
-  //   for (int i = 0; i < str.length; i++) {
-  //     if (i > 0 && (str.length - i) % 3 == 0) {
-  //       buffer.write(',');
-  //     }
-  //     buffer.write(str[i]);
-  //   }
-  //   return buffer.toString();
-  // }
-}
-
 class _TabChip extends StatelessWidget {
   const _TabChip({
     required this.label,
@@ -2129,6 +1961,128 @@ class _LineChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _StateWiseLegendChip extends StatelessWidget {
+  const _StateWiseLegendChip({
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 10.r,
+              height: 10.r,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: isSelected
+                    ? Border.all(color: AppColors.textDark, width: 1.5)
+                    : null,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: AppTextStyles.bodyS.copyWith(
+                fontSize: 12.sp,
+                color: isSelected ? AppColors.textDark : AppColors.textMuted,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StateDropdown extends StatelessWidget {
+  const _StateDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final List<String> items;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 140.w,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label:',
+            style: AppTextStyles.detailScreenSubtitle.copyWith(
+              fontSize: 11.sp,
+              color: AppColors.textMuted,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: items.contains(value) ? value : (items.isNotEmpty ? items.first : null),
+                isExpanded: true,
+                isDense: true,
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20.sp,
+                  color: AppColors.textMuted,
+                ),
+                style: AppTextStyles.bodyS.copyWith(
+                  color: AppColors.textDark,
+                  fontSize: 11.sp,
+                ),
+                items: items
+                    .map(
+                      (e) => DropdownMenuItem<String>(
+                        value: e,
+                        child: Text(
+                          e,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => v != null ? onChanged(v) : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _YearDropdown extends StatelessWidget {

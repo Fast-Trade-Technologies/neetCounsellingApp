@@ -13,6 +13,8 @@ class CompetitionStatisticsController extends GetxController {
   final RxString selectedState = 'All'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString selectedYearState = '2025'.obs;
+  /// 'registered' | 'appeared' | 'qualified' – drives state-wise map data
+  final RxString selectedStateWiseDataType = 'registered'.obs;
   /// Search query for filtering state-wise competition list
   final RxString stateWiseSearchQuery = ''.obs;
 
@@ -102,9 +104,9 @@ class CompetitionStatisticsController extends GetxController {
       return;
     }
     
-    // Store full API data
+    // Store full API data (includes state_map_data for state-wise map: year -> registered/appeared/qualified -> state codes)
     apiData.value = Map<String, dynamic>.from(data);
-    
+
     // Parse chart_data from API response
     final chartData = data['chart_data'];
     if (chartData is Map) {
@@ -463,7 +465,104 @@ class CompetitionStatisticsController extends GetxController {
     selectedYearState.value = v;
     loadCompetitionData();
   }
+  void setStateWiseDataType(String v) => selectedStateWiseDataType.value = v;
   void setStateWiseSearchQuery(String v) => stateWiseSearchQuery.value = v;
+
+  /// API state code (e.g. in-ap) to SVG id (e.g. INAP) for india_states.svg
+  static String _stateMapCodeToSvgId(String code) {
+    final lower = code.toLowerCase();
+    if (lower == 'in-cg') return 'INCT';
+    if (lower == 'in-dnhdd') return 'INDH';
+    return code.toUpperCase().replaceAll('-', '');
+  }
+
+  /// Map of SVG id -> value for the state-wise map. Uses selected year + selected chip (Registered / Appeared / Qualified).
+  /// Data from same API: apiData['state_map_data'][year][dataType] e.g. state_map_data["2024"]["registered"].
+  Map<String, int> get stateWiseMapValuesBySvgId {
+    final year = selectedYearState.value;
+    final dataType = selectedStateWiseDataType.value; // 'registered' | 'appeared' | 'qualified'
+    Map<String, dynamic>? yearData;
+    final stateMapData = apiData['state_map_data'];
+    if (stateMapData is Map && stateMapData[year] is Map) {
+      yearData = Map<String, dynamic>.from(stateMapData[year] as Map);
+    }
+    if (yearData == null) {
+      for (final key in ['state_wise', 'state_wise_by_year', 'year_wise_state_data']) {
+        final top = apiData[key];
+        if (top is Map && top[year] is Map) {
+          yearData = Map<String, dynamic>.from(top[year] as Map);
+          break;
+        }
+      }
+    }
+    if (yearData == null && apiData[year] is Map) {
+      yearData = Map<String, dynamic>.from(apiData[year] as Map);
+    }
+    if (yearData == null) return {};
+    final typeData = yearData[dataType];
+    if (typeData is! Map) return {};
+    final result = <String, int>{};
+    for (final entry in typeData.entries) {
+      final svgId = _stateMapCodeToSvgId(entry.key.toString());
+      final v = entry.value;
+      result[svgId] = v is int ? v : int.tryParse(v.toString()) ?? 0;
+    }
+    return result;
+  }
+
+  /// State name -> API code (e.g. Andhra Pradesh -> in-ap) for map highlight
+  static const Map<String, String> _stateNameToCode = {
+    'Uttar Pradesh': 'in-up',
+    'Maharashtra': 'in-mh',
+    'Rajasthan': 'in-rj',
+    'Karnataka': 'in-ka',
+    'Tamil Nadu': 'in-tn',
+    'Gujarat': 'in-gj',
+    'West Bengal': 'in-wb',
+    'Madhya Pradesh': 'in-mp',
+    'Bihar': 'in-br',
+    'Andhra Pradesh': 'in-ap',
+    'Telangana': 'in-tg',
+    'Kerala': 'in-kl',
+    'Odisha': 'in-or',
+    'Punjab': 'in-pb',
+    'Haryana': 'in-hr',
+    'Jharkhand': 'in-jh',
+    'Chandigarh': 'in-ch',
+    'Delhi': 'in-dl',
+    'Himachal Pradesh': 'in-hp',
+    'Uttarakhand': 'in-ut',
+    'Jammu & Kashmir': 'in-jk',
+    'Assam': 'in-as',
+    'Andaman & Nicobar': 'in-an',
+    'Arunachal Pradesh': 'in-ar',
+    'Manipur': 'in-mn',
+    'Meghalaya': 'in-ml',
+    'Mizoram': 'in-mz',
+    'Nagaland': 'in-nl',
+    'Sikkim': 'in-sk',
+    'Tripura': 'in-tr',
+    'Goa': 'in-ga',
+    'Puducherry': 'in-py',
+    'Ladakh': 'in-ladakh',
+    'Dadra & Nagar Haveli': 'in-dnhdd',
+    'Dadra & Nagar Haveli and Daman and Diu': 'in-dnhdd',
+    'Lakshadweep': 'in-ld',
+    'Chhattisgarh': 'in-cg',
+  };
+
+  /// API code for the currently selected state (for map highlight). Null if All.
+  String? get selectedStateCodeForMap {
+    final name = selectedState.value;
+    if (name.isEmpty || name == 'All') return null;
+    final code = _stateNameToCode[name];
+    if (code != null) return code;
+    // Match by case-insensitive or partial name
+    for (final e in _stateNameToCode.entries) {
+      if (e.key.toLowerCase() == name.toLowerCase()) return e.value;
+    }
+    return null;
+  }
 
   // Sample: row label, then per year (2019..2025): value, trend up/down, change
   static const List<Map<String, dynamic>> _defaultBreakdownRows = [
