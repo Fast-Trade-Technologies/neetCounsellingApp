@@ -689,46 +689,73 @@ class CompetitionStatisticsView
             controller.apiData;
             final selectedCode = controller.selectedStateCodeForMap;
             final stateValuesBySvgId = controller.stateWiseMapValuesBySvgId;
-            return FutureBuilder<String>(
-              future: rootBundle.loadString('assets/maps/india_states.svg'),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return SizedBox(
-                    height: 260.h,
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                }
-                String svgData = snapshot.data!;
-                stateValuesBySvgId.forEach((svgId, count) {
-                  svgData = svgData.replaceAll('{{$svgId}}', _formatNumberForMap(count));
-                });
-                svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
-                if (selectedCode != null && selectedCode.isNotEmpty) {
-                  final codeUpper = selectedCode.toUpperCase();
-                  final stateCode = codeUpper.replaceAll('-', '');
-                  final svgId = stateCode == 'INCG'
-                      ? 'INCT'
-                      : (stateCode == 'INDHDD' ? 'INDH' : stateCode);
-                  svgData = svgData.replaceFirstMapped(
-                    RegExp('id=["\']$svgId["\']', caseSensitive: false),
-                    (match) => '${match.group(0)} stroke="#0D47A1" stroke-width="2.5" fill="#E3F2FD"',
-                  );
-                }
-                return Container(
-                  key: ValueKey('state_map_$dataType'),
-                  height: 260.h,
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFD),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.chipBorder),
+            return Container(
+              key: ValueKey('state_map_$dataType'),
+              height: 260.h,
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFD),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.chipBorder),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 26.w, vertical: 18.h),
+                        child: FutureBuilder<String>(
+                          future: rootBundle.loadString('assets/maps/india_states.svg'),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            String svgData = snapshot.data!;
+                            stateValuesBySvgId.forEach((svgId, count) {
+                              svgData = svgData.replaceAll('{{$svgId}}', _formatNumberForMap(count));
+                            });
+                            svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
+                            if (selectedCode != null && selectedCode.isNotEmpty) {
+                              final codeUpper = selectedCode.toUpperCase();
+                              final stateCode = codeUpper.replaceAll('-', '');
+                              final svgId = stateCode == 'INCG'
+                                  ? 'INCT'
+                                  : (stateCode == 'INDHDD' ? 'INDH' : stateCode);
+                              svgData = svgData.replaceFirstMapped(
+                                RegExp('id=["\']$svgId["\']', caseSensitive: false),
+                                (match) => '${match.group(0)} stroke="#0D47A1" stroke-width="2.5" fill="#E3F2FD"',
+                              );
+                            }
+                            return InteractiveViewer(
+                              transformationController: controller.mapTransformController,
+                              minScale: 0.8,
+                              maxScale: 4.0,
+                              panEnabled: true,
+                              child: SvgPicture.string(
+                                svgData,
+                                fit: BoxFit.contain,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
-                  child: SvgPicture.string(
-                    svgData,
-                    fit: BoxFit.contain,
+                  Positioned(
+                    left: 10.w,
+                    top: 14.h,
+                    child: Column(
+                      children: [
+                        _buildMapAction(Icons.home_outlined, onTap: controller.resetMapView),
+                        SizedBox(height: 10.h),
+                        _buildMapAction(Icons.add, onTap: controller.zoomInMap),
+                        SizedBox(height: 10.h),
+                        _buildMapAction(Icons.remove, onTap: controller.zoomOutMap),
+                      ],
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             );
           }),
           SizedBox(height: 8.h),
@@ -746,6 +773,30 @@ class CompetitionStatisticsView
       buffer.write(str[i]);
     }
     return buffer.toString();
+  }
+
+  Widget _buildMapAction(IconData icon, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10.r),
+      child: Container(
+        width: 36.w,
+        height: 36.w,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: const Color(0xFFDCE5EF)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textDark.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
+      ),
+    );
   }
 
   Widget _buildStateOverviewMapSection(BuildContext context) {

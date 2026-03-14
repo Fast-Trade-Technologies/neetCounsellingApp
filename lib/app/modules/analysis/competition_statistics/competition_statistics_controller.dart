@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../api_services/filters_api.dart';
@@ -56,11 +57,39 @@ class CompetitionStatisticsController extends GetxController {
 
   List<String> get yearsList => years;
 
+  /// Pan/zoom for the state-wise SVG map (same as college_seats).
+  final TransformationController mapTransformController = TransformationController();
+  double _mapScale = 1.0;
+
+  void resetMapView() {
+    _mapScale = 1.0;
+    mapTransformController.value = Matrix4.identity();
+  }
+
+  void zoomInMap() {
+    _setMapScale(_mapScale * 1.2);
+  }
+
+  void zoomOutMap() {
+    _setMapScale(_mapScale / 1.2);
+  }
+
+  void _setMapScale(double scale) {
+    _mapScale = scale.clamp(0.8, 4.0);
+    mapTransformController.value = Matrix4.identity()..scale(_mapScale);
+  }
+
   @override
   void onInit() {
     super.onInit();
     _loadStateFilters();
     loadCompetitionData();
+  }
+
+  @override
+  void onClose() {
+    mapTransformController.dispose();
+    super.onClose();
   }
 
   Future<void> _loadStateFilters() async {
