@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/map_choropleth_util.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import 'competition_statistics_controller.dart';
 
@@ -715,6 +716,7 @@ class CompetitionStatisticsView
                               svgData = svgData.replaceAll('{{$svgId}}', _formatNumberForMap(count));
                             });
                             svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
+                            svgData = applyChoroplethFill(svgData, stateValuesBySvgId);
                             if (selectedCode != null && selectedCode.isNotEmpty) {
                               final codeUpper = selectedCode.toUpperCase();
                               final stateCode = codeUpper.replaceAll('-', '');

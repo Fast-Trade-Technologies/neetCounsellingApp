@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/map_choropleth_util.dart';
 import '../../../core/widgets/detail_app_bar.dart';
 import '../../../core/widgets/detail_dropdown.dart';
 import '../../../core/widgets/filter_bottom_sheet.dart';
@@ -433,7 +434,9 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                       // so that they are not shown on the map.
                       svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
 
-                      // Highlight only the selected state's path by injecting a fill color.
+                      svgData = applyChoroplethFill(svgData, stateSeatsMap);
+
+                      // Highlight only the selected state's path.
                       if (selectedCode != null && selectedCode.isNotEmpty) {
                         final codeUpper = selectedCode.toUpperCase();
                         final stateCode = codeUpper.replaceAll('-', '');
