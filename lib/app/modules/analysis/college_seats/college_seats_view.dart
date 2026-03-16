@@ -360,7 +360,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
             SizedBox(width: 12.w),
             Expanded(
               child: Align(
-                alignment: Alignment.centerRight,
+                alignment: Alignment.topRight,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -434,7 +434,11 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                       // so that they are not shown on the map.
                       svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
 
-                      svgData = applyChoroplethFill(svgData, stateSeatsMap);
+                      svgData = applyChoroplethFill(
+                        svgData,
+                        stateSeatsMap,
+                        isCollegeSeatsPage: true,
+                      );
 
                       // Highlight only the selected state's path.
                       if (selectedCode != null && selectedCode.isNotEmpty) {
@@ -478,8 +482,8 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
           ),
           // State-wise seats overlay in the map, driven by the top dropdown.
           Positioned(
-            right: 16.w,
-            bottom: 20.h,
+            top: 0.h,
+            right: 0.w,
             child: Obx(() {
               final name = controller.selectedStateName;
               final seats = controller.selectedStateSeats;

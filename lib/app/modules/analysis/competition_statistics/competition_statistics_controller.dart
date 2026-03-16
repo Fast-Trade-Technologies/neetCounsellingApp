@@ -502,6 +502,7 @@ class CompetitionStatisticsController extends GetxController {
     final lower = code.toLowerCase();
     if (lower == 'in-cg') return 'INCT';
     if (lower == 'in-dnhdd') return 'INDH';
+    if (lower == 'in-ladakh') return 'INLA';
     return code.toUpperCase().replaceAll('-', '');
   }
 

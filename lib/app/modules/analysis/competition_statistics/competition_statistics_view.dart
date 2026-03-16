@@ -720,7 +720,11 @@ class CompetitionStatisticsView
                               final stateCode = codeUpper.replaceAll('-', '');
                               final svgId = stateCode == 'INCG'
                                   ? 'INCT'
-                                  : (stateCode == 'INDHDD' ? 'INDH' : stateCode);
+                                  : stateCode == 'INDHDD'
+                                      ? 'INDH'
+                                      : stateCode == 'INLADAKH'
+                                          ? 'INLA'
+                                          : stateCode;
                               svgData = svgData.replaceFirstMapped(
                                 RegExp('id=["\']$svgId["\']', caseSensitive: false),
                                 (match) => '${match.group(0)} stroke="#0D47A1" stroke-width="2.5" fill="#E3F2FD"',
