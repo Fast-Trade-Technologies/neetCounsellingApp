@@ -41,23 +41,33 @@ class CompetitionStatisticsView
               _buildYearlyInsightsCard(),
               SizedBox(height: 16.h),
               Obx(() {
-                final tabIndex = controller.breakdownTabIndex.value;
-                if (tabIndex == 1) {
-                  // Nationality tab
-                  return _buildNationalityCard(context);
-                } else if (tabIndex == 2) {
+                 // final tabIndex = controller.breakdownTabIndex.value;
+                  // if (tabIndex == 1) {
+                    // Nationality tab
+                    return Column(
+                      children: [
+                        _buildNationalityCard(context),
+                        SizedBox(height: 16.h),
+                        _buildCategoryCard(context),
+                         SizedBox(height: 16.h),
+                        // _buildExamCard(context),
+                        _buildGenderCard(context),
+                      ],
+                    );
+                    
+                // } else if (tabIndex == 2) {
                   // Gender tab
-                  return _buildGenderCard(context);
-                } else if (tabIndex == 3) {
+                  //  _buildGenderCard(context);
+                // } else if (tabIndex == 3) {
                   // Category tab
-                  return _buildCategoryCard(context);
-                } else if (tabIndex == 4) {
+                  //  _buildCategoryCard(context);
+                //  } else if (tabIndex == 4) {
                   // Exam tab - show exam data
-                  return _buildExamCard(context);
-                } else {
+                  //  _buildExamCard(context);
+                // } else {
                   // Candidates tab (default) - show nationality as default
-                  return _buildNationalityCard(context);
-                }
+                  //  _buildNationalityCard(context);
+                // }
               }),
               SizedBox(height: 16.h),
               _buildStateWiseCard(context),
@@ -605,9 +615,9 @@ class CompetitionStatisticsView
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Obx(
+           Obx(
               () => Text(
-               'State-Wise Competition - ${controller.selectedYearState.value}',
+                        'State-Wise Competition - ${controller.selectedYearState.value}',
                         style: AppTextStyles.welcomeHeading.copyWith(
                           fontSize: 14.sp,
                         ),
@@ -620,8 +630,9 @@ class CompetitionStatisticsView
                         color: AppColors.textDark,
                       ),
                     ),
-                Row(
-                // mainAxisSize: MainAxisSize.min,
+                     SizedBox(height: 4.h),
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Obx(
                     () => Expanded(
@@ -642,17 +653,10 @@ class CompetitionStatisticsView
                       onChanged: controller.setYearState,
                     ),
                   ),
-                ],
-              ),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10.h),
-                    Obx(() => Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ],
+          ),
+          SizedBox(height: 12.h),
+            Obx(() => Row(
                       children: [
                         _StateWiseLegendChip(
                           label: 'Registered',
@@ -676,12 +680,6 @@ class CompetitionStatisticsView
                         ),
                       ],
                     )),
-                  ],
-                ),
-              ),
-            
-            ],
-          ),
           SizedBox(height: 12.h),
           Obx(() {
             final dataType = controller.selectedStateWiseDataType.value;
@@ -713,7 +711,7 @@ class CompetitionStatisticsView
                             }
                             String svgData = snapshot.data!;
                             stateValuesBySvgId.forEach((svgId, count) {
-                              svgData = svgData.replaceAll('{{$svgId}}', _formatNumberForMap(count));
+                              svgData = svgData.replaceAll('{{$svgId}}', count.toString());//_formatNumberForMap(count));
                             });
                             svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
                             svgData = applyChoroplethFill(svgData, stateValuesBySvgId);
@@ -767,56 +765,18 @@ class CompetitionStatisticsView
     );
   }
 
-  static String _formatNumberForMap(int n) {
-    final str = n.toString();
-    final buffer = StringBuffer();
-    for (int i = 0; i < str.length; i++) {
-      if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
-      buffer.write(str[i]);
-    }
-    return buffer.toString();
-  }
-
-  Widget _buildMapAction(IconData icon, {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10.r),
-      child: Container(
-        width: 36.w,
-        height: 36.w,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: const Color(0xFFDCE5EF)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textDark.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
-      ),
-    );
-  }
-
   Widget _buildStateOverviewMapSection(BuildContext context) {
     return Obx(() {
       final data = controller.apiData;
       final selectedYear = controller.selectedYearState.value;
       final selectedStateName = controller.selectedState.value;
       final stateMapData = data['state_map_data'];
-      Map<String, dynamic>? yearData;
-      if (stateMapData is Map && stateMapData[selectedYear] is Map) {
-        yearData = Map<String, dynamic>.from(stateMapData[selectedYear] as Map);
-      }
-      if (yearData == null && data[selectedYear] is Map) {
-        yearData = Map<String, dynamic>.from(data[selectedYear] as Map);
-      }
 
       final valuesByState = <String, Map<String, int>>{};
-      if (yearData != null) {
+      if (stateMapData is Map && stateMapData[selectedYear] is Map) {
+        final yearData = Map<String, dynamic>.from(
+          stateMapData[selectedYear] as Map,
+        );
         final reg = Map<String, dynamic>.from(
           yearData['registered'] as Map? ?? {},
         );
@@ -1269,7 +1229,7 @@ class _CategoryChart extends StatelessWidget {
         final qual = (row['qualified'] as num).toDouble();
 
         return Padding(
-          padding: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.only(bottom: 10.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1282,36 +1242,178 @@ class _CategoryChart extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8.h),
-              // Registered bar
-              _HorizontalBar(
-                label: 'Registered',
-                value: reg,
+              _CategoryLineRow(
                 maxValue: maxValue,
-                color: AppColors.progressGreen,
-                showValue: true,
-              ),
-              SizedBox(height: 6.h),
-              // Appeared bar
-              _HorizontalBar(
-                label: 'Appeared',
-                value: app,
-                maxValue: maxValue,
-                color: AppColors.primaryBlue,
-                showValue: true,
-              ),
-              SizedBox(height: 6.h),
-              // Qualified bar
-              _HorizontalBar(
-                label: 'Qualified',
-                value: qual,
-                maxValue: maxValue,
-                color: AppColors.accentOrange,
-                showValue: true,
+                registered: reg,
+                appeared: app,
+                qualified: qual,
               ),
             ],
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _CategoryLineRow extends StatelessWidget {
+  const _CategoryLineRow({
+    required this.maxValue,
+    required this.registered,
+    required this.appeared,
+    required this.qualified,
+  });
+
+  final double maxValue;
+  final double registered;
+  final double appeared;
+  final double qualified;
+
+  String _formatValue(double v) {
+    // Show values in full with commas (e.g. 9,48,507)
+    final n = v.round();
+    final str = n.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) {
+        buffer.write(',');
+      }
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 64.h,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final trackHeight = 3.0;
+
+          double _x(double value) {
+            if (maxValue <= 0) return 0;
+            final ratio = (value / maxValue).clamp(0.0, 1.0);
+            return ratio * width;
+          }
+
+          Widget _buildLineWithDot({
+            required double value,
+            required Color color,
+            required double centerY,
+            bool showLabel = true,
+          }) {
+            final xPos = _x(value);
+            final dotDiameter = 10.w;
+            final spacing = 4.w;
+            final labelMaxWidth = 84.w;
+
+            // Adjust dot position so that "dot + spacing + label" always stay inside the track width.
+            // Label will ALWAYS be rendered to the RIGHT of the dot (as you requested).
+            final maxDotX = (width - (dotDiameter + spacing + labelMaxWidth))
+                .clamp(0.0, width);
+            final adjustedDotX = xPos.clamp(0.0, maxDotX);
+            final lineEndX = adjustedDotX;
+
+            return Stack(
+              children: [
+                // Colored line from 0 to the value point
+                Positioned(
+                  left: 0,
+                  right: width - lineEndX,
+                  top: centerY - trackHeight / 2,
+                  child: Container(
+                    height: trackHeight,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Dot + optional value label at the end
+                Positioned(
+                  left: adjustedDotX - (dotDiameter / 2),
+                  top: centerY - 7.h,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: dotDiameter,
+                        height: dotDiameter,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                      if (showLabel) ...[
+                        SizedBox(width: spacing),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 2.h,
+                          ),
+                          constraints: BoxConstraints(maxWidth: labelMaxWidth),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.textDark
+                                    .withValues(alpha: 0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _formatValue(value),
+                            style: AppTextStyles.bodyS.copyWith(
+                              fontSize: 9.sp,
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Stack(
+            children: [
+              // Registered (green) with value label
+              _buildLineWithDot(
+                value: registered,
+                color: AppColors.progressGreen,
+                centerY: 16.h,
+                showLabel: true,
+              ),
+              // Appeared (blue) with value label
+              _buildLineWithDot(
+                value: appeared,
+                color: AppColors.primaryBlue,
+                centerY: 32.h,
+                showLabel: true,
+              ),
+              // Qualified (orange) with value label
+              _buildLineWithDot(
+                value: qualified,
+                color: AppColors.accentOrange,
+                centerY: 48.h,
+                showLabel: true,
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -1356,32 +1458,12 @@ class _GenderChart extends StatelessWidget {
                   fontSize: 12.sp,
                 ),
               ),
-              SizedBox(height: 8.h),
-              // Registered bar
-              _HorizontalBar(
-                label: 'Registered',
-                value: reg,
+              SizedBox(height: 10.h),
+              _CategoryLineRow(
                 maxValue: maxValue,
-                color: AppColors.progressGreen,
-                showValue: true,
-              ),
-              SizedBox(height: 6.h),
-              // Appeared bar
-              _HorizontalBar(
-                label: 'Appeared',
-                value: app,
-                maxValue: maxValue,
-                color: AppColors.primaryBlue,
-                showValue: true,
-              ),
-              SizedBox(height: 6.h),
-              // Qualified bar
-              _HorizontalBar(
-                label: 'Qualified',
-                value: qual,
-                maxValue: maxValue,
-                color: AppColors.accentOrange,
-                showValue: true,
+                registered: reg,
+                appeared: app,
+                qualified: qual,
               ),
             ],
           ),
@@ -2016,54 +2098,34 @@ class _LineChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class _StateWiseLegendChip extends StatelessWidget {
-  const _StateWiseLegendChip({
-    required this.label,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
+String _formatNumberForMap(int value) {
+  if (value >= 100000) return '${(value / 100000).toStringAsFixed(1)}L';
+  if (value >= 1000) return '${(value / 1000).toStringAsFixed(0)}K';
+  return value.toString();
+}
 
-  final String label;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 10.r,
-              height: 10.r,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: isSelected
-                    ? Border.all(color: AppColors.textDark, width: 1.5)
-                    : null,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              label,
-              style: AppTextStyles.bodyS.copyWith(
-                fontSize: 12.sp,
-                color: isSelected ? AppColors.textDark : AppColors.textMuted,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+Widget _buildMapAction(IconData icon, {VoidCallback? onTap}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(10.r),
+    child: Container(
+      width: 36.w,
+      height: 36.w,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFDCE5EF)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textDark.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-    );
-  }
+      child: Icon(icon, size: 18, color: const Color(0xFF243A60)),
+    ),
+  );
 }
 
 class _StateDropdown extends StatelessWidget {
@@ -2114,18 +2176,11 @@ class _StateDropdown extends StatelessWidget {
                 ),
                 style: AppTextStyles.bodyS.copyWith(
                   color: AppColors.textDark,
-                  fontSize: 11.sp,
+                  fontSize: 12.sp,
                 ),
                 items: items
                     .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e,
-                        child: Text(
-                          e,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
+                      (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
                     )
                     .toList(),
                 onChanged: (v) => v != null ? onChanged(v) : null,
@@ -2133,6 +2188,46 @@ class _StateDropdown extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StateWiseLegendChip extends StatelessWidget {
+  const _StateWiseLegendChip({
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.25) : AppColors.chipBg,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: isSelected ? color : AppColors.chipBorder,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.bodyS.copyWith(
+            color: isSelected ? color : AppColors.textDark,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
