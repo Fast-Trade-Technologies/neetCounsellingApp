@@ -714,7 +714,16 @@ class CompetitionStatisticsView
                               svgData = svgData.replaceAll('{{$svgId}}', count.toString());//_formatNumberForMap(count));
                             });
                             svgData = svgData.replaceAll(RegExp(r'\{\{[A-Z0-9]+\}\}'), '');
-                            svgData = applyChoroplethFill(svgData, stateValuesBySvgId);
+                            final palette = dataType == 'appeared'
+                                ? ChoroplethPalette.blue
+                                : dataType == 'qualified'
+                                    ? ChoroplethPalette.orange
+                                    : ChoroplethPalette.green;
+                            svgData = applyChoroplethFill(
+                              svgData,
+                              stateValuesBySvgId,
+                              palette: palette,
+                            );
                             if (selectedCode != null && selectedCode.isNotEmpty) {
                               final codeUpper = selectedCode.toUpperCase();
                               final stateCode = codeUpper.replaceAll('-', '');

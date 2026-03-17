@@ -437,7 +437,7 @@ class CollegeSeatsView extends GetView<CollegeSeatsController> {
                       svgData = applyChoroplethFill(
                         svgData,
                         stateSeatsMap,
-                        isCollegeSeatsPage: true,
+                        palette: ChoroplethPalette.blue,
                       );
 
                       // Highlight only the selected state's path.

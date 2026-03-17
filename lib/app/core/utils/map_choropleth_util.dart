@@ -1,32 +1,58 @@
 import 'package:flutter/material.dart';
 
-// Blue palette (e.g. for college seats map)
+/// Available color palettes for choropleth maps.
+enum ChoroplethPalette { blue, green, orange }
+
+// Blue palette (e.g. for college seats map / "Appeared")
 const _defaultNoDataFillBlue = '#b3d1ff';
 const _lightBlue = Color.fromARGB(255, 227, 242, 253);
 const _darkBlue = Color.fromARGB(255, 68, 143, 230);
 
-// Green palette (e.g. for competition statistics map like reference image)
+// Green palette (e.g. for competition "Registered")
 const _defaultNoDataFillGreen = '#A5D6A7';
 const _lightGreen = Color(0xFFC8E6C9);
 const _darkGreen = Color(0xFF2E7D32);
+
+// Orange palette (e.g. for competition "Qualified")
+const _defaultNoDataFillOrange = '#FFE0B2';
+const _lightOrange = Color(0xFFFFF3E0);
+const _darkOrange = Color(0xFFF57C00);
 
 const _minRatio = 0.25;
 const _rangeRatio = 0.75;
 
 /// Applies a choropleth to India map SVG.
-/// - If [isCollegeSeatsPage] is true → blue shades.
-/// - Otherwise → green shades (like the provided reference image).
+///
 /// Every state path gets a fill: with data → choropleth; without data → default fill.
+/// Use [palette] to control the color scheme (blue/green/orange).
 String applyChoroplethFill(
   String svgData,
   Map<String, int> valuesBySvgId, {
-  bool isCollegeSeatsPage = false,
+  ChoroplethPalette palette = ChoroplethPalette.green,
 }) {
-  // Pick palette based on page
-  final defaultNoDataFill =
-      isCollegeSeatsPage ? _defaultNoDataFillBlue : _defaultNoDataFillGreen;
-  final lightColor = isCollegeSeatsPage ? _lightBlue : _lightGreen;
-  final darkColor = isCollegeSeatsPage ? _darkBlue : _darkGreen;
+  // Pick palette based on usage
+  late final String defaultNoDataFill;
+  late final Color lightColor;
+  late final Color darkColor;
+
+  switch (palette) {
+    case ChoroplethPalette.blue:
+      defaultNoDataFill = _defaultNoDataFillBlue;
+      lightColor = _lightBlue;
+      darkColor = _darkBlue;
+      break;
+    case ChoroplethPalette.orange:
+      defaultNoDataFill = _defaultNoDataFillOrange;
+      lightColor = _lightOrange;
+      darkColor = _darkOrange;
+      break;
+    case ChoroplethPalette.green:
+    default:
+      defaultNoDataFill = _defaultNoDataFillGreen;
+      lightColor = _lightGreen;
+      darkColor = _darkGreen;
+      break;
+  }
 
   // Replace root fill (background land color) with palette's default,
   // handling both possible original colors used in different SVGs.
