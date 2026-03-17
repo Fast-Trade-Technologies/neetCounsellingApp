@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../../../api_services/checklist_api.dart';
 import '../../../../api_services/filters_api.dart';
 import '../../../core/snackbar/app_snackbar.dart';
-import '../../../core/utils/url_launcher_util.dart';
+import '../../../core/widgets/pdf_webview_page.dart';
 
 class ChecklistDocument {
   ChecklistDocument({
@@ -211,6 +211,16 @@ class ChecklistSampleController extends GetxController {
       AppSnackbar.info('Sample View', 'Sample not available for "${doc.documentName}".');
       return;
     }
-    await openLinkInBrowser(doc.sampleFile);
+    // Clean up URL coming from API (may contain escaped slashes like http:\/\/...)
+    var url = doc.sampleFile!.trim();
+    url = url.replaceAll(r'\/', '/');
+    if (url.isEmpty) {
+      AppSnackbar.info('Sample View', 'Sample URL is invalid.');
+      return;
+    }
+    Get.to(() => PdfWebViewPage(
+          url: url,
+          title: doc.documentName,
+        ));
   }
 }
