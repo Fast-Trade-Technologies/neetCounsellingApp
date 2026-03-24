@@ -6,17 +6,17 @@ enum ChoroplethPalette { blue, green, orange }
 // Blue palette (e.g. for college seats map / "Appeared")
 const _defaultNoDataFillBlue = '#b3d1ff';
 const _lightBlue = Color.fromARGB(255, 227, 242, 253);
-const _darkBlue = Color.fromARGB(255, 68, 143, 230);
+const _darkBlue = Color.fromARGB(255, 105, 167, 236);
 
 // Green palette (e.g. for competition "Registered")
 const _defaultNoDataFillGreen = '#A5D6A7';
 const _lightGreen = Color(0xFFC8E6C9);
-const _darkGreen = Color(0xFF2E7D32);
+const _darkGreen = Color.fromARGB(255, 133, 245, 139);
 
 // Orange palette (e.g. for competition "Qualified")
 const _defaultNoDataFillOrange = '#FFE0B2';
 const _lightOrange = Color(0xFFFFF3E0);
-const _darkOrange = Color(0xFFF57C00);
+const _darkOrange = Color.fromARGB(255, 255, 179, 102);
 
 const _minRatio = 0.25;
 const _rangeRatio = 0.75;

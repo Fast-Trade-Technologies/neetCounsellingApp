@@ -515,9 +515,21 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
               ),
             );
           }),
-
           SizedBox(height: 16.h),
+           _buildSummaryTableHeader(),
+                   for (int i = 0; i < controller.tableRows.length; i++)
+                    _buildSummaryTableRow(
+                      _chartColors[i % _chartColors.length],
+                      controller.tableRows[i].seatTypeName ?? '',
+                      controller.tableRows[i].totalSeats.toString(),
+                      controller.tableRows[i].totalCategories?.toString() ?? '',
+                      controller.tableRows[i].totalColleges?.toString() ?? '',
+                      isLast: i == controller.tableRows.length - 1,
+                    ),
 
+          SizedBox(height: 8.h),
+          Divider(color: AppColors.border, height: 2, thickness: 4),
+          SizedBox(height: 8.h),
           /// Legend
           Obx(() {
             final labels = controller.seatLabels;
@@ -561,16 +573,9 @@ class SeatDistributionView extends GetView<SeatDistributionController> {
                   //     style: AppTextStyles.welcomeHeading.copyWith(fontSize: 14.sp),
                   //   ),
                   // ),
-                  _buildSummaryTableHeader(),
-                  for (int i = 0; i < rows.length; i++)
-                    _buildSummaryTableRow(
-                      _chartColors[i % _chartColors.length],
-                      rows[i].seatTypeName,
-                      rows[i].totalSeats.toString(),
-                      rows[i].totalCategories.toString(),
-                      rows[i].totalColleges.toString(),
-                      isLast: i == rows.length - 1,
-                    ),
+                  
+                 
+                 
                 ],
               ),
             );

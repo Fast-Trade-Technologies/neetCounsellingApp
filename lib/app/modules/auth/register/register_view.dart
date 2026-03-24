@@ -85,62 +85,6 @@ class RegisterView extends GetView<RegisterController> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: () => controller.setStream('0'),
-                        borderRadius: BorderRadius.circular(10.r),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-                          decoration: BoxDecoration(
-                            color: controller.selectedStream.value == '0' ? AppColors.chipBg : Colors.white,
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: controller.selectedStream.value == '0'
-                                  ? AppColors.primaryBlue
-                                  : AppColors.border,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 18.w,
-                                height: 18.w,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: controller.selectedStream.value == '0'
-                                        ? AppColors.primaryBlue
-                                        : AppColors.border,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Container(
-                                    width: 9.w,
-                                    height: 9.w,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: controller.selectedStream.value == '0'
-                                          ? AppColors.primaryBlue
-                                          : Colors.transparent,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'UG',
-                                style: AppTextStyles.bodyS.copyWith(
-                                  color: AppColors.textDark,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: InkWell(
                         onTap: () => controller.setStream('1'),
                         borderRadius: BorderRadius.circular(10.r),
                         child: Container(
@@ -175,6 +119,62 @@ class RegisterView extends GetView<RegisterController> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: controller.selectedStream.value == '1'
+                                          ? AppColors.primaryBlue
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                'UG',
+                                style: AppTextStyles.bodyS.copyWith(
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => controller.setStream('2'),
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: controller.selectedStream.value == '2' ? AppColors.chipBg : Colors.white,
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(
+                              color: controller.selectedStream.value == '2'
+                                  ? AppColors.primaryBlue
+                                  : AppColors.border,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 18.w,
+                                height: 18.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: controller.selectedStream.value == '2'
+                                        ? AppColors.primaryBlue
+                                        : AppColors.border,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 9.w,
+                                    height: 9.w,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: controller.selectedStream.value == '2'
                                           ? AppColors.primaryBlue
                                           : Colors.transparent,
                                     ),

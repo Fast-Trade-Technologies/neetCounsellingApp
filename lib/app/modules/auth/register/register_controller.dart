@@ -52,15 +52,16 @@ class RegisterController extends GetxController {
     );
 
     if (success) {
+      Get.back();
       AppSnackbar.success('Registered', 'You can now sign in with your mobile number.');
-      Get.offAllNamed(AppRoutes.login);
+       //Get.offAllNamed(AppRoutes.login);
       return;
     }
     isLoading.value = false;
     AppSnackbar.error('Registration failed', errorMessage ?? 'Please try again.');
   }
 
-  void onSignIn() => Get.offAllNamed(AppRoutes.login);
+  void onSignIn() => Get.back(); //Get.offAllNamed(AppRoutes.login);
 
   void setStream(String streamValue) {
     selectedStream.value = streamValue;

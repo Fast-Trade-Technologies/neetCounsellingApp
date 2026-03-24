@@ -295,7 +295,7 @@ class CompetitionStatisticsView
                         children: ['25', '20', '15', '10', '5', '0']
                             .map(
                               (t) => Text(
-                                t == '0' ? '0' : '$t L',
+                                t == '0' ? '0' : '$t  ',
                                 style: AppTextStyles.bodyS.copyWith(
                                   fontSize: 9.sp,
                                   color: AppColors.textMuted,
@@ -350,7 +350,7 @@ class CompetitionStatisticsView
                           maxValue,
                         );
                         return Text(
-                          value == 0 ? '0' : '${value.toStringAsFixed(0)}L',
+                          value == 0 ? '0' : value.toStringAsFixed(0),
                           style: AppTextStyles.bodyS.copyWith(
                             fontSize: 9.sp,
                             color: AppColors.textMuted,
@@ -453,6 +453,30 @@ class CompetitionStatisticsView
               ),
             ),
           ),
+          Obx(() => Row(
+                      children: [
+                        _StateWiseLegendChip(
+                          label: 'Registered',
+                          color: AppColors.progressGreen,
+                          isSelected: controller.selectedStateWiseDataType.value == 'registered',
+                          onTap: () => controller.setStateWiseDataType('registered'),
+                        ),
+                        SizedBox(width: 12.w),
+                        _StateWiseLegendChip(
+                          label: 'Appeared',
+                          color: AppColors.primaryBlue,
+                          isSelected: controller.selectedStateWiseDataType.value == 'appeared',
+                          onTap: () => controller.setStateWiseDataType('appeared'),
+                        ),
+                        SizedBox(width: 12.w),
+                        _StateWiseLegendChip(
+                          label: 'Qualified',
+                          color: AppColors.accentOrange,
+                          isSelected: controller.selectedStateWiseDataType.value == 'qualified',
+                          onTap: () => controller.setStateWiseDataType('qualified'),
+                        ),
+                      ],
+                    )),
         ],
       ),
     );
@@ -504,6 +528,16 @@ class CompetitionStatisticsView
               ),
             ),
           ),
+           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _LegendDot(color: AppColors.progressGreen, label: 'Registered'),
+              SizedBox(width: 16.w),
+              _LegendDot(color: AppColors.primaryBlue, label: 'Appeared'),
+              SizedBox(width: 16.w),
+              _LegendDot(color: AppColors.accentOrange, label: 'Qualified'),
+            ],
+          ),
         ],
       ),
     );
@@ -554,6 +588,16 @@ class CompetitionStatisticsView
                 controller.selectedYearGender.value,
               ),
             ),
+          ),
+           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _LegendDot(color: AppColors.progressGreen, label: 'Registered'),
+              SizedBox(width: 16.w),
+              _LegendDot(color: AppColors.primaryBlue, label: 'Appeared'),
+              SizedBox(width: 16.w),
+              _LegendDot(color: AppColors.accentOrange, label: 'Qualified'),
+            ],
           ),
         ],
       ),
@@ -782,7 +826,7 @@ class CompetitionStatisticsView
     return Obx(() {
       final data = controller.apiData;
       final selectedYear = controller.selectedYearState.value;
-      final selectedStateName = controller.selectedState.value;
+      final selectedStateName ='';
       final stateMapData = data['state_map_data'];
 
       final valuesByState = <String, Map<String, int>>{};
@@ -821,11 +865,12 @@ class CompetitionStatisticsView
       }
 
       final stateNames = valuesByState.keys.toList()..sort();
-      final activeState = valuesByState.containsKey(selectedStateName)
-          ? selectedStateName
-          : stateNames.first;
+      final activeState = '';
+      //  valuesByState.containsKey(selectedStateName)
+      //     ? selectedStateName
+      //     : stateNames.first;
       final active =
-          valuesByState[activeState] ??
+          // valuesByState[activeState] ??
           const <String, int>{'registered': 0, 'appeared': 0, 'qualified': 0};
 
       return Container(
@@ -1146,8 +1191,8 @@ class _HorizontalBar extends StatelessWidget {
 
   /// Format value (in lakhs): show as "X.X L" for >= 1, else show count for small numbers.
   static String _formatValue(double valueInLakhs) {
-    if (valueInLakhs >= 1) return '${valueInLakhs.toStringAsFixed(1)} L';
-    if (valueInLakhs >= 0.01) return '${valueInLakhs.toStringAsFixed(2)} L';
+    if (valueInLakhs >= 1) return '${valueInLakhs.toStringAsFixed(1)}';
+    if (valueInLakhs >= 0.01) return '${valueInLakhs.toStringAsFixed(2)}';
     final count = (valueInLakhs * 100000).round();
     return count.toString();
   }
@@ -1669,7 +1714,7 @@ class _VerticalBarGroup extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${registered.toStringAsFixed(1)}L',
+              '${registered.toStringAsFixed(1)}',
               style: AppTextStyles.bodyS.copyWith(
                 fontSize: 7.sp,
                 color: AppColors.progressGreen,
@@ -1680,7 +1725,7 @@ class _VerticalBarGroup extends StatelessWidget {
             ),
             SizedBox(height: 2.h),
             Text(
-              '${appeared.toStringAsFixed(1)}L',
+              '${appeared.toStringAsFixed(1)}',
               style: AppTextStyles.bodyS.copyWith(
                 fontSize: 7.sp,
                 color: AppColors.primaryBlue,
@@ -1691,7 +1736,7 @@ class _VerticalBarGroup extends StatelessWidget {
             ),
             SizedBox(height: 2.h),
             Text(
-              '${qualified.toStringAsFixed(1)}L',
+              '${qualified.toStringAsFixed(1)}',
               style: AppTextStyles.bodyS.copyWith(
                 fontSize: 7.sp,
                 color: AppColors.accentOrange,
@@ -1925,7 +1970,7 @@ class _LineChartWidget extends StatelessWidget {
                         maxLakhs,
                       );
                       return Text(
-                        value == 0 ? '0' : '${value.toInt()}L',
+                        value == 0 ? '0' : '${value.toInt()}',
                         style: AppTextStyles.bodyS.copyWith(
                           fontSize: 10.sp,
                           color: AppColors.textMuted,

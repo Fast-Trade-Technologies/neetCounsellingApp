@@ -387,9 +387,9 @@ class CompetitionStatisticsController extends GetxController {
         final label = nationalityTypes[typeKey] ?? typeKey;
         data.add({
           'label': label,
-          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
-          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
-          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) ,// / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) ,// / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) ,// / 100000.0,
         });
       }
     }
@@ -414,9 +414,9 @@ class CompetitionStatisticsController extends GetxController {
         final label = genderTypes[typeKey] ?? typeKey;
         data.add({
           'label': label,
-          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
-          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
-          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0),// / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0),// / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0),// / 100000.0,
         });
       }
     }
@@ -441,9 +441,9 @@ class CompetitionStatisticsController extends GetxController {
         final label = categoryTypes[typeKey] ?? typeKey;
         data.add({
           'label': label,
-          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0) / 100000.0,
-          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
-          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0) / 100000.0,
+          'registered': (reg[i] is int ? reg[i] : int.tryParse(reg[i]?.toString() ?? '0') ?? 0),// / 100000.0,
+          'appeared': (app.length > i ? (app[i] is int ? app[i] : int.tryParse(app[i]?.toString() ?? '0') ?? 0) : 0),// / 100000.0,
+          'qualified': (qual.length > i ? (qual[i] is int ? qual[i] : int.tryParse(qual[i]?.toString() ?? '0') ?? 0) : 0),// / 100000.0,
         });
       }
     }
@@ -461,9 +461,9 @@ class CompetitionStatisticsController extends GetxController {
     for (int i = 0; i < chartYears.length; i++) {
       insights.add({
         'year': chartYears[i],
-        'registered': registeredData.length > i ? registeredData[i] / 100000.0 : 0.0,
-        'appeared': appearedData.length > i ? appearedData[i] / 100000.0 : 0.0,
-        'qualified': qualifiedData.length > i ? qualifiedData[i] / 100000.0 : 0.0,
+        'registered': registeredData.length > i ? registeredData[i] : 0,
+        'appeared': appearedData.length > i ? appearedData[i] : 0,
+        'qualified': qualifiedData.length > i ? qualifiedData[i] : 0,
       });
     }
     

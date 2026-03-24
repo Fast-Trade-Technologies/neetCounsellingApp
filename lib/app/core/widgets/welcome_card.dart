@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
+import '../../../src/core/map/map_code.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'app_asset_image.dart';
@@ -144,7 +146,9 @@ class WelcomeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   InkWell(
-                    onTap: isActivePlan ? null : onBookNow,
+                    onTap: isActivePlan ? (){
+                     null;
+                    } : onBookNow,
                     borderRadius: BorderRadius.circular(10.r),
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),

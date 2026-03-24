@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:get/get.dart';
+import 'package:neetcounsellingapp/app/core/widgets/detail_app_bar.dart';
 
 class PdfWebViewPage extends StatelessWidget {
   const PdfWebViewPage({
@@ -14,9 +16,15 @@ class PdfWebViewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title?.isNotEmpty == true ? title! : 'Sample Document'),
+      appBar: DetailAppBar(
+        title: title?.isNotEmpty == true ? title! : 'Sample Document',
+        // subtitle: 'Neet Counselling / Post-Exam / Checklist & Sample Views',
+        hideFilter: true,
+        onBack: () => Get.back(),
       ),
+      // appBar: AppBar(
+      //   title: Text(title?.isNotEmpty == true ? title! : 'Sample Document'),
+      // ),
       body: SfPdfViewer.network(url),
     );
   }

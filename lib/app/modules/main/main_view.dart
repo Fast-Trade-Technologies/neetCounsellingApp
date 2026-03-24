@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:neetcounsellingapp/app/modules/analysis/college_seats/college_seats_webview_page.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -509,7 +510,7 @@ class _DashboardContent extends StatelessWidget {
               MenuGridButton(
                 label: 'Colleges & Seats',
                 iconAsset: '${MainView._icons}/collages.png',
-                onTap: () => Get.toNamed(AppRoutes.analysisCollegeSeats),
+                onTap: () => Get.to(()=> CollegeSeatsWebViewPage()), //Get.toNamed(AppRoutes.analysisCollegeSeats),
               ),
               MenuGridButton(
                 label: 'Webinars',

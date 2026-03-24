@@ -258,29 +258,29 @@ class CoursesView extends GetView<CoursesController> {
           ),
         ),
         SizedBox(height: 12.h),
-        Wrap(
-          spacing: 8.w,
-          runSpacing: 4.h,
-          children: nodes.asMap().entries.map((e) {
-            final label = e.value.name;
-            final color = _chartColors[e.key % _chartColors.length];
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8.w,
-                  height: 8.w,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  label,
-                  style: AppTextStyles.bodyS.copyWith(fontSize: 9.sp, color: AppColors.textDark),
-                ),
-              ],
-            );
-          }).toList(),
-        ),
+        // Wrap(
+        //   spacing: 8.w,
+        //   runSpacing: 4.h,
+        //   children: nodes.asMap().entries.map((e) {
+        //     final label = e.value.name;
+        //     final color = _chartColors[e.key % _chartColors.length];
+        //     return Row(
+        //       mainAxisSize: MainAxisSize.min,
+        //       children: [
+        //         Container(
+        //           width: 8.w,
+        //           height: 8.w,
+        //           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        //         ),
+        //         SizedBox(width: 4.w),
+        //         Text(
+        //           label,
+        //           style: AppTextStyles.bodyS.copyWith(fontSize: 9.sp, color: AppColors.textDark),
+        //         ),
+        //       ],
+        //     );
+        //   }).toList(),
+        // ),
       ],
     );
   }
