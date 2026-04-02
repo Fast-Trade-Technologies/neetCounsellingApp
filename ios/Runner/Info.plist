@@ -64,5 +64,11 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+    <string>This app needs access to your camera to upload documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photolibrary to upload documents.</string>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>Microphone access may be required by third-party services used in the app.</string>
 </dict>
 </plist>

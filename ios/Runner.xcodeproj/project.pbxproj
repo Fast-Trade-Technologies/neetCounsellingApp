@@ -10,12 +10,12 @@
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
-		3FB25ABC5210E73D2D152566 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CAA1DB452C519C9E07BA25 /* Pods_Runner.framework */; };
 		57B91A9E3374C4567C951910 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A61B745116FFD9587325FAB2 /* Pods_RunnerTests.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		D2E93FFA235A8582AECCF5BF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CAA1DB452C519C9E07BA25 /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,7 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3FB25ABC5210E73D2D152566 /* Pods_Runner.framework in Frameworks */,
+				D2E93FFA235A8582AECCF5BF /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,9 +491,49 @@
 				DEVELOPMENT_TEAM = 7K74Q3Z5NJ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Neet Counselling";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-framework",
+					"\"audio_session\"",
+					"-framework",
+					"\"connectivity_plus\"",
+					"-framework",
+					"\"device_info_plus\"",
+					"-framework",
+					"\"image_picker_ios\"",
+					"-framework",
+					"\"just_audio\"",
+					"-framework",
+					"\"open_filex\"",
+					"-framework",
+					"\"package_info_plus\"",
+					"-framework",
+					"\"permission_handler_apple\"",
+					"-framework",
+					"\"razorpay_flutter\"",
+					"-framework",
+					"\"shared_preferences_foundation\"",
+					"-framework",
+					"\"smart_auth\"",
+					"-framework",
+					"\"sqflite_darwin\"",
+					"-framework",
+					"\"syncfusion_flutter_pdfviewer\"",
+					"-framework",
+					"\"url_launcher_ios\"",
+					"-framework",
+					"\"video_player_avfoundation\"",
+					"-framework",
+					"\"wakelock_plus\"",
+					"-framework",
+					"\"webview_flutter_wkwebview\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.bsky.neetcounsellingapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -676,12 +716,53 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 7K74Q3Z5NJ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Neet Counselling";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-framework",
+					"\"audio_session\"",
+					"-framework",
+					"\"connectivity_plus\"",
+					"-framework",
+					"\"device_info_plus\"",
+					"-framework",
+					"\"image_picker_ios\"",
+					"-framework",
+					"\"just_audio\"",
+					"-framework",
+					"\"open_filex\"",
+					"-framework",
+					"\"package_info_plus\"",
+					"-framework",
+					"\"permission_handler_apple\"",
+					"-framework",
+					"\"razorpay_flutter\"",
+					"-framework",
+					"\"shared_preferences_foundation\"",
+					"-framework",
+					"\"smart_auth\"",
+					"-framework",
+					"\"sqflite_darwin\"",
+					"-framework",
+					"\"syncfusion_flutter_pdfviewer\"",
+					"-framework",
+					"\"url_launcher_ios\"",
+					"-framework",
+					"\"video_player_avfoundation\"",
+					"-framework",
+					"\"wakelock_plus\"",
+					"-framework",
+					"\"webview_flutter_wkwebview\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.bsky.neetcounsellingapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -707,9 +788,49 @@
 				DEVELOPMENT_TEAM = 7K74Q3Z5NJ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Neet Counselling";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-framework",
+					"\"audio_session\"",
+					"-framework",
+					"\"connectivity_plus\"",
+					"-framework",
+					"\"device_info_plus\"",
+					"-framework",
+					"\"image_picker_ios\"",
+					"-framework",
+					"\"just_audio\"",
+					"-framework",
+					"\"open_filex\"",
+					"-framework",
+					"\"package_info_plus\"",
+					"-framework",
+					"\"permission_handler_apple\"",
+					"-framework",
+					"\"razorpay_flutter\"",
+					"-framework",
+					"\"shared_preferences_foundation\"",
+					"-framework",
+					"\"smart_auth\"",
+					"-framework",
+					"\"sqflite_darwin\"",
+					"-framework",
+					"\"syncfusion_flutter_pdfviewer\"",
+					"-framework",
+					"\"url_launcher_ios\"",
+					"-framework",
+					"\"video_player_avfoundation\"",
+					"-framework",
+					"\"wakelock_plus\"",
+					"-framework",
+					"\"webview_flutter_wkwebview\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.bsky.neetcounsellingapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
