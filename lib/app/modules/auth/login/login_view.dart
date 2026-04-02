@@ -84,28 +84,25 @@ class LoginView extends GetView<LoginController> {
               // ),
               SizedBox(height: 18.h),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Text("Don't have an account?", style: AppTextStyles.bodyS.copyWith(
+                    color: AppColors.textDark,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),),
+                  SizedBox(width: 4.w),
                   InkWell(
                     onTap: controller.onRegister,
                     child: Text(
                       'Register',
                       style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.textDark,
+                        color: AppColors.primaryBlue,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                  // InkWell(
-                  //   onTap: controller.onSkip,
-                  //   child: Text(
-                  //     'Skip',
-                  //     style: AppTextStyles.bodyS.copyWith(
-                  //       color: AppColors.textDark,
-                  //       fontWeight: FontWeight.w700,
-                  //     ),
-                  //   ),
-                  // ),
                 ],
               ),
               SizedBox(height: 16.h),
