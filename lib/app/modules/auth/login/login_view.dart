@@ -51,18 +51,44 @@ class LoginView extends GetView<LoginController> {
                 textInputAction: TextInputAction.done,
               ),
               SizedBox(height: 8.h),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Forgot Password?',
-                  style: AppTextStyles.bodyS.copyWith(
-                    color: AppColors.textMuted,
-                    fontWeight: FontWeight.w600,
-                  ),
+              // Align(
+              //   alignment: Alignment.centerRight,
+              //   child: Text(
+              //     'Forgot Password?',
+              //     style: AppTextStyles.bodyS.copyWith(
+              //       color: AppColors.textMuted,
+              //       fontWeight: FontWeight.w600,
+              //     ),
+              //   ),
+              // ),
+              SizedBox(height: 14.h),
+              AppPrimaryButton(
+                text: 'GET OTP ON WHATSAPP',
+                onTap: () {
+                  controller.onGetOtp(otpType: 'whatsapp');
+                },
+                borderRadius: BorderRadius.circular(999.r),
+                gradient: const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0xFF0B5D2B), Color(0xFF5CB85C)],
                 ),
+                leading: Image.asset("assets/images/whatsappp.png",height: 20.h,width: 20.w,color: Colors.white,),
               ),
               SizedBox(height: 14.h),
-              AppPrimaryButton(text: 'Get OTP', onTap: () { controller.onGetOtp(); }),
+              AppPrimaryButton(
+                text: 'GET OTP VIA EMAIL',
+                onTap: () {
+                  controller.onGetOtp(otpType: 'mail');
+                },
+                borderRadius: BorderRadius.circular(999.r),
+                gradient: const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0xFF0060A8), Color(0xFF10B5D2)],
+                ),
+                leading: Icon(Icons.mail_rounded, color: Colors.white, size: 20.sp),
+              ),
               // TODO: Uncomment below code for Google and Apple Sign-In functionality
               // SizedBox(height: 12.h),
               // const AuthOrDivider(),

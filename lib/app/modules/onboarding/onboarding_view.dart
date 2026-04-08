@@ -27,8 +27,57 @@ class OnboardingView extends GetView<OnboardingController> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 10.h),
-            AppAssetImage(_logoAsset, width: 54.w, height: 54.w),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // 🔹 Center Logo
+              Center(
+                child: AppAssetImage(
+                  _logoAsset,
+                  width: 54.w,
+                  height: 54.w,
+                ),
+              ),
+
+              // 🔹 Right Side Action Button
+              Positioned(
+                right: 0,
+                child: Obx(
+                  () => controller.pageIndex.value != 3 ? TextButton(
+                    onPressed: () => Get.offAllNamed(AppRoutes.login),
+                    child: Text(
+                      'Skip',
+                      style: AppTextStyles.bodyM.copyWith(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ) : InkWell(
+                onTap: () {
+                  Get.toNamed(AppRoutes.login);
+                },
+                child: Container(
+                  height: 30.h,
+                  width: 80.w,
+                  margin: EdgeInsets.only(right: 10.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Get Started',
+                      style: AppTextStyles.label.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+                ),
+              ),
+            ],
+          ),
             SizedBox(height: 6.h),
             Expanded(
               child: PageView(
@@ -337,8 +386,7 @@ class _OnboardingPage4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double imageH =
-        (MediaQuery.sizeOf(context).height * 0.42).clamp(200.0, 360.0);
+    final double imageH = 300.h;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: SingleChildScrollView(
@@ -383,30 +431,30 @@ class _OnboardingPage4 extends StatelessWidget {
                     icon: Icons.local_hospital_rounded, text: 'BDS Admissions'),
               ],
             ),
-            SizedBox(height: 10.h),
-            Center(
-              child: InkWell(
-                onTap: () {
-                  Get.toNamed(AppRoutes.login);
-                },
-                child: Container(
-                  height: 48.h,
-                  width: 150.w,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Get Started',
-                      style: AppTextStyles.label.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // SizedBox(height: 10.h),
+            // Center(
+            //   child: InkWell(
+            //     onTap: () {
+            //       Get.toNamed(AppRoutes.login);
+            //     },
+            //     child: Container(
+            //       height: 48.h,
+            //       width: 150.w,
+            //       decoration: BoxDecoration(
+            //         color: AppColors.primaryBlue,
+            //         borderRadius: BorderRadius.circular(10.r),
+            //       ),
+            //       child: Center(
+            //         child: Text(
+            //           'Get Started',
+            //           style: AppTextStyles.label.copyWith(
+            //             color: Colors.white,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
