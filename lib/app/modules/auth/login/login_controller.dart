@@ -18,7 +18,7 @@ class LoginController extends GetxController {
     }
   }
 
-  Future<void> onGetOtp() async {
+  Future<void> onGetOtp({String otpType = 'whatsapp'}) async {
     final phone = mobileController.text.trim();
     if (phone.isEmpty) {
       AppSnackbar.warning('Required', 'Enter mobile number');
@@ -32,7 +32,7 @@ class LoginController extends GetxController {
     isLoading.value = true;
     final (success, errorMessage) = await AuthApi.login(
       mobile: phone,
-      otpType: 'whatsapp',
+      otpType: otpType,
       showLoader: true,
     );
     isLoading.value = false;

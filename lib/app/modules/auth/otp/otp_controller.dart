@@ -98,6 +98,7 @@ class OtpController extends GetxController {
       AppSnackbar.success('OTP Verified', 'Login successful! Welcome back.');
       Get.offAllNamed(AppRoutes.home);
     } else {
+       isLoading.value = false;
       AppSnackbar.error('Verification failed', errorMessage ?? 'Invalid OTP');
     }
   }
