@@ -3,7 +3,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 class RazorpayService {
   static const String defaultKey = String.fromEnvironment(
     'RAZORPAY_KEY',
-    defaultValue: 'rzp_test_csjPrMKd9W7drl',
+    defaultValue: 'rzp_live_8YEE8JNtgzRGeI',
   );
 
   Razorpay? _razorpay;
