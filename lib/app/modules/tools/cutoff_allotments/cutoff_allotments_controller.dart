@@ -251,12 +251,12 @@ class CutoffAllotmentsController extends GetxController {
     if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
       if (instituteTypeFilters.isNotEmpty) {
         final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
-        instituteTypeId = match.isNotEmpty ? match.first.id : (instituteTypeIds[selectedInstituteType.value] ?? '0');
+        instituteTypeId = match.isNotEmpty ? match.first.id : '0';
       } else {
-        instituteTypeId = instituteTypeIds[selectedInstituteType.value] ?? '0';
-      }
+        instituteTypeId = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).first.id;
+      } 
     } else if (instituteTypeFilters.isNotEmpty) {
-      instituteTypeId = instituteTypeFilters.first.id;
+      instituteTypeId = "0";
     }
     
     // course_type_id is required - use first course if none selected, or '0' as fallback
@@ -383,9 +383,18 @@ class CutoffAllotmentsController extends GetxController {
     currentPage.value = pageToLoad;
     error.value = '';
     isLoading.value = true;
-    final instituteTypeId = selectedInstituteType.value.isNotEmpty && instituteTypeIds.containsKey(selectedInstituteType.value)
-        ? instituteTypeIds[selectedInstituteType.value]
-        : null;
+    String instituteTypeId = '0';
+    if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
+      if (instituteTypeFilters.isNotEmpty) {
+        final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+        instituteTypeId = match.isNotEmpty ? match.first.id : '0';
+      } else {
+        instituteTypeId = '0'; instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).first.id;
+      }
+    } else if (instituteTypeFilters.isNotEmpty) {
+      // instituteTypeId = instituteTypeFilters.first.id;
+      instituteTypeId = '0';
+    }
     String? courseId;
     if (selectedCourse.value.isNotEmpty && selectedCourse.value != 'Select Course') {
       if (courseFilters.isNotEmpty) {

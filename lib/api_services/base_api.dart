@@ -7,8 +7,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
-import 'package:path_provider/path_provider.dart';
-import 'package:open_filex/open_filex.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:open_filex/open_filex.dart';
 
 import 'package:neetcounsellingapp/app/core/snackbar/app_snackbar.dart';
 import 'package:neetcounsellingapp/app/core/storage/app_storage.dart';
@@ -233,48 +233,48 @@ class BaseAPI {
 
   /// Download Method
 
-  Future<Response?> download(String? url, {String ext = ".pdf", Map<String, dynamic>? headers}) async {
-    log('download url: $url');
-    if (url == 'null' || (url ?? "").isEmpty) {
-      _BaseOverlays().showSnackBar(message: "Url not found");
-      return null;
-    }
+  // Future<Response?> download(String? url, {String ext = ".pdf", Map<String, dynamic>? headers}) async {
+  //   log('download url: $url');
+  //   if (url == 'null' || (url ?? "").isEmpty) {
+  //     _BaseOverlays().showSnackBar(message: "Url not found");
+  //     return null;
+  //   }
 
-    try {
-      // App-specific storage directory
-      Directory directory = await getApplicationDocumentsDirectory();
-      String fileName = url!.split('/').last;
-      int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      String savePath = '${directory.path}/$timestamp-$fileName$ext';
+  //   try {
+  //     // App-specific storage directory
+  //     Directory directory = await getApplicationDocumentsDirectory();
+  //     String fileName = url!.split('/').last;
+  //     int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  //     String savePath = '${directory.path}/$timestamp-$fileName$ext';
 
-      log("Saving to: $savePath");
+  //     log("Saving to: $savePath");
 
-      final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
-      requestHeaders.addAll(_authHeaders());
-      _BaseOverlays().showLoader();
+  //     final Map<String, dynamic> requestHeaders = Map<String, dynamic>.from(headers ?? {});
+  //     requestHeaders.addAll(_authHeaders());
+  //     _BaseOverlays().showLoader();
 
-      final response = await Dio().download(
-        url,
-        savePath,
-        options: Options(headers: requestHeaders),
-        onReceiveProgress: (received, total) {
-          int progress = ((received / total) * 100).toInt();
-          _BaseOverlays().updateProgress(progress);
-        },
-      );
+  //     final response = await Dio().download(
+  //       url,
+  //       savePath,
+  //       options: Options(headers: requestHeaders),
+  //       onReceiveProgress: (received, total) {
+  //         int progress = ((received / total) * 100).toInt();
+  //         _BaseOverlays().updateProgress(progress);
+  //       },
+  //     );
 
-      _BaseOverlays().dismissOverlay();
-      // **File Open**
+  //     _BaseOverlays().dismissOverlay();
+  //     // **File Open**
 
-      await OpenFilex.open(savePath);
-      return response;
-    } catch (e) {
-      log("Error: $e");
-      _BaseOverlays().dismissOverlay();
-      _BaseOverlays().showSnackBar(message: e.toString());
-      throw e.toString();
-    }
-  }
+  //     await OpenFilex.open(savePath);
+  //     return response;
+  //   } catch (e) {
+  //     log("Error: $e");
+  //     _BaseOverlays().dismissOverlay();
+  //     _BaseOverlays().showSnackBar(message: e.toString());
+  //     throw e.toString();
+  //   }
+  // }
 
 
 
