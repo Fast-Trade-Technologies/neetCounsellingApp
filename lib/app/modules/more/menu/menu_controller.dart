@@ -26,7 +26,7 @@ class MoreMenuController extends GetxController {
   }
 
   Future<void> onLogout() async {
-    await AppStorage.clearAll();
+    AppStorage.clearAuth();
     Get.offAllNamed(AppRoutes.login);
   }
 }

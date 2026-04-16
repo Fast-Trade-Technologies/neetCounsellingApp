@@ -3,7 +3,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 class RazorpayService {
   static const String defaultKey = String.fromEnvironment(
     'RAZORPAY_KEY',
-    defaultValue: 'rzp_test_csjPrMKd9W7drl',
+    defaultValue: 'rzp_live_8YEE8JNtgzRGeI',
   );
 
   Razorpay? _razorpay;
@@ -66,9 +66,7 @@ class RazorpayService {
         'paylater': false,
       },
 
-      'theme': {
-        'color': '#1C5FAE',
-      },
+      'theme': {'color': '#1C5FAE'},
 
       'notes': notes ?? {'plan_name': planName},
     };
