@@ -116,6 +116,9 @@ class FiltersApi {
   /// Response structure: { isSuccess: true, data: { categories: [{ id, name }], quotas: [], institute_types: [] } }
   static Future<(bool success, List<FilterItem> list, String? errorMessage)> getDependentFilters({
     required String quotaId,
+    String? counsellingId,
+    String? stateId,
+    String? instituteTypeId,
     bool showLoader = false,
   }) async {
     final userId = AppStorage.userId;
@@ -124,6 +127,9 @@ class FiltersApi {
       final query = <String, dynamic>{
         'nLoginUserIdNo': userId,
         'quota_id': quotaId,
+        if (counsellingId != null && counsellingId.isNotEmpty) 'counselling_id': counsellingId,
+        if (stateId != null && stateId.isNotEmpty) 'state_id': stateId,
+        if (instituteTypeId != null && instituteTypeId.isNotEmpty) 'institute_type_id': instituteTypeId,
       };
       final response = await _api.get(
         url: dependentFiltersPath,

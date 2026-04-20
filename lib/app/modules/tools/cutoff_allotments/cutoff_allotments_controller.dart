@@ -204,19 +204,28 @@ class CutoffAllotmentsController extends GetxController {
   /// Load category options from /common/dependent-filters for the selected quota.
   Future<void> _loadCategories() async {
     String? quotaId;
-    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+    if ((selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') || selectedInstituteType.value != 'Select Institute Type') {
       final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
       quotaId = match.isNotEmpty ? match.first.id : null;
     }
     if (quotaId == null && quotaFilters.isNotEmpty) {
-      quotaId = quotaFilters.first.id;
+      quotaId = '0';
     }
     if (quotaId == null || quotaId.isEmpty) {
       categoryFilters.clear();
       return;
     }
+    final instituteTypeId = selectedInstituteType.value != 'Select Institute Type'
+        ? (() {
+            final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+            return match.isNotEmpty ? match.first.id : '0';
+          })()
+        : '0';
     final (success, list, _) = await FiltersApi.getDependentFilters(
       quotaId: quotaId,
+      counsellingId: selectedCounsellingTypeId.value,
+      stateId: selectedStateId.value,
+      instituteTypeId: instituteTypeId,
       showLoader: false,
     );
     if (success && list.isNotEmpty) {
