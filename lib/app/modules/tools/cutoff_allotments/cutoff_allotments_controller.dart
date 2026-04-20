@@ -98,23 +98,23 @@ class CutoffAllotmentsController extends GetxController {
   final RxList<FilterItem> instituteTypeFilters = <FilterItem>[].obs;
   final RxList<FilterItem> quotaFilters = <FilterItem>[].obs;
   List<String> get states => stateFilters.isEmpty
-      ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
+      ? []
       : ['Select State', ...stateFilters.map((e) => e.name)];
 
   List<String> get instituteTypesForDropdown => instituteTypeFilters.isEmpty
-      ? ['Select Institute Type', 'Government', 'Private', 'Deemed']
+      ? []
       : ['Select Institute Type', ...instituteTypeFilters.map((e) => e.name)];
 
   List<String> get quotasForDropdown => quotaFilters.isEmpty
-      ? ['Select Quota', 'General', 'OBC', 'SC', 'ST', 'EWS']
+      ? ["Select Quota"]
       : ['Select Quota', ...quotaFilters.map((e) => e.name)];
 
   List<String> get categoriesForDropdown => categoryFilters.isEmpty
       ? ['Select Category']
       : ['Select Category', ...categoryFilters.map((e) => e.name)];
 
-  static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
-  static const List<String> years = ['2024', '2023', '2022', '2021'];
+  static const List<String> courses = [];
+  static const List<String> years = [];
   static const List<int> entriesOptions = [10, 25, 50, 100];
 
   static const Map<String, String> instituteTypeIds = {
@@ -192,7 +192,7 @@ class CutoffAllotmentsController extends GetxController {
       }
     }
     await _loadInstituteTypes();
-    await _loadQuotas();
+    // await _loadQuotas();
     await _loadCategories();
     await _loadFiltersFromCutOffApi();
     filtersLoading.value = false;
@@ -531,7 +531,8 @@ class CutoffAllotmentsController extends GetxController {
     selectedQuota.value = 'Select Quota';
     selectedCategory.value = 'Select Category';
     categoryFilters.clear();
-    _loadQuotas();
+     _loadQuotas();
+    _loadCategories();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
@@ -552,6 +553,7 @@ class CutoffAllotmentsController extends GetxController {
   void setCourse(String v) {
     selectedCourse.value = v;
     _loadQuotas();
+    _loadCategories();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
 
