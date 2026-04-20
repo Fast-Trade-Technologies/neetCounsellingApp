@@ -27,57 +27,55 @@ class OnboardingView extends GetView<OnboardingController> {
       body: SafeArea(
         child: Column(
           children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // 🔹 Center Logo
-              Center(
-                child: AppAssetImage(
-                  _logoAsset,
-                  width: 54.w,
-                  height: 54.w,
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // 🔹 Center Logo
+                Center(
+                  child: AppAssetImage(_logoAsset, width: 54.w, height: 54.w),
                 ),
-              ),
 
-              // 🔹 Right Side Action Button
-              Positioned(
-                right: 0,
-                child: Obx(
-                  () => controller.pageIndex.value != 3 ? TextButton(
-                    onPressed: () => Get.offAllNamed(AppRoutes.login),
-                    child: Text(
-                      'Skip',
-                      style: AppTextStyles.bodyM.copyWith(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ) : InkWell(
-                onTap: () {
-                  Get.toNamed(AppRoutes.login);
-                },
-                child: Container(
-                  height: 30.h,
-                  width: 80.w,
-                  margin: EdgeInsets.only(right: 10.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Get Started',
-                      style: AppTextStyles.label.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
+                // 🔹 Right Side Action Button
+                Positioned(
+                  right: 0,
+                  child: Obx(
+                    () => controller.pageIndex.value != 3
+                        ? TextButton(
+                            onPressed: () => Get.offAllNamed(AppRoutes.login),
+                            child: Text(
+                              'Skip',
+                              style: AppTextStyles.bodyM.copyWith(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: () {
+                              Get.toNamed(AppRoutes.login);
+                            },
+                            child: Container(
+                              height: 30.h,
+                              width: 80.w,
+                              margin: EdgeInsets.only(right: 10.w),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryBlue,
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Get Started',
+                                  style: AppTextStyles.label.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                 ),
-              ),
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
             SizedBox(height: 6.h),
             Expanded(
               child: PageView(
@@ -93,18 +91,22 @@ class OnboardingView extends GetView<OnboardingController> {
             ),
             SizedBox(height: 8.h),
             Obx(
-              () => controller.pageIndex.value < 3 ? InkWell(
-                onTap: controller.goNextOrFinish,
-                borderRadius: BorderRadius.circular(999),
-                child: Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-                  child: _DotsIndicator(
-                    count: _kPageCount,
-                    index: controller.pageIndex.value,
-                  ),
-                ),
-              ) : const SizedBox.shrink(),
+              () => controller.pageIndex.value < 3
+                  ? InkWell(
+                      onTap: controller.goNextOrFinish,
+                      borderRadius: BorderRadius.circular(999),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 10.h,
+                        ),
+                        child: _DotsIndicator(
+                          count: _kPageCount,
+                          index: controller.pageIndex.value,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
             SizedBox(height: 14.h),
           ],
@@ -132,7 +134,9 @@ class _DotsIndicator extends StatelessWidget {
           height: 8.h,
           width: selected ? 24.w : 8.w,
           decoration: BoxDecoration(
-            color: selected ? AppColors.primaryBlue : AppColors.indicatorInactive,
+            color: selected
+                ? AppColors.primaryBlue
+                : AppColors.indicatorInactive,
             borderRadius: BorderRadius.circular(999),
             boxShadow: selected
                 ? [
@@ -155,8 +159,10 @@ class _OnboardingPage1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double imageH =
-        (MediaQuery.sizeOf(context).height * 0.42).clamp(180.0, 320.0);
+    final double imageH = (MediaQuery.sizeOf(context).height * 0.42).clamp(
+      180.0,
+      320.0,
+    );
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: SingleChildScrollView(
@@ -215,8 +221,10 @@ class _OnboardingPage2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double imageH =
-        (MediaQuery.sizeOf(context).height * 0.43).clamp(180.0, 330.0);
+    final double imageH = (MediaQuery.sizeOf(context).height * 0.43).clamp(
+      180.0,
+      330.0,
+    );
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: SingleChildScrollView(
@@ -275,8 +283,10 @@ class _OnboardingPage3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double imageH =
-        (MediaQuery.sizeOf(context).height * 0.42).clamp(200.0, 340.0);
+    final double imageH = (MediaQuery.sizeOf(context).height * 0.42).clamp(
+      200.0,
+      340.0,
+    );
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: SingleChildScrollView(
@@ -326,14 +336,21 @@ class _OnboardingPage3 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
                 _FeatureItem(
-                    icon: Icons.bar_chart_rounded, label: 'Cut-Off\nStats'),
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Cut-Off\nStats',
+                ),
                 _FeatureItem(
-                    icon: Icons.school_rounded, label: 'College\nAnalysis'),
+                  icon: Icons.school_rounded,
+                  label: 'College\nAnalysis',
+                ),
                 _FeatureItem(
-                    icon: Icons.notifications_active_rounded,
-                    label: 'Counselling\nAlerts'),
+                  icon: Icons.notifications_active_rounded,
+                  label: 'Counselling\nAlerts',
+                ),
                 _FeatureItem(
-                    icon: Icons.person_rounded, label: 'Personalised\nGuidance'),
+                  icon: Icons.person_rounded,
+                  label: 'Personalised\nGuidance',
+                ),
               ],
             ),
             SizedBox(height: 10.h),
@@ -424,11 +441,14 @@ class _OnboardingPage4 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
                 _Chip(
-                    icon: Icons.medical_services_rounded,
-                    text: 'NEET UG & NEET PG'),
+                  icon: Icons.medical_services_rounded,
+                  text: 'NEET UG & NEET PG',
+                ),
                 _Chip(icon: Icons.badge_rounded, text: 'MBBS, MD/MS'),
                 _Chip(
-                    icon: Icons.local_hospital_rounded, text: 'BDS Admissions'),
+                  icon: Icons.local_hospital_rounded,
+                  text: 'BDS Admissions',
+                ),
               ],
             ),
             // SizedBox(height: 10.h),
@@ -519,12 +539,17 @@ class _RichTitle extends StatelessWidget {
       textAlign: TextAlign.center,
       text: TextSpan(
         children: [
-          TextSpan(text: top, style: style.copyWith(color: topColor)),
+          TextSpan(
+            text: top,
+            style: style.copyWith(color: topColor),
+          ),
           const TextSpan(text: '\n'),
-          TextSpan(text: bottom, style: style.copyWith(color: bottomColor)),
+          TextSpan(
+            text: bottom,
+            style: style.copyWith(color: bottomColor),
+          ),
         ],
       ),
     );
   }
 }
-

@@ -66,9 +66,7 @@ class RazorpayService {
         'paylater': false,
       },
 
-      'theme': {
-        'color': '#1C5FAE',
-      },
+      'theme': {'color': '#1C5FAE'},
 
       'notes': notes ?? {'plan_name': planName},
     };

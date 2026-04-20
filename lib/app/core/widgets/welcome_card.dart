@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-
-import '../../../src/core/map/map_code.dart';
+import 'dart:io' show Platform;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'app_asset_image.dart';
@@ -32,10 +30,7 @@ class WelcomeCard extends StatelessWidget {
         ShaderMask(
           blendMode: BlendMode.srcIn,
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [
-              AppColors.gradientTitleStart,
-              AppColors.gradientTitleEnd,
-            ],
+            colors: [AppColors.gradientTitleStart, AppColors.gradientTitleEnd],
           ).createShader(bounds),
           child: Text(
             'Welcome Neet Counselling',
@@ -57,7 +52,7 @@ class WelcomeCard extends StatelessWidget {
           ),
         ),
         SizedBox(height: 10.h),
-    
+
         // Pills row
         Container(
           padding: EdgeInsets.all(16.w),
@@ -74,34 +69,39 @@ class WelcomeCard extends StatelessWidget {
                   children: [
                     _FeaturePill(
                       label: 'Counselling Expert',
-                      iconAsset: 'assets/dashboard-chips-icons/user-graduate-solid.svg',
+                      iconAsset:
+                          'assets/dashboard-chips-icons/user-graduate-solid.svg',
                     ),
                     SizedBox(width: 8.w),
                     _FeaturePill(
                       label: 'All-round Support',
-                      iconAsset: 'assets/dashboard-chips-icons/handshake-angle-solid.svg',
+                      iconAsset:
+                          'assets/dashboard-chips-icons/handshake-angle-solid.svg',
                     ),
                     SizedBox(width: 8.w),
                     _FeaturePill(
                       label: 'Curated Strategies',
-                      iconAsset: 'assets/dashboard-chips-icons/lightbulb-solid.svg',
+                      iconAsset:
+                          'assets/dashboard-chips-icons/lightbulb-solid.svg',
                     ),
                     SizedBox(width: 8.w),
                     _FeaturePill(
                       label: 'Documentation Support',
-                      iconAsset: 'assets/dashboard-chips-icons/file-lines-solid.svg',
+                      iconAsset:
+                          'assets/dashboard-chips-icons/file-lines-solid.svg',
                     ),
                     SizedBox(width: 8.w),
                     _FeaturePill(
                       label: 'Personalized College Support',
-                      iconAsset: 'assets/dashboard-chips-icons/user-graduate-green.svg',
+                      iconAsset:
+                          'assets/dashboard-chips-icons/user-graduate-green.svg',
                     ),
                   ],
                 ),
               ),
-              
+
               SizedBox(height: 12.h),
-              
+
               // Banner image (exact like screenshot)
               ClipRRect(
                 borderRadius: BorderRadius.circular(16.r),
@@ -116,9 +116,9 @@ class WelcomeCard extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               SizedBox(height: 12.h),
-              
+
               // Short description
               Text(
                 'Schedule a counselling session with your Sr. Counselor :)',
@@ -128,7 +128,7 @@ class WelcomeCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8.h),
-              
+
               // Long description (matches screenshot copy)
               Text(
                 'At “NEETCounseling.com”, we believe that the right guidance can turn your NEET UG score into a successful MBBS or BDS admission. Since 2016, we have helped over 24,000 medical aspirants by offering expert support, personalized mentorship, and a smooth, stress-free counselling experience. Our dedicated team of 50+ senior counselors and medical admission experts works day and night to guide you through every step of the UG counselling process—be it All India, State, Deemed, Management or NRI quota.',
@@ -138,36 +138,43 @@ class WelcomeCard extends StatelessWidget {
                   fontSize: 11.5.sp,
                 ),
               ),
-              
+
               SizedBox(height: 16.h),
-              
               // Book Now button (full-width, same style as screenshot)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  InkWell(
-                    onTap: isActivePlan ? (){
-                     null;
-                    } : onBookNow,
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        color: isActivePlan
-                            ? AppColors.textMuted.withValues(alpha: 0.4)
-                            : AppColors.bookNowBlue,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Text(
-                        'Book Now',
-                        style: AppTextStyles.buttonText.copyWith(
-                          color: isActivePlan ? AppColors.textMuted : Colors.white,
+              if (!Platform.isIOS)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: isActivePlan
+                          ? () {
+                              null;
+                            }
+                          : onBookNow,
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 10.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActivePlan
+                              ? AppColors.textMuted.withValues(alpha: 0.4)
+                              : AppColors.bookNowBlue,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Text(
+                          'Book Now',
+                          style: AppTextStyles.buttonText.copyWith(
+                            color: isActivePlan
+                                ? AppColors.textMuted
+                                : Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),
