@@ -21,7 +21,10 @@ class FeesSeatMatrixApi {
     required String stateIdCounselling,
     required String stateId,
     required String year,
+    String? instituteTypeId,
     String? courseId,
+    String? quotaId,
+    String? smCategoryId,
     String? clinicalTypeId,
     int? page,
     int? perPage,
@@ -39,6 +42,9 @@ class FeesSeatMatrixApi {
         'year': year,
       };
       if (courseId != null && courseId.isNotEmpty) query['course_id'] = courseId;
+      if (instituteTypeId != null && instituteTypeId.isNotEmpty) query['institute_type_id'] = instituteTypeId;
+      if (quotaId != null && quotaId.isNotEmpty) query['quota_id'] = quotaId;
+      if (smCategoryId != null && smCategoryId.isNotEmpty) query['sm_category_id'] = smCategoryId;
       if (clinicalTypeId != null && clinicalTypeId.isNotEmpty) query['clinical_type_id'] = clinicalTypeId;
       if (page != null && page > 0) query['page'] = page.toString();
       if (perPage != null && perPage > 0) query['per_page'] = (perPage > maxPerPage ? maxPerPage : perPage).toString();

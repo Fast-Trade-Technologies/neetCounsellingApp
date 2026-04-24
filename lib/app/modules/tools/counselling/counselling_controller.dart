@@ -59,6 +59,12 @@ class CounsellingController extends GetxController {
   final RxString selectedState = 'All State'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString searchQuery = ''.obs;
+  final RxInt entriesPerPage = 10.obs;
+  final RxInt currentPage = 1.obs;
+  final RxInt totalCount = 0.obs;
+  final RxBool totalCountFromApi = false.obs;
+  final RxInt paginationFromApi = 0.obs;
+  final RxInt paginationToApi = 0.obs;
 
   final RxList<FilterItem> stateFilters = <FilterItem>[].obs;
   final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
@@ -75,6 +81,7 @@ class CounsellingController extends GetxController {
   late List<CounsellingRow> _allRows;
   final RxList<CounsellingRow> filteredRows = <CounsellingRow>[].obs;
   final RxBool filtersLoading = false.obs;
+  static const List<int> entriesOptions = [10, 25, 50, 100];
 
   @override
   void onInit() {
@@ -105,23 +112,32 @@ class CounsellingController extends GetxController {
   }
 
   Future<void> loadCounsellingData() async {
+    final pageToLoad = currentPage.value < 1 ? 1 : currentPage.value;
     final stateId = selectedStateId.value.isNotEmpty 
         ? selectedStateId.value 
         : '';
     final counsellingTypeId = selectedCounsellingTypeId.value.isNotEmpty
         ? selectedCounsellingTypeId.value
-        : (counsellingTypeFilters.isNotEmpty ? counsellingTypeFilters.first.id : '1');
+        : ('');
     final stateTypeId = selectedStateTypeId.value.isNotEmpty
         ? selectedStateTypeId.value
-        : (stateTypeFilters.isNotEmpty ? stateTypeFilters.first.id : '1');
+        : ('');
     final (success, data, errorMessage) = await CounsellingApi.getCounselling(
       stateId: stateId,
       stateTypeId: stateTypeId,
       counsellingTypeId: counsellingTypeId,
       showLoader: false,
+      extraQuery: <String, dynamic>{
+        'page': pageToLoad.toString(),
+        'per_page': entriesPerPage.value.toString(),
+      },
     );
     if (!success || data == null) {
-      _allRows = _buildSampleRows();
+      // _allRows = _buildSampleRows();
+      totalCount.value = 0;
+      totalCountFromApi.value = false;
+      paginationFromApi.value = 0;
+      paginationToApi.value = 0;
       _applyFilters();
       return;
     }
@@ -133,12 +149,11 @@ class CounsellingController extends GetxController {
     final rawList = data['counselling'];
     final rows = <CounsellingRow>[];
     if (rawList is List) {
-      int sNo = 0;
       for (final e in rawList) {
         if (e is Map) {
-          sNo++;
+          final serialNumber = (pageToLoad - 1) * entriesPerPage.value + rows.length + 1;
           try {
-            rows.add(CounsellingRow.fromJson(Map<String, dynamic>.from(e), serialNumber: sNo));
+            rows.add(CounsellingRow.fromJson(Map<String, dynamic>.from(e), serialNumber: serialNumber));
           } catch (ex) {
             // Skip invalid entries
             continue;
@@ -147,10 +162,29 @@ class CounsellingController extends GetxController {
       }
     }
     
-    // Parse pagination info (stored for future use if needed)
-    // final pagination = data['pagination'];
+    final pagination = data['pagination'];
+    if (pagination is Map) {
+      final map = Map<String, dynamic>.from(pagination);
+      final rawTotal = map['total'] ?? map['total_records'] ?? map['total_count'];
+      if (rawTotal != null) {
+        totalCount.value = rawTotal is int ? rawTotal : int.tryParse(rawTotal.toString()) ?? 0;
+        totalCountFromApi.value = true;
+      } else {
+        totalCount.value = 0;
+        totalCountFromApi.value = false;
+      }
+      final fromVal = map['from'];
+      final toVal = map['to'];
+      paginationFromApi.value = fromVal is int ? fromVal : int.tryParse(fromVal?.toString() ?? '') ?? 0;
+      paginationToApi.value = toVal is int ? toVal : int.tryParse(toVal?.toString() ?? '') ?? 0;
+    } else {
+      totalCount.value = 0;
+      totalCountFromApi.value = false;
+      paginationFromApi.value = 0;
+      paginationToApi.value = 0;
+    }
     
-    _allRows = rows.isEmpty ? _buildSampleRows() : rows;
+    _allRows = rows;
     _applyFilters();
   }
   
@@ -194,34 +228,19 @@ class CounsellingController extends GetxController {
       }
       if (list.isNotEmpty) {
         stateTypeFilters.assignAll(list);
-        if (selectedStateTypeId.value.isEmpty) {
-          selectedStateType.value = list.first.name;
-          selectedStateTypeId.value = list.first.id;
-        }
+        // if (selectedStateTypeId.value.isEmpty) {
+        //   selectedStateType.value = list.first.name;
+        //   selectedStateTypeId.value = list.first.id;
+        // }
       }
     }
   }
 
   @override
   Future<void> refresh() async {
+    currentPage.value = 1;
     await loadFilters();
     await loadCounsellingData();
-  }
-
-  List<CounsellingRow> _buildSampleRows() {
-    return [
-      CounsellingRow(
-        id: 1,
-        name: 'Admission Committee for Professional Medical Educational Courses (ACPMEC)',
-        state: 'Gujarat',
-        stateType: 'Closed State',
-        counsellingType: 'State',
-        officialWebsiteUrl: 'https://medadmgujarat.org/',
-        registrationUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScyvhOx8RI5jePjaP3ub9ZJHb3vWHoCYa4Jx3LlU2ShFj7fjQ/viewform',
-        prospectsUrl: 'https://drive.google.com/file/d/1GUfqUqOV5rByoldY-TAwir1tnerAPO_f/view',
-        sNo: 1,
-      ),
-    ];
   }
 
   void setCounsellingType(String v) {
@@ -232,6 +251,7 @@ class CounsellingController extends GetxController {
       final match = counsellingTypeFilters.where((e) => e.name == v).toList();
       selectedCounsellingTypeId.value = match.isEmpty ? '' : match.first.id;
     }
+    currentPage.value = 1;
     loadCounsellingData();
   }
   
@@ -243,7 +263,9 @@ class CounsellingController extends GetxController {
       final match = stateTypeFilters.where((e) => e.name == v).toList();
       selectedStateTypeId.value = match.isEmpty ? '' : match.first.id;
     }
-    _applyFilters(); // Apply filter locally since state type is in the data
+    _applyFilters();
+    currentPage.value = 1;
+    loadCounsellingData();
   }
   
   void setState(String v) {
@@ -254,7 +276,59 @@ class CounsellingController extends GetxController {
       final match = stateFilters.where((e) => e.name == v).toList();
       selectedStateId.value = match.isEmpty ? '' : match.first.id;
     }
+    currentPage.value = 1;
     loadCounsellingData();
+  }
+
+  void setEntriesPerPage(int v) {
+    entriesPerPage.value = v;
+    currentPage.value = 1;
+    loadCounsellingData();
+  }
+
+  int get totalPages {
+    final perPage = entriesPerPage.value <= 0 ? 10 : entriesPerPage.value;
+    final total = totalCount.value;
+    if (total <= 0 || perPage <= 0) return 0;
+    return (total / perPage).ceil();
+  }
+
+  bool get hasNextPage {
+    if (totalCountFromApi.value) return currentPage.value < totalPages;
+    return filteredRows.length >= entriesPerPage.value;
+  }
+
+  bool get hasPreviousPage => currentPage.value > 1;
+
+  void nextPage() {
+    if (!hasNextPage) return;
+    currentPage.value = currentPage.value + 1;
+    loadCounsellingData();
+  }
+
+  void previousPage() {
+    if (!hasPreviousPage) return;
+    currentPage.value = currentPage.value - 1;
+    loadCounsellingData();
+  }
+
+  void goToPage(int page) {
+    if (page < 1) return;
+    if (totalPages > 0 && page > totalPages) return;
+    currentPage.value = page;
+    loadCounsellingData();
+  }
+
+  int get paginationStart {
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationFromApi.value;
+    if (filteredRows.isEmpty) return 0;
+    return (currentPage.value - 1) * entriesPerPage.value + 1;
+  }
+
+  int get paginationEnd {
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationToApi.value;
+    if (filteredRows.isEmpty) return 0;
+    return (currentPage.value - 1) * entriesPerPage.value + filteredRows.length;
   }
   
   void setSearchQuery(String value) {

@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/url_launcher_util.dart';
 import '../../../core/widgets/detail_app_bar.dart';
+import '../../../core/widgets/pagination_bar.dart';
 import 'counselling_controller.dart';
 
 class CounsellingView extends GetView<CounsellingController> {
@@ -184,7 +185,9 @@ class CounsellingView extends GetView<CounsellingController> {
               SizedBox(width: 10.w),
               Expanded(
                 child: Obx(() {
-                  final count = controller.filteredRows.length;
+                  final count = controller.totalCountFromApi.value
+                      ? controller.totalCount.value
+                      : controller.filteredRows.length;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -234,6 +237,31 @@ class CounsellingView extends GetView<CounsellingController> {
             ),
           ),
           SizedBox(height: 14.h),
+          Obx(() {
+            final total = controller.totalCount.value;
+            final fromApi = controller.totalCountFromApi.value;
+            final start = controller.paginationStart;
+            final end = controller.paginationEnd;
+            final showingText = controller.filteredRows.isEmpty
+                ? 'Showing 0-0 of 0'
+                : (fromApi && total > 0 ? 'Showing $start-$end of $total' : 'Showing $start-$end');
+            return Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: PaginationBar(
+                showingText: showingText,
+                entriesPerPage: controller.entriesPerPage.value,
+                entriesOptions: CounsellingController.entriesOptions,
+                onEntriesPerPageChanged: controller.setEntriesPerPage,
+                hasPreviousPage: controller.hasPreviousPage,
+                hasNextPage: controller.hasNextPage,
+                onPreviousPage: controller.previousPage,
+                onNextPage: controller.nextPage,
+                currentPage: controller.currentPage.value,
+                totalPages: controller.totalPages,
+                onPageTap: controller.goToPage,
+              ),
+            );
+          }),
           Obx(() {
             final list = controller.filteredRows;
             if (list.isEmpty) {
