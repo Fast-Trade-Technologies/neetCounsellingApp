@@ -31,8 +31,15 @@ class CutoffRow {
 
   static String _instituteStr(Map<String, dynamic> json) {
     String str(dynamic v) => (v?.toString() ?? '').trim();
-    final collegeName = str(json['college_name'] ?? json['institute_name'] ?? json['institute'] ?? json['institute_and_type']);
-    final instituteType = str(json['institute_type_name'] ?? json['institute_type']);
+    final collegeName = str(
+      json['college_name'] ??
+          json['institute_name'] ??
+          json['institute'] ??
+          json['institute_and_type'],
+    );
+    final instituteType = str(
+      json['institute_type_name'] ?? json['institute_type'],
+    );
     if (collegeName.isNotEmpty && instituteType.isNotEmpty) {
       return '$collegeName ($instituteType)';
     }
@@ -40,9 +47,10 @@ class CutoffRow {
   }
 
   factory CutoffRow.fromJson(Map<String, dynamic> json) {
-    int toInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    int toInt(dynamic v) =>
+        v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
     String str(dynamic v) => (v?.toString() ?? '').trim();
-    
+
     // Handle nested rounds object
     final rounds = json['rounds'];
     String getRound(String key) {
@@ -50,15 +58,21 @@ class CutoffRow {
         final value = rounds[key];
         return value == null ? '-' : str(value);
       }
-      return str(json[key] ?? json['round${key.substring(1)}'] ?? json['round_${key.substring(1)}']);
+      return str(
+        json[key] ??
+            json['round${key.substring(1)}'] ??
+            json['round_${key.substring(1)}'],
+      );
     }
-    
+
     return CutoffRow(
       sNo: toInt(json['s_no'] ?? json['sNo'] ?? json['serial_no']),
       instituteAndType: CutoffRow._instituteStr(json),
       course: str(json['course_name'] ?? json['course']),
       quota: str(json['quota_name'] ?? json['quota']),
-      category: str(json['category_name'] ?? json['category'] ?? json['sm_category']),
+      category: str(
+        json['category_name'] ?? json['category'] ?? json['sm_category'],
+      ),
       fees: str(json['fees'] ?? json['fee'] ?? json['fee_structure']),
       r1: getRound('r1'),
       r2: getRound('r2'),
@@ -72,7 +86,8 @@ class CutoffAllotmentsController extends GetxController {
   final RxString selectedState = 'Select State'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString selectedCounsellingType = 'State'.obs;
-  final RxString selectedCounsellingTypeId = '1'.obs; // Default to '1' (State counselling)
+  final RxString selectedCounsellingTypeId =
+      '1'.obs; // Default to '1' (State counselling)
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
   final RxString selectedQuota = 'Select Quota'.obs;
   final RxString selectedCategory = 'Select Category'.obs;
@@ -84,8 +99,10 @@ class CutoffAllotmentsController extends GetxController {
   final RxString searchQuery = ''.obs;
   final RxInt currentPage = 1.obs;
   final RxInt totalCount = 0.obs;
+
   /// True when totalCount was set from API response; false when inferred from current page size.
   final RxBool totalCountFromApi = false.obs;
+
   /// When API returns pagination.from and pagination.to, use these for "Showing X-Y"
   final RxInt paginationFromApi = 0.obs;
   final RxInt paginationToApi = 0.obs;
@@ -152,12 +169,16 @@ class CutoffAllotmentsController extends GetxController {
       : counsellingTypeFilters.map((e) => e.name).toList();
 
   List<String> get coursesForDropdown => courseFilters.isEmpty
-      ? ['Select Course', ...CutoffAllotmentsController.courses.where((c) => c != 'Select Course')]
+      ? [
+          'Select Course',
+          ...CutoffAllotmentsController.courses.where(
+            (c) => c != 'Select Course',
+          ),
+        ]
       : ['Select Course', ...courseFilters.map((e) => e.name)];
 
-  List<String> get yearsForDropdown => yearFilters.isEmpty
-      ? CutoffAllotmentsController.years
-      : yearFilters;
+  List<String> get yearsForDropdown =>
+      yearFilters.isEmpty ? CutoffAllotmentsController.years : yearFilters;
 
   List<String> get clinicalTypesForDropdown => clinicalTypeFilters.isEmpty
       ? ['Select Clinical Type']
@@ -172,16 +193,22 @@ class CutoffAllotmentsController extends GetxController {
 
   Future<void> _loadFilters() async {
     filtersLoading.value = true;
-    final (statesOk, stateList, _) = await FiltersApi.getStates(showLoader: false);
+    final (statesOk, stateList, _) = await FiltersApi.getStates(
+      showLoader: false,
+    );
     if (statesOk && stateList.isNotEmpty) {
       stateFilters.assignAll(stateList);
       // Set default state to Uttar Pradesh
-      if (selectedState.value == 'Select State' || selectedStateId.value.isEmpty) {
-        final upState = stateList.where((e) => 
-          e.name.toLowerCase().contains('uttar pradesh') || 
-          e.name.toLowerCase().contains('up') ||
-          e.name.toLowerCase() == 'up'
-        ).toList();
+      if (selectedState.value == 'Select State' ||
+          selectedStateId.value.isEmpty) {
+        final upState = stateList
+            .where(
+              (e) =>
+                  e.name.toLowerCase().contains('uttar pradesh') ||
+                  e.name.toLowerCase().contains('up') ||
+                  e.name.toLowerCase() == 'up',
+            )
+            .toList();
         if (upState.isNotEmpty) {
           selectedState.value = upState.first.name;
           selectedStateId.value = upState.first.id;
@@ -204,8 +231,12 @@ class CutoffAllotmentsController extends GetxController {
   /// Load category options from /common/dependent-filters for the selected quota.
   Future<void> _loadCategories() async {
     String? quotaId;
-    if ((selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') || selectedInstituteType.value != 'Select Institute Type') {
-      final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
+    if ((selectedQuota.value.isNotEmpty &&
+            selectedQuota.value != 'Select Quota') ||
+        selectedInstituteType.value != 'Select Institute Type') {
+      final match = quotaFilters
+          .where((e) => e.name == selectedQuota.value)
+          .toList();
       quotaId = match.isNotEmpty ? match.first.id : null;
     }
     if (quotaId == null && quotaFilters.isNotEmpty) {
@@ -215,9 +246,12 @@ class CutoffAllotmentsController extends GetxController {
       categoryFilters.clear();
       return;
     }
-    final instituteTypeId = selectedInstituteType.value != 'Select Institute Type'
+    final instituteTypeId =
+        selectedInstituteType.value != 'Select Institute Type'
         ? (() {
-            final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+            final match = instituteTypeFilters
+                .where((e) => e.name == selectedInstituteType.value)
+                .toList();
             return match.isNotEmpty ? match.first.id : '0';
           })()
         : '0';
@@ -236,7 +270,9 @@ class CutoffAllotmentsController extends GetxController {
   }
 
   Future<void> _loadInstituteTypes() async {
-    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '1';
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : '1';
     final (success, list, _) = await FiltersApi.getInstituteTypes(
       counsellingId: counsellingId,
       showLoader: false,
@@ -248,39 +284,52 @@ class CutoffAllotmentsController extends GetxController {
 
   Future<void> _loadQuotas() async {
     // All parameters are required, so provide defaults if not selected
-    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '0';
-    
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty
+        ? selectedCounsellingTypeId.value
+        : '0';
+
     // state_id is required - use first state if none selected, or '0' as fallback
-    String stateId = selectedStateId.value.isNotEmpty 
-        ? selectedStateId.value 
+    String stateId = selectedStateId.value.isNotEmpty
+        ? selectedStateId.value
         : (stateFilters.isNotEmpty ? stateFilters.first.id : '0');
-    
+
     // institute_type_id is required - use first institute type if none selected, or '0' as fallback
     String instituteTypeId = '0';
-    if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
+    if (selectedInstituteType.value.isNotEmpty &&
+        selectedInstituteType.value != 'Select Institute Type') {
       if (instituteTypeFilters.isNotEmpty) {
-        final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+        final match = instituteTypeFilters
+            .where((e) => e.name == selectedInstituteType.value)
+            .toList();
         instituteTypeId = match.isNotEmpty ? match.first.id : '0';
       } else {
-        instituteTypeId = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).first.id;
-      } 
+        instituteTypeId = instituteTypeFilters
+            .where((e) => e.name == selectedInstituteType.value)
+            .first
+            .id;
+      }
     } else if (instituteTypeFilters.isNotEmpty) {
       instituteTypeId = "0";
     }
-    
+
     // course_type_id is required - use first course if none selected, or '0' as fallback
     String courseTypeId = '0';
-    if (selectedCourse.value.isNotEmpty && selectedCourse.value != 'Select Course') {
+    if (selectedCourse.value.isNotEmpty &&
+        selectedCourse.value != 'Select Course') {
       if (courseFilters.isNotEmpty) {
-        final match = courseFilters.where((e) => e.name == selectedCourse.value).toList();
-        courseTypeId = match.isNotEmpty ? match.first.id : (courseIds[selectedCourse.value] ?? '0');
+        final match = courseFilters
+            .where((e) => e.name == selectedCourse.value)
+            .toList();
+        courseTypeId = match.isNotEmpty
+            ? match.first.id
+            : (courseIds[selectedCourse.value] ?? '0');
       } else {
         courseTypeId = courseIds[selectedCourse.value] ?? '0';
       }
     } else if (courseFilters.isNotEmpty) {
       courseTypeId = courseFilters.first.id;
     }
-    
+
     final (success, list, _) = await FiltersApi.getQuota(
       counsellingId: counsellingId,
       stateId: stateId,
@@ -319,14 +368,16 @@ class CutoffAllotmentsController extends GetxController {
       if (list.isNotEmpty) {
         counsellingTypeFilters.assignAll(list);
         // Set default counselling type if not set or if current selection is not in the list
-        if (selectedCounsellingTypeId.value.isEmpty || 
+        if (selectedCounsellingTypeId.value.isEmpty ||
             !list.any((e) => e.id == selectedCounsellingTypeId.value) ||
             !list.any((e) => e.name == selectedCounsellingType.value)) {
           selectedCounsellingType.value = list.first.name;
           selectedCounsellingTypeId.value = list.first.id;
         } else {
           // Ensure selected value matches the filter item
-          final match = list.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+          final match = list
+              .where((e) => e.id == selectedCounsellingTypeId.value)
+              .toList();
           if (match.isNotEmpty) {
             selectedCounsellingType.value = match.first.name;
           }
@@ -342,7 +393,10 @@ class CutoffAllotmentsController extends GetxController {
     final yearsList = map['years'];
     if (yearsList is List && yearsList.isNotEmpty) {
       yearFilters.assignAll(
-        yearsList.map((e) => e is int ? e.toString() : (e?.toString() ?? '')).where((s) => s.isNotEmpty).toList(),
+        yearsList
+            .map((e) => e is int ? e.toString() : (e?.toString() ?? ''))
+            .where((s) => s.isNotEmpty)
+            .toList(),
       );
       if (yearFilters.isNotEmpty && !yearFilters.contains(selectedYear.value)) {
         selectedYear.value = yearFilters.first;
@@ -393,50 +447,81 @@ class CutoffAllotmentsController extends GetxController {
     error.value = '';
     isLoading.value = true;
     String instituteTypeId = '0';
-    if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
+    if (selectedInstituteType.value.isNotEmpty &&
+        selectedInstituteType.value != 'Select Institute Type') {
       if (instituteTypeFilters.isNotEmpty) {
-        final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+        final match = instituteTypeFilters
+            .where((e) => e.name == selectedInstituteType.value)
+            .toList();
         instituteTypeId = match.isNotEmpty ? match.first.id : '0';
       } else {
-        instituteTypeId = '0'; instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).first.id;
+        instituteTypeId = '0';
+        instituteTypeFilters
+            .where((e) => e.name == selectedInstituteType.value)
+            .first
+            .id;
       }
     } else if (instituteTypeFilters.isNotEmpty) {
       // instituteTypeId = instituteTypeFilters.first.id;
       instituteTypeId = '0';
     }
     String? courseId;
-    if (selectedCourse.value.isNotEmpty && selectedCourse.value != 'Select Course') {
+    if (selectedCourse.value.isNotEmpty &&
+        selectedCourse.value != 'Select Course') {
       if (courseFilters.isNotEmpty) {
-        final match = courseFilters.where((e) => e.name == selectedCourse.value).toList();
-        courseId = match.isNotEmpty ? match.first.id : courseIds[selectedCourse.value];
+        final match = courseFilters
+            .where((e) => e.name == selectedCourse.value)
+            .toList();
+        courseId = match.isNotEmpty
+            ? match.first.id
+            : courseIds[selectedCourse.value];
       } else {
         courseId = courseIds[selectedCourse.value];
       }
     }
     String? clinicalTypeId;
-    if (clinicalTypeFilters.isNotEmpty && selectedClinicalType.value.isNotEmpty && selectedClinicalType.value != 'Select Clinical Type') {
-      final match = clinicalTypeFilters.where((e) => e.name == selectedClinicalType.value).toList();
+    if (clinicalTypeFilters.isNotEmpty &&
+        selectedClinicalType.value.isNotEmpty &&
+        selectedClinicalType.value != 'Select Clinical Type') {
+      final match = clinicalTypeFilters
+          .where((e) => e.name == selectedClinicalType.value)
+          .toList();
       clinicalTypeId = match.isNotEmpty ? match.first.id : null;
     }
     String? quotaId;
-    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+    if (selectedQuota.value.isNotEmpty &&
+        selectedQuota.value != 'Select Quota') {
       if (quotaFilters.isNotEmpty) {
-        final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
-        quotaId = match.isNotEmpty ? match.first.id : quotaIds[selectedQuota.value];
+        final match = quotaFilters
+            .where((e) => e.name == selectedQuota.value)
+            .toList();
+        quotaId = match.isNotEmpty
+            ? match.first.id
+            : quotaIds[selectedQuota.value];
       } else {
         quotaId = quotaIds[selectedQuota.value];
       }
     }
     String? smCategoryId;
-    if (selectedCategory.value.isNotEmpty && selectedCategory.value != 'Select Category') {
+    if (selectedCategory.value.isNotEmpty &&
+        selectedCategory.value != 'Select Category') {
       if (categoryFilters.isNotEmpty) {
-        final match = categoryFilters.where((e) => e.name == selectedCategory.value).toList();
+        final match = categoryFilters
+            .where((e) => e.name == selectedCategory.value)
+            .toList();
         smCategoryId = match.isNotEmpty ? match.first.id : null;
       }
     }
 
-    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
-    final (success, data, errorMessage) = await CutOffAllotmentsApi.getCutOffAllotments(
+    final perPage = entriesPerPage.value.clamp(
+      1,
+      CutOffAllotmentsApi.maxPerPage,
+    );
+    final (
+      success,
+      data,
+      errorMessage,
+    ) = await CutOffAllotmentsApi.getCutOffAllotments(
       stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: selectedStateId.value,
       year: selectedYear.value,
@@ -469,17 +554,29 @@ class CutoffAllotmentsController extends GetxController {
       final map = Map<String, dynamic>.from(pagination);
       final rawTotal = map['total'];
       if (rawTotal != null) {
-        totalCount.value = rawTotal is int ? rawTotal : int.tryParse(rawTotal.toString()) ?? 0;
+        totalCount.value = rawTotal is int
+            ? rawTotal
+            : int.tryParse(rawTotal.toString()) ?? 0;
         totalCountFromApi.value = true;
       }
       final fromVal = map['from'];
       final toVal = map['to'];
-      paginationFromApi.value = fromVal is int ? fromVal : int.tryParse(fromVal?.toString() ?? '') ?? 0;
-      paginationToApi.value = toVal is int ? toVal : int.tryParse(toVal?.toString() ?? '') ?? 0;
+      paginationFromApi.value = fromVal is int
+          ? fromVal
+          : int.tryParse(fromVal?.toString() ?? '') ?? 0;
+      paginationToApi.value = toVal is int
+          ? toVal
+          : int.tryParse(toVal?.toString() ?? '') ?? 0;
     } else {
-      final rawTotal = data['total'] ?? data['total_count'] ?? data['totalCount'] ?? data['total_records'];
+      final rawTotal =
+          data['total'] ??
+          data['total_count'] ??
+          data['totalCount'] ??
+          data['total_records'];
       if (rawTotal != null) {
-        totalCount.value = rawTotal is int ? rawTotal : int.tryParse(rawTotal.toString()) ?? 0;
+        totalCount.value = rawTotal is int
+            ? rawTotal
+            : int.tryParse(rawTotal.toString()) ?? 0;
         totalCountFromApi.value = true;
       } else {
         totalCountFromApi.value = false;
@@ -489,18 +586,25 @@ class CutoffAllotmentsController extends GetxController {
     }
 
     // API may return list in data.data (paginated) or data.cutoffs / data.list
-    final rawList = data['data'] ?? data['cutoffs'] ?? data['list'] ?? data['cut_off_allotments'] ?? data['allotments'];
+    final rawList =
+        data['data'] ??
+        data['cutoffs'] ??
+        data['list'] ??
+        data['cut_off_allotments'] ??
+        data['allotments'];
     final list = <CutoffRow>[];
     if (rawList is List) {
       for (var i = 0; i < rawList.length; i++) {
         final e = rawList[i];
         if (e is Map) {
           final map = Map<String, dynamic>.from(e);
-          if (map['s_no'] == null && map['sNo'] == null) map['s_no'] = (pageToLoad - 1) * perPage + i + 1;
+          if (map['s_no'] == null && map['sNo'] == null)
+            map['s_no'] = (pageToLoad - 1) * perPage + i + 1;
           list.add(CutoffRow.fromJson(map));
         }
       }
-      if (totalCount.value == 0) totalCount.value = (pageToLoad - 1) * perPage + list.length;
+      if (totalCount.value == 0)
+        totalCount.value = (pageToLoad - 1) * perPage + list.length;
     }
     _allRows = list;
     _applyFilters();
@@ -516,6 +620,7 @@ class CutoffAllotmentsController extends GetxController {
     } else {
       selectedCounsellingTypeId.value = v == 'MCC' ? '2' : '1';
     }
+    _loadInstituteTypes();
     _loadQuotas();
     final match = counsellingTypeFilters.where((e) => e.name == v).toList();
     selectedCounsellingTypeId.value = match.isEmpty ? '1' : match.first.id;
@@ -540,7 +645,7 @@ class CutoffAllotmentsController extends GetxController {
     selectedQuota.value = 'Select Quota';
     selectedCategory.value = 'Select Category';
     categoryFilters.clear();
-     _loadQuotas();
+    _loadQuotas();
     _loadCategories();
     loadCutOffAllotments(showLoader: false, page: 1);
   }
@@ -589,7 +694,10 @@ class CutoffAllotmentsController extends GetxController {
   }
 
   int get totalPages {
-    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    final perPage = entriesPerPage.value.clamp(
+      1,
+      CutOffAllotmentsApi.maxPerPage,
+    );
     final total = totalCount.value;
     if (total <= 0 || perPage <= 0) return 0;
     return (total / perPage).ceil();
@@ -598,18 +706,23 @@ class CutoffAllotmentsController extends GetxController {
   bool get hasNextPage {
     if (totalCountFromApi.value) return currentPage.value < totalPages;
     // When API doesn't send total: show Next if current page is full (more may exist)
-    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    final perPage = entriesPerPage.value.clamp(
+      1,
+      CutOffAllotmentsApi.maxPerPage,
+    );
     return filteredRows.length >= perPage;
   }
 
   bool get hasPreviousPage => currentPage.value > 1;
 
   void nextPage() {
-    if (hasNextPage) loadCutOffAllotments(showLoader: false, page: currentPage.value + 1);
+    if (hasNextPage)
+      loadCutOffAllotments(showLoader: false, page: currentPage.value + 1);
   }
 
   void previousPage() {
-    if (hasPreviousPage) loadCutOffAllotments(showLoader: false, page: currentPage.value - 1);
+    if (hasPreviousPage)
+      loadCutOffAllotments(showLoader: false, page: currentPage.value - 1);
   }
 
   void goToPage(int page) {
@@ -619,16 +732,24 @@ class CutoffAllotmentsController extends GetxController {
 
   /// 1-based start index for "Showing X-Y of Z" (uses API pagination.from when available)
   int get paginationStart {
-    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationFromApi.value;
-    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0)
+      return paginationFromApi.value;
+    final perPage = entriesPerPage.value.clamp(
+      1,
+      CutOffAllotmentsApi.maxPerPage,
+    );
     if (filteredRows.isEmpty) return 0;
     return (currentPage.value - 1) * perPage + 1;
   }
 
   /// 1-based end index for "Showing X-Y of Z" (uses API pagination.to when available)
   int get paginationEnd {
-    if (paginationFromApi.value > 0 && paginationToApi.value > 0) return paginationToApi.value;
-    final perPage = entriesPerPage.value.clamp(1, CutOffAllotmentsApi.maxPerPage);
+    if (paginationFromApi.value > 0 && paginationToApi.value > 0)
+      return paginationToApi.value;
+    final perPage = entriesPerPage.value.clamp(
+      1,
+      CutOffAllotmentsApi.maxPerPage,
+    );
     final count = filteredRows.length;
     if (count == 0) return 0;
     return (currentPage.value - 1) * perPage + count;
@@ -656,5 +777,4 @@ class CutoffAllotmentsController extends GetxController {
       );
     }
   }
-
 }
