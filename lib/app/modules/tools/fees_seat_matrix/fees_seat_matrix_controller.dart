@@ -49,6 +49,8 @@ class FeesSeatRow {
 }
 
 class FeesSeatMatrixController extends GetxController {
+  final RxString selectedCounsellingType = 'State'.obs;
+  final RxString selectedCounsellingTypeId = '1'.obs;
   final RxString selectedState = 'Select State'.obs;
   final RxString selectedStateId = ''.obs;
   final RxString selectedInstituteType = 'Select Institute Type'.obs;
@@ -77,6 +79,7 @@ class FeesSeatMatrixController extends GetxController {
   final RxList<FilterItem> courseFilters = <FilterItem>[].obs;
   final RxList<String> yearFilters = <String>[].obs;
   final RxList<FilterItem> clinicalTypeFilters = <FilterItem>[].obs;
+  final RxList<FilterItem> counsellingTypeFilters = <FilterItem>[].obs;
 
   List<String> get states => stateFilters.isEmpty
       ? ['Select State', 'Uttar Pradesh', 'Maharashtra', 'Rajasthan', 'Karnataka']
@@ -93,6 +96,10 @@ class FeesSeatMatrixController extends GetxController {
   List<String> get categoriesForDropdown => categoryFilters.isEmpty
       ? ['Select Category']
       : ['Select Category', ...categoryFilters.map((e) => e.name)];
+
+  List<String> get counsellingTypesForDropdown => counsellingTypeFilters.isEmpty
+      ? ['State', 'MCC']
+      : counsellingTypeFilters.map((e) => e.name).toList();
 
   static const List<String> courses = ['Select Course', 'MBBS', 'BDS', 'BAMS', 'BHMS'];
   static const List<String> years = ['2024', '2023', '2022', '2021'];
@@ -176,7 +183,15 @@ class FeesSeatMatrixController extends GetxController {
       return;
     }
     final (success, list, _) = await FiltersApi.getDependentFilters(
-      quotaId: quotaId,
+      quotaId: '',
+      counsellingId: selectedCounsellingTypeId.value,
+      stateId: selectedStateId.value,
+      instituteTypeId: selectedInstituteType.value != 'Select Institute Type'
+          ? (() {
+              final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+              return match.isNotEmpty ? match.first.id : '0';
+            })()
+          : '0',
       showLoader: false,
     );
     if (success && list.isNotEmpty) {
@@ -187,7 +202,7 @@ class FeesSeatMatrixController extends GetxController {
   }
 
   Future<void> _loadInstituteTypes() async {
-    final counsellingId = '1'; // Default counselling type
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '1';
     final (success, list, _) = await FiltersApi.getInstituteTypes(
       counsellingId: counsellingId,
       showLoader: false,
@@ -199,7 +214,7 @@ class FeesSeatMatrixController extends GetxController {
 
   Future<void> _loadQuotas() async {
     // All parameters are required, so provide defaults if not selected
-    final counsellingId = '1'; // Default counselling type
+    final counsellingId = selectedCounsellingTypeId.value.isNotEmpty ? selectedCounsellingTypeId.value : '1';
     
     // state_id is required - use first state if none selected, or '0' as fallback
     String stateId = selectedStateId.value.isNotEmpty 
@@ -247,7 +262,7 @@ class FeesSeatMatrixController extends GetxController {
   Future<void> _loadFiltersFromFeesSeatApi() async {
     final stateId = stateFilters.isNotEmpty ? stateFilters.first.id : '2';
     final (success, data, _) = await FeesSeatMatrixApi.getFeesSeatMatrix(
-      stateIdCounselling: '1',
+      stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: stateId,
       year: '2024',
       page: 1,
@@ -262,6 +277,23 @@ class FeesSeatMatrixController extends GetxController {
     final filters = data['filters'];
     if (filters is! Map) return;
     final map = Map<String, dynamic>.from(filters);
+
+    final counsellingTypesList = map['counselling_types'];
+    if (counsellingTypesList is List && counsellingTypesList.isNotEmpty) {
+      final list = _parseFilterItemList(counsellingTypesList);
+      if (list.isNotEmpty) {
+        counsellingTypeFilters.assignAll(list);
+        if (!list.any((e) => e.id == selectedCounsellingTypeId.value)) {
+          selectedCounsellingTypeId.value = list.first.id;
+          selectedCounsellingType.value = list.first.name;
+        } else {
+          final match = list.where((e) => e.id == selectedCounsellingTypeId.value).toList();
+          if (match.isNotEmpty) {
+            selectedCounsellingType.value = match.first.name;
+          }
+        }
+      }
+    }
 
     // courses: [{ id, name }]
     final coursesList = map['courses'];
@@ -309,7 +341,8 @@ class FeesSeatMatrixController extends GetxController {
     return loadFeesSeatMatrix(showLoader: false, page: 1);
   }
 
-  bool get canLoad => selectedStateId.value.isNotEmpty && selectedYear.value.isNotEmpty;
+  bool get canLoad =>
+      selectedCounsellingTypeId.value.isNotEmpty && selectedStateId.value.isNotEmpty && selectedYear.value.isNotEmpty;
 
   Future<void> loadFeesSeatMatrix({bool showLoader = true, int? page}) async {
     if (!canLoad) {
@@ -340,13 +373,35 @@ class FeesSeatMatrixController extends GetxController {
       final match = clinicalTypeFilters.where((e) => e.name == selectedClinicalType.value).toList();
       clinicalTypeId = match.isNotEmpty ? match.first.id : null;
     }
+    String instituteTypeId = '0';
+    if (selectedInstituteType.value.isNotEmpty && selectedInstituteType.value != 'Select Institute Type') {
+      if (instituteTypeFilters.isNotEmpty) {
+        final match = instituteTypeFilters.where((e) => e.name == selectedInstituteType.value).toList();
+        instituteTypeId = match.isNotEmpty ? match.first.id : (instituteTypeIds[selectedInstituteType.value] ?? '0');
+      } else {
+        instituteTypeId = instituteTypeIds[selectedInstituteType.value] ?? '0';
+      }
+    }
+    String? quotaId;
+    if (selectedQuota.value.isNotEmpty && selectedQuota.value != 'Select Quota') {
+      final match = quotaFilters.where((e) => e.name == selectedQuota.value).toList();
+      quotaId = match.isNotEmpty ? match.first.id : null;
+    }
+    String? smCategoryId;
+    if (selectedCategory.value.isNotEmpty && selectedCategory.value != 'Select Category') {
+      final match = categoryFilters.where((e) => e.name == selectedCategory.value).toList();
+      smCategoryId = match.isNotEmpty ? match.first.id : null;
+    }
 
     final perPage = entriesPerPage.value.clamp(1, FeesSeatMatrixApi.maxPerPage);
     final (success, data, errorMessage) = await FeesSeatMatrixApi.getFeesSeatMatrix(
-      stateIdCounselling: '1',
+      stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: selectedStateId.value,
       year: selectedYear.value,
+      instituteTypeId: instituteTypeId,
       courseId: courseId,
+      quotaId: quotaId,
+      smCategoryId: smCategoryId,
       clinicalTypeId: clinicalTypeId,
       page: pageToLoad,
       perPage: perPage,
@@ -411,6 +466,20 @@ class FeesSeatMatrixController extends GetxController {
     _parseFiltersFromResponse(data);
   }
 
+  void setCounsellingType(String v) {
+    selectedCounsellingType.value = v;
+    if (counsellingTypeFilters.isNotEmpty) {
+      final match = counsellingTypeFilters.where((e) => e.name == v).toList();
+      selectedCounsellingTypeId.value = match.isNotEmpty ? match.first.id : '1';
+    } else {
+      selectedCounsellingTypeId.value = v == 'MCC' ? '2' : '1';
+    }
+    _loadInstituteTypes();
+    _loadQuotas();
+    _loadCategories();
+    loadFeesSeatMatrix(showLoader: false, page: 1);
+  }
+
   void setState(String v) {
     selectedState.value = v;
     if (v == 'Select State') {
@@ -426,6 +495,7 @@ class FeesSeatMatrixController extends GetxController {
   void setInstituteType(String v) {
     selectedInstituteType.value = v;
     _loadQuotas();
+    _loadCategories();
     loadFeesSeatMatrix(showLoader: false, page: 1);
   }
 

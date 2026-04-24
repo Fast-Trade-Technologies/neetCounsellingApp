@@ -28,7 +28,7 @@ class CounsellingApi {
       final query = <String, dynamic>{
         'nLoginUserIdNo': userId,
         'counselling_type_id': counsellingTypeId,
-        'state_type_id': stateTypeId,
+        stateTypeId.isEmpty?'':'state_type_id': stateTypeId,
         'state_id': stateId,
         ...?extraQuery,
       };

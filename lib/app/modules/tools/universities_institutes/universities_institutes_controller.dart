@@ -264,7 +264,7 @@ class UniversitiesInstitutesController extends GetxController {
 
     final perPage = entriesPerPage.value.clamp(1, UniversitiesInstitutesApi.maxPerPage);
     final (success, data, errorMessage) = await UniversitiesInstitutesApi.getUniversitiesInstitutes(
-      stateIdCounselling: '1',
+      stateIdCounselling: selectedCounsellingTypeId.value,
       stateId: selectedStateId.value,
       instituteTypeId: instituteTypeId,
       universityId: universityId,

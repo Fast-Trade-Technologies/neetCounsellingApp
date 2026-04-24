@@ -622,6 +622,7 @@ class CutoffAllotmentsController extends GetxController {
     }
     _loadInstituteTypes();
     _loadQuotas();
+    _loadInstituteTypes();
     final match = counsellingTypeFilters.where((e) => e.name == v).toList();
     selectedCounsellingTypeId.value = match.isEmpty ? '1' : match.first.id;
     loadCutOffAllotments(showLoader: false, page: 1);
